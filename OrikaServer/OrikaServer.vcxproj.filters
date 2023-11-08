@@ -1,0 +1,882 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="MT5Connection">
+      <UniqueIdentifier>{2d04a3b3-48ae-4e2d-9981-77f73fea66a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataTable">
+      <UniqueIdentifier>{91046a54-58a1-4ef8-8118-1f2ff1912be6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SQLDATA">
+      <UniqueIdentifier>{1a64e568-d118-4e26-bbf5-7c813c6c3a91}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MSMQ">
+      <UniqueIdentifier>{b001d560-1434-4392-998b-d99e8b4994a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="LogWriter">
+      <UniqueIdentifier>{e34fb07d-098b-49fb-b0fa-d25f4ffac684}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Login">
+      <UniqueIdentifier>{b893b159-7c92-4d24-8d61-33469d07236a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="LZ">
+      <UniqueIdentifier>{45574eca-218f-496d-b232-44812d227371}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ClientSocket">
+      <UniqueIdentifier>{6110b5cd-969c-4425-9d16-2beb3c47fb2d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="WebSocketClient">
+      <UniqueIdentifier>{69b806ad-22cd-4b24-8f92-cb394dbea3d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="server">
+      <UniqueIdentifier>{b464fe0c-89f4-453b-bfaa-f071089d086f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="server\base64">
+      <UniqueIdentifier>{529c1879-7cad-44d3-9b4b-62e1798832e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="server\sha1">
+      <UniqueIdentifier>{c775a52b-ffd1-431c-85a8-6d12cf72e1b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ProtoFile">
+      <UniqueIdentifier>{076547ff-97df-45d0-80e6-a5b804f88b91}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="OrikaServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OrikaServerDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EchoService.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\ClientMasterTable.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLDATA\SqlData.h">
+      <Filter>SQLDATA</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\SymbolMasterTable.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\MetaDataTable.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\netpositionTable.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="MSMQ\MSMQApiWrapper.h">
+      <Filter>MSMQ</Filter>
+    </ClInclude>
+    <ClInclude Include="LogWriter\LogFile.h">
+      <Filter>LogWriter</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_clientmaster.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_clientbrokerage.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_PLDevideRatio.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_symbolgroup.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_Clientgatewayconfig.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_symbolmaster.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\OrderTable.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_positionAverageAccounting.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="UserLogin.h">
+      <Filter>Login</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\TableTabAndColumn.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\Orika_LoginTable.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\TableGroupData.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\TableLoginPassword.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="Orika_BalanceTableAccounting.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="server\cert.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\DataBuffer.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\FrameAndDeframeMessage.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\IncomingPacket.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\OutgoingPacket.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\server.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\WebsocketDataMessage.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\WebsocketHandshakeMessage.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\WebsocketMessage.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="server\base64\base64.h">
+      <Filter>server\base64</Filter>
+    </ClInclude>
+    <ClInclude Include="server\sha1\sha1.h">
+      <Filter>server\sha1</Filter>
+    </ClInclude>
+    <ClInclude Include="server\openssl_iocp.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="Manager.h">
+      <Filter>MT5Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="DealerSink.h">
+      <Filter>MT5Connection</Filter>
+    </ClInclude>
+    <ClInclude Include="DataTable\TableUpdateColumnMetaData.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="TableClosingFile.h">
+      <Filter>DataTable</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSocket\DataSource.h">
+      <Filter>ClientSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSocket\UniFeederSocket.h">
+      <Filter>ClientSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSocket\Sync.h">
+      <Filter>ClientSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSocket\Thread.h">
+      <Filter>ClientSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ClientSocket\ClientSocket.h">
+      <Filter>ClientSocket</Filter>
+    </ClInclude>
+    <ClInclude Include="ProtoMessageConverter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LZ\lzstring.h">
+      <Filter>LZ</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ActiveColumnChanged.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\AllGroupData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\AllSymbolgroupinfo.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\BalanceTransferRequest.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\BalanceTransferResponse.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\BalanceTransferStatus.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Brokerdata.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ClientAndSymbol.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Clientcredit.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Clientdata.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ClientMasterData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\clientmessage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Clientposition.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ClientpositionInsertandUpdate.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ClientPositionUpdate.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ClosingUpdateUpload.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ColorTemplates.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ColorTheme.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ColorThemes.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Dashboard.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DataDeleteResponse.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DealingData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DealingDataInterval.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DealTransferRequest.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DeleteColorTheme.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DeleteDataRequest.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DeleteDataStatus.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DeletePage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DeleteTemplate.ptoto.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchBrokerData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchClientData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchClientPositions.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchColorTemplates.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchColorTheme.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchDealingDataInterval.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchHighLowMismatchData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchLoginUserWiseDataRequest.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchPageDetails.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchSubbrokerData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchSymbolgroupinfo.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\GatewayPositiondevideratioUpdate.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\HbS.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Heartbeat.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\HighLowMismatchData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\IgnoreClosingandsave.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\login.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\LoginByToken.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\loginrequest.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\loginresponse.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\MetaData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\OrderData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\PageDetails.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\PageList.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\PositionMatchReport.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\PositionTransferResponse.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\PositiontransferStatus.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SaveColorTemplate.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SaveColorTheme.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SavePage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SavePageRes.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SelectedTheme.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\ServerMessage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SetSelectedTheme.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Subbrokerdata.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SubscribeTicker.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Symbolgroupinfo.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SymbolMasterData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\tab.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\tabcolumn.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\tabdata.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TdhExecution.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TdhResponseMessage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\tickdata.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TotalClientForBalanceTransfer.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TotalDealForTransfer.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TotalNoOfData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TradeDateChange.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TypeAndFileName.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\Unsubscribe.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UpdateClientcredit.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UpdateDataByTablename.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UpdatePageSequence.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UpdateRejectlimitSetting.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UserData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UserDetails.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\OrderActivateRequest.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\OrderActivateResponse.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SymbolmappingData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\UpdateSymbolmargin.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\SetAuthKey.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\LoginByKey.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\AlertMessage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="OrikaServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OrikaServerDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EchoService.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StaticClass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SQLDATA\SqlData.cpp">
+      <Filter>SQLDATA</Filter>
+    </ClCompile>
+    <ClCompile Include="MSMQ\MSMQApiWrapper.cpp">
+      <Filter>MSMQ</Filter>
+    </ClCompile>
+    <ClCompile Include="LogWriter\LogFile.cpp">
+      <Filter>LogWriter</Filter>
+    </ClCompile>
+    <ClCompile Include="UserLogin.cpp">
+      <Filter>Login</Filter>
+    </ClCompile>
+    <ClCompile Include="server\cert.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\DataBuffer.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\FrameAndDeframeMessage.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\IncomingPacket.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\OutgoingPacket.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\server.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\WebsocketDataMessage.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\WebsocketHandshakeMessage.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\WebsocketMessage.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="server\base64\base64.cpp">
+      <Filter>server\base64</Filter>
+    </ClCompile>
+    <ClCompile Include="server\sha1\sha1.cpp">
+      <Filter>server\sha1</Filter>
+    </ClCompile>
+    <ClCompile Include="server\openssl_iocp.cpp">
+      <Filter>server</Filter>
+    </ClCompile>
+    <ClCompile Include="Manager.cpp">
+      <Filter>MT5Connection</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientSocket\DataSource.cpp">
+      <Filter>ClientSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientSocket\UniFeederSocket.cpp">
+      <Filter>ClientSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="ClientSocket\ClientSocket.cpp">
+      <Filter>ClientSocket</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtoMessageConverter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LZ\lzstring.cpp">
+      <Filter>LZ</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ActiveColumnChanged.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\AllGroupData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\AllSymbolgroupinfo.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\BalanceTransferRequest.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\BalanceTransferResponse.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\BalanceTransferStatus.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Brokerdata.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ClientAndSymbol.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Clientcredit.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Clientdata.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ClientMasterData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\clientmessage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Clientposition.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ClientpositionInsertandUpdate.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ClientPositionUpdate.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ClosingUpdateUpload.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ColorTemplates.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ColorTheme.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ColorThemes.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Dashboard.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DataDeleteResponse.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DealingData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DealingDataInterval.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DealTransferRequest.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DeleteColorTheme.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DeleteDataRequest.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DeleteDataStatus.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DeletePage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DeleteTemplate.ptoto.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchBrokerData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchClientData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchClientPositions.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchColorTemplates.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchColorTheme.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchDealingDataInterval.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchHighLowMismatchData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchLoginUserWiseDataRequest.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchPageDetails.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchSubbrokerData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchSymbolgroupinfo.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\GatewayPositiondevideratioUpdate.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\HbS.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Heartbeat.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\HighLowMismatchData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\IgnoreClosingandsave.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\login.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\LoginByToken.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\loginrequest.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\loginresponse.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\MetaData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\OrderData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\PageDetails.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\PageList.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\PositionMatchReport.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\PositionTransferResponse.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\PositiontransferStatus.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SaveColorTemplate.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SaveColorTheme.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SavePage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SavePageRes.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SelectedTheme.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\ServerMessage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SetSelectedTheme.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Subbrokerdata.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SubscribeTicker.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Symbolgroupinfo.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SymbolMasterData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\tab.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\tabcolumn.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\tabdata.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TdhExecution.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TdhResponseMessage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\tickdata.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TotalClientForBalanceTransfer.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TotalDealForTransfer.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TotalNoOfData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TradeDateChange.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TypeAndFileName.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\Unsubscribe.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UpdateClientcredit.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UpdateDataByTablename.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UpdatePageSequence.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UpdateRejectlimitSetting.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UserData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UserDetails.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\OrderActivateRequest.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\OrderActivateResponse.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SymbolmappingData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\UpdateSymbolmargin.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\SetAuthKey.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\LoginByKey.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\AlertMessage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OrikaServer.rc">
+      <Filter>Source Files\Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\OrikaServer.rc2">
+      <Filter>Source Files\Resource Files</Filter>
+    </None>
+    <None Include="..\ProtoFile\clientmessage.proto">
+      <Filter>ProtoFile</Filter>
+    </None>
+    <None Include="..\ProtoFile\Heartbeat.proto">
+      <Filter>ProtoFile</Filter>
+    </None>
+    <None Include="..\ProtoFile\login.proto">
+      <Filter>ProtoFile</Filter>
+    </None>
+    <None Include="..\ProtoFile\loginrequest.proto">
+      <Filter>ProtoFile</Filter>
+    </None>
+    <None Include="..\ProtoFile\loginresponse.proto">
+      <Filter>ProtoFile</Filter>
+    </None>
+    <None Include="..\ProtoFile\PageDetails.proto">
+      <Filter>ProtoFile</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\OrikaServer.ico">
+      <Filter>Source Files\Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

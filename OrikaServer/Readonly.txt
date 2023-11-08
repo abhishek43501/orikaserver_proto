@@ -1,0 +1,2 @@
+/// Sending Update Message When Tick Has Been Changes<summary>			
+int rowsCount=tmpArray.Total();

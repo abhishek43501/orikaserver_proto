@@ -1,0 +1,495 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B69F2810-D597-4AE7-B676-6496BF3B3EC6}</ProjectGuid>
+    <RootNamespace>OrikaServer</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\json;..\PushFramework\include;..\OrikaServer;..\PushFramework;..\WebsocketProtocol\src;$(IncludePath)</IncludePath>
+    <OutDir>..\OrikeEXE</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>..\json;..\PushFramework\include;..\OrikaServer;\OrikaServer_proto\PushFramework;\OrikaServer_proto\WebsocketProtocol\src;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>\orikaserver\OrikaServer\x32\openssl\include;\OrikaServer\OrikaServer;\orikaserver\OrikaServer\x32;\OrikaServer\OrikaServer\json;\orikaserver\OrikaServer\x32\LZO\include;\orikaserver\OrikaServer\x32\QT\include;\orikaserver\OrikaServer\x32\QT\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>\orikaserver\OrikaServer\x32\openssl\lib;\orikaserver\OrikaServer\x32\LZO_Lib;\orikaserver\OrikaServer\x32\Qt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;Qt5Core.lib;lzo.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\include;\OrikaServer_proto\OrikaServer;\orikaserver_proto\OrikaServer\x64_Lib;\OrikaServer_proto\OrikaServer\json;C:\OrikaServer_proto\ProtoBuff\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\lib;C:\OrikaServer_proto\ProtoBuff\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libeay32.lib;ssleay32.lib;absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;crypto.lib;gpr.lib;grpc++.lib;grpc++_alts.lib;grpc++_error_details.lib;grpc++_reflection.lib;grpc++_unsecure.lib;grpc.lib;grpcpp_channelz.lib;grpc_authorization_provider.lib;grpc_plugin_support.lib;grpc_unsecure.lib;libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;re2.lib;ssl.lib;upb.lib;utf8_range.lib;utf8_validity.lib;zlib.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>500000000000</StackReserveSize>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\include;\OrikaServer_proto\OrikaServer;\orikaserver_proto\OrikaServer\x64_Lib;\OrikaServer_proto\OrikaServer\json;C:\OrikaServer_proto\ProtoBuff\include;C:\OrikaServer_proto\OrikaServer\x64_Lib\LZO\include;C:\OrikaServer_proto\OrikaServer\x64_Lib\QT\include\QtCore;C:\OrikaServer_proto\OrikaServer\x64_Lib\QT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\lib;C:\OrikaServer_proto\ProtoBuff\lib;\orikaserver_proto\OrikaServer\x64_Lib\LZO_Lib;\orikaserver_proto\OrikaServer\x64_Lib\Qt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;crypto.lib;gpr.lib;grpc++.lib;grpc++_alts.lib;grpc++_error_details.lib;grpc++_reflection.lib;grpc++_unsecure.lib;grpc.lib;grpcpp_channelz.lib;grpc_authorization_provider.lib;grpc_plugin_support.lib;grpc_unsecure.lib;libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;re2.lib;ssl.lib;upb.lib;utf8_range.lib;utf8_validity.lib;zlib.lib;zlibstatic.lib;lzo.lib;Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <StackReserveSize>100000000</StackReserveSize>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\ProtoFile\ActiveColumnChanged.pb.h" />
+    <ClInclude Include="..\ProtoFile\AlertMessage.pb.h" />
+    <ClInclude Include="..\ProtoFile\AllGroupData.pb.h" />
+    <ClInclude Include="..\ProtoFile\AllSymbolgroupinfo.pb.h" />
+    <ClInclude Include="..\ProtoFile\BalanceTransferRequest.pb.h" />
+    <ClInclude Include="..\ProtoFile\BalanceTransferResponse.pb.h" />
+    <ClInclude Include="..\ProtoFile\BalanceTransferStatus.pb.h" />
+    <ClInclude Include="..\ProtoFile\Brokerdata.pb.h" />
+    <ClInclude Include="..\ProtoFile\ClientAndSymbol.pb.h" />
+    <ClInclude Include="..\ProtoFile\Clientcredit.pb.h" />
+    <ClInclude Include="..\ProtoFile\Clientdata.pb.h" />
+    <ClInclude Include="..\ProtoFile\ClientMasterData.pb.h" />
+    <ClInclude Include="..\ProtoFile\clientmessage.pb.h" />
+    <ClInclude Include="..\ProtoFile\Clientposition.pb.h" />
+    <ClInclude Include="..\ProtoFile\ClientpositionInsertandUpdate.pb.h" />
+    <ClInclude Include="..\ProtoFile\ClientPositionUpdate.pb.h" />
+    <ClInclude Include="..\ProtoFile\ClosingUpdateUpload.pb.h" />
+    <ClInclude Include="..\ProtoFile\ColorTemplates.pb.h" />
+    <ClInclude Include="..\ProtoFile\ColorTheme.pb.h" />
+    <ClInclude Include="..\ProtoFile\ColorThemes.pb.h" />
+    <ClInclude Include="..\ProtoFile\Dashboard.pb.h" />
+    <ClInclude Include="..\ProtoFile\DataDeleteResponse.pb.h" />
+    <ClInclude Include="..\ProtoFile\DealingData.pb.h" />
+    <ClInclude Include="..\ProtoFile\DealingDataInterval.pb.h" />
+    <ClInclude Include="..\ProtoFile\DealTransferRequest.pb.h" />
+    <ClInclude Include="..\ProtoFile\DeleteColorTheme.pb.h" />
+    <ClInclude Include="..\ProtoFile\DeleteDataRequest.pb.h" />
+    <ClInclude Include="..\ProtoFile\DeleteDataStatus.pb.h" />
+    <ClInclude Include="..\ProtoFile\DeletePage.pb.h" />
+    <ClInclude Include="..\ProtoFile\DeleteTemplate.ptoto.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchBrokerData.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchClientData.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchClientPositions.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchColorTemplates.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchColorTheme.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchDealingDataInterval.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchHighLowMismatchData.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchLoginUserWiseDataRequest.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchPageDetails.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchSubbrokerData.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchSymbolgroupinfo.pb.h" />
+    <ClInclude Include="..\ProtoFile\GatewayPositiondevideratioUpdate.pb.h" />
+    <ClInclude Include="..\ProtoFile\HbS.pb.h" />
+    <ClInclude Include="..\ProtoFile\Heartbeat.pb.h" />
+    <ClInclude Include="..\ProtoFile\HighLowMismatchData.pb.h" />
+    <ClInclude Include="..\ProtoFile\IgnoreClosingandsave.pb.h" />
+    <ClInclude Include="..\ProtoFile\login.pb.h" />
+    <ClInclude Include="..\ProtoFile\LoginByKey.pb.h" />
+    <ClInclude Include="..\ProtoFile\LoginByToken.pb.h" />
+    <ClInclude Include="..\ProtoFile\loginrequest.pb.h" />
+    <ClInclude Include="..\ProtoFile\loginresponse.pb.h" />
+    <ClInclude Include="..\ProtoFile\MetaData.pb.h" />
+    <ClInclude Include="..\ProtoFile\OrderActivateRequest.pb.h" />
+    <ClInclude Include="..\ProtoFile\OrderActivateResponse.pb.h" />
+    <ClInclude Include="..\ProtoFile\OrderData.pb.h" />
+    <ClInclude Include="..\ProtoFile\PageDetails.pb.h" />
+    <ClInclude Include="..\ProtoFile\PageList.pb.h" />
+    <ClInclude Include="..\ProtoFile\PositionMatchReport.pb.h" />
+    <ClInclude Include="..\ProtoFile\PositionTransferResponse.pb.h" />
+    <ClInclude Include="..\ProtoFile\PositiontransferStatus.pb.h" />
+    <ClInclude Include="..\ProtoFile\SaveColorTemplate.pb.h" />
+    <ClInclude Include="..\ProtoFile\SaveColorTheme.pb.h" />
+    <ClInclude Include="..\ProtoFile\SavePage.pb.h" />
+    <ClInclude Include="..\ProtoFile\SavePageRes.pb.h" />
+    <ClInclude Include="..\ProtoFile\SelectedTheme.pb.h" />
+    <ClInclude Include="..\ProtoFile\ServerMessage.pb.h" />
+    <ClInclude Include="..\ProtoFile\SetAuthKey.pb.h" />
+    <ClInclude Include="..\ProtoFile\SetSelectedTheme.pb.h" />
+    <ClInclude Include="..\ProtoFile\Subbrokerdata.pb.h" />
+    <ClInclude Include="..\ProtoFile\SubscribeTicker.pb.h" />
+    <ClInclude Include="..\ProtoFile\Symbolgroupinfo.pb.h" />
+    <ClInclude Include="..\ProtoFile\SymbolmappingData.pb.h" />
+    <ClInclude Include="..\ProtoFile\SymbolMasterData.pb.h" />
+    <ClInclude Include="..\ProtoFile\tab.pb.h" />
+    <ClInclude Include="..\ProtoFile\tabcolumn.pb.h" />
+    <ClInclude Include="..\ProtoFile\tabdata.pb.h" />
+    <ClInclude Include="..\ProtoFile\TdhExecution.pb.h" />
+    <ClInclude Include="..\ProtoFile\TdhResponseMessage.pb.h" />
+    <ClInclude Include="..\ProtoFile\tickdata.pb.h" />
+    <ClInclude Include="..\ProtoFile\TotalClientForBalanceTransfer.pb.h" />
+    <ClInclude Include="..\ProtoFile\TotalDealForTransfer.pb.h" />
+    <ClInclude Include="..\ProtoFile\TotalNoOfData.pb.h" />
+    <ClInclude Include="..\ProtoFile\TradeDateChange.pb.h" />
+    <ClInclude Include="..\ProtoFile\TypeAndFileName.pb.h" />
+    <ClInclude Include="..\ProtoFile\Unsubscribe.pb.h" />
+    <ClInclude Include="..\ProtoFile\UpdateClientcredit.pb.h" />
+    <ClInclude Include="..\ProtoFile\UpdateDataByTablename.pb.h" />
+    <ClInclude Include="..\ProtoFile\UpdatePageSequence.pb.h" />
+    <ClInclude Include="..\ProtoFile\UpdateRejectlimitSetting.pb.h" />
+    <ClInclude Include="..\ProtoFile\UpdateSymbolmargin.pb.h" />
+    <ClInclude Include="..\ProtoFile\UserData.pb.h" />
+    <ClInclude Include="..\ProtoFile\UserDetails.pb.h" />
+    <ClInclude Include="ClientSocket\ClientSocket.h" />
+    <ClInclude Include="ClientSocket\DataSource.h" />
+    <ClInclude Include="ClientSocket\Sync.h" />
+    <ClInclude Include="ClientSocket\Thread.h" />
+    <ClInclude Include="ClientSocket\UniFeederSocket.h" />
+    <ClInclude Include="DataTable\ClientMasterTable.h" />
+    <ClInclude Include="DataTable\MetaDataTable.h" />
+    <ClInclude Include="DataTable\netpositionTable.h" />
+    <ClInclude Include="DataTable\OrderTable.h" />
+    <ClInclude Include="DataTable\Orika_clientbrokerage.h" />
+    <ClInclude Include="DataTable\Orika_Clientgatewayconfig.h" />
+    <ClInclude Include="DataTable\Orika_clientmaster.h" />
+    <ClInclude Include="DataTable\Orika_LoginTable.h" />
+    <ClInclude Include="DataTable\Orika_PLDevideRatio.h" />
+    <ClInclude Include="DataTable\Orika_positionAverageAccounting.h" />
+    <ClInclude Include="DataTable\Orika_symbolgroup.h" />
+    <ClInclude Include="DataTable\Orika_symbolmaster.h" />
+    <ClInclude Include="DataTable\SymbolMasterTable.h" />
+    <ClInclude Include="DataTable\TableGroupData.h" />
+    <ClInclude Include="DataTable\TableLoginPassword.h" />
+    <ClInclude Include="DataTable\TableTabAndColumn.h" />
+    <ClInclude Include="DataTable\TableUpdateColumnMetaData.h" />
+    <ClInclude Include="DealerSink.h" />
+    <ClInclude Include="EchoService.h" />
+    <ClInclude Include="LogWriter\LogFile.h" />
+    <ClInclude Include="LZ\lzstring.h" />
+    <ClInclude Include="Manager.h" />
+    <ClInclude Include="MSMQ\MSMQApiWrapper.h" />
+    <ClInclude Include="OrikaServer.h" />
+    <ClInclude Include="OrikaServerDlg.h" />
+    <ClInclude Include="Orika_BalanceTableAccounting.h" />
+    <ClInclude Include="ProtoMessageConverter.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="server\base64\base64.h" />
+    <ClInclude Include="server\cert.h" />
+    <ClInclude Include="server\DataBuffer.h" />
+    <ClInclude Include="server\FrameAndDeframeMessage.h" />
+    <ClInclude Include="server\IncomingPacket.h" />
+    <ClInclude Include="server\openssl_iocp.h" />
+    <ClInclude Include="server\OutgoingPacket.h" />
+    <ClInclude Include="server\server.h" />
+    <ClInclude Include="server\sha1\sha1.h" />
+    <ClInclude Include="server\WebsocketDataMessage.h" />
+    <ClInclude Include="server\WebsocketHandshakeMessage.h" />
+    <ClInclude Include="server\WebsocketMessage.h" />
+    <ClInclude Include="SQLDATA\SqlData.h" />
+    <ClInclude Include="StaticClass.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="TableClosingFile.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="UserLogin.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\ProtoFile\ActiveColumnChanged.pb.cc" />
+    <ClCompile Include="..\ProtoFile\AlertMessage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\AllGroupData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\AllSymbolgroupinfo.pb.cc" />
+    <ClCompile Include="..\ProtoFile\BalanceTransferRequest.pb.cc" />
+    <ClCompile Include="..\ProtoFile\BalanceTransferResponse.pb.cc" />
+    <ClCompile Include="..\ProtoFile\BalanceTransferStatus.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Brokerdata.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ClientAndSymbol.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Clientcredit.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Clientdata.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ClientMasterData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\clientmessage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Clientposition.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ClientpositionInsertandUpdate.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ClientPositionUpdate.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ClosingUpdateUpload.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ColorTemplates.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ColorTheme.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ColorThemes.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Dashboard.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DataDeleteResponse.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DealingData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DealingDataInterval.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DealTransferRequest.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DeleteColorTheme.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DeleteDataRequest.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DeleteDataStatus.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DeletePage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DeleteTemplate.ptoto.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchBrokerData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchClientData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchClientPositions.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchColorTemplates.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchColorTheme.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchDealingDataInterval.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchHighLowMismatchData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchLoginUserWiseDataRequest.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchPageDetails.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchSubbrokerData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchSymbolgroupinfo.pb.cc" />
+    <ClCompile Include="..\ProtoFile\GatewayPositiondevideratioUpdate.pb.cc" />
+    <ClCompile Include="..\ProtoFile\HbS.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Heartbeat.pb.cc" />
+    <ClCompile Include="..\ProtoFile\HighLowMismatchData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\IgnoreClosingandsave.pb.cc" />
+    <ClCompile Include="..\ProtoFile\login.pb.cc" />
+    <ClCompile Include="..\ProtoFile\LoginByKey.pb.cc" />
+    <ClCompile Include="..\ProtoFile\LoginByToken.pb.cc" />
+    <ClCompile Include="..\ProtoFile\loginrequest.pb.cc" />
+    <ClCompile Include="..\ProtoFile\loginresponse.pb.cc" />
+    <ClCompile Include="..\ProtoFile\MetaData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\OrderActivateRequest.pb.cc" />
+    <ClCompile Include="..\ProtoFile\OrderActivateResponse.pb.cc" />
+    <ClCompile Include="..\ProtoFile\OrderData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\PageDetails.pb.cc" />
+    <ClCompile Include="..\ProtoFile\PageList.pb.cc" />
+    <ClCompile Include="..\ProtoFile\PositionMatchReport.pb.cc" />
+    <ClCompile Include="..\ProtoFile\PositionTransferResponse.pb.cc" />
+    <ClCompile Include="..\ProtoFile\PositiontransferStatus.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SaveColorTemplate.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SaveColorTheme.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SavePage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SavePageRes.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SelectedTheme.pb.cc" />
+    <ClCompile Include="..\ProtoFile\ServerMessage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SetAuthKey.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SetSelectedTheme.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Subbrokerdata.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SubscribeTicker.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Symbolgroupinfo.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SymbolmappingData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\SymbolMasterData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\tab.pb.cc" />
+    <ClCompile Include="..\ProtoFile\tabcolumn.pb.cc" />
+    <ClCompile Include="..\ProtoFile\tabdata.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TdhExecution.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TdhResponseMessage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\tickdata.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TotalClientForBalanceTransfer.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TotalDealForTransfer.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TotalNoOfData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TradeDateChange.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TypeAndFileName.pb.cc" />
+    <ClCompile Include="..\ProtoFile\Unsubscribe.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UpdateClientcredit.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UpdateDataByTablename.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UpdatePageSequence.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UpdateRejectlimitSetting.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UpdateSymbolmargin.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UserData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\UserDetails.pb.cc" />
+    <ClCompile Include="ClientSocket\ClientSocket.cpp" />
+    <ClCompile Include="ClientSocket\DataSource.cpp" />
+    <ClCompile Include="ClientSocket\UniFeederSocket.cpp" />
+    <ClCompile Include="EchoService.cpp" />
+    <ClCompile Include="LogWriter\LogFile.cpp" />
+    <ClCompile Include="LZ\lzstring.cpp" />
+    <ClCompile Include="Manager.cpp" />
+    <ClCompile Include="MSMQ\MSMQApiWrapper.cpp" />
+    <ClCompile Include="OrikaServer.cpp" />
+    <ClCompile Include="OrikaServerDlg.cpp" />
+    <ClCompile Include="ProtoMessageConverter.cpp" />
+    <ClCompile Include="server\base64\base64.cpp" />
+    <ClCompile Include="server\cert.cpp" />
+    <ClCompile Include="server\DataBuffer.cpp" />
+    <ClCompile Include="server\FrameAndDeframeMessage.cpp" />
+    <ClCompile Include="server\IncomingPacket.cpp" />
+    <ClCompile Include="server\openssl_iocp.cpp" />
+    <ClCompile Include="server\OutgoingPacket.cpp" />
+    <ClCompile Include="server\server.cpp" />
+    <ClCompile Include="server\sha1\sha1.cpp" />
+    <ClCompile Include="server\WebsocketDataMessage.cpp" />
+    <ClCompile Include="server\WebsocketHandshakeMessage.cpp" />
+    <ClCompile Include="server\WebsocketMessage.cpp" />
+    <ClCompile Include="SQLDATA\SqlData.cpp" />
+    <ClCompile Include="StaticClass.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="UserLogin.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OrikaServer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\ProtoFile\clientmessage.proto" />
+    <None Include="..\ProtoFile\Heartbeat.proto" />
+    <None Include="..\ProtoFile\login.proto" />
+    <None Include="..\ProtoFile\loginrequest.proto" />
+    <None Include="..\ProtoFile\loginresponse.proto" />
+    <None Include="..\ProtoFile\PageDetails.proto" />
+    <None Include="res\OrikaServer.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\OrikaServer.ico" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="OrikaServer.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

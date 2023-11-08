@@ -48,3 +48,9 @@ Thumbs.db
 *.mov
 *.wmv
 
+.vs/OrikaServer/v17/ipch/a7825fdb810aef5a.ipch
+.vs/OrikaServer/v17/Browse.VC.opendb
+.vs/OrikaServer/v17/Browse.VC.db-wal
+*.ipch
+*.db
+.vs/

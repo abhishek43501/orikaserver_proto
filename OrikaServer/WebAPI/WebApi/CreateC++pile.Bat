@@ -1,0 +1,21 @@
+protoc --cpp_out=. WebApi\account_authorization_2.proto
+protoc --cpp_out=. WebApi\api_limit_2.proto
+protoc --cpp_out=. WebApi\historical_2.proto
+protoc --cpp_out=. WebApi\instrument_definition_2.proto
+protoc --cpp_out=. WebApi\market_data_2.proto
+protoc --cpp_out=. WebApi\metadata_2.proto
+protoc --cpp_out=. WebApi\metadata_admin_2.proto
+protoc --cpp_out=. WebApi\order_2.proto
+protoc --cpp_out=. WebApi\otc_1.proto
+protoc --cpp_out=. WebApi\rules_1.proto
+protoc --cpp_out=. WebApi\strategy_2.proto
+protoc --cpp_out=. WebApi\strategy_definition_2.proto
+protoc --cpp_out=. WebApi\symbol_browsing_2.proto
+protoc --cpp_out=. WebApi\trade_routing_2.proto
+protoc --cpp_out=. WebApi\trading_account_2.proto
+protoc --cpp_out=. WebApi\trading_session_2.proto
+protoc --cpp_out=. WebApi\user_attribute_2.proto
+protoc --cpp_out=. WebApi\user_session_2.proto
+protoc --cpp_out=. common\decimal.proto
+protoc --cpp_out=. common\shared_1.proto
+
