@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Oreka;
+message LoginByKey {
+    string type = 1;
+    string authKey = 2;
+}

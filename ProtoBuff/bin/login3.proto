@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package loginpackage;
+
+message LoginMessage
+{
+  string type = 1;
+  string login = 2;
+  string pwd = 3;
+  string serialNo = 4;
+}

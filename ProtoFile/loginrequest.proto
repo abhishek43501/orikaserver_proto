@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package Orika;
+message loginrequest 
+{
+    string type = 1;
+    string login = 2;
+    string pwd = 3;
+    string serialNo = 4;
+}

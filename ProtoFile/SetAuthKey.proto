@@ -1,0 +1,9 @@
+	
+syntax = "proto3";
+package Oreka;
+message SetAuthKey {
+    string type = 1;
+    string loginUser = 2;
+    string spreadSheetId = 3;
+    string authKey = 4;
+}
