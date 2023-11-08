@@ -1,0 +1,7 @@
+syntax = "proto3";
+package Oreka;
+//UNSUBSCRIBE
+message Unsubscribe {
+    string type = 1;
+    string requestType = 2;
+}

@@ -1,0 +1,13 @@
+//For Response of  {"type":"FETCH_ALL_SYMBOLGROUPINFO"}
+syntax = "proto3";
+package Oreka;
+message AllSymbolgroupinfo {
+
+    message Symbolgroups {
+        string symbolgroup = 1;
+        double symbolgroupmargin = 2;
+    }
+
+    string type = 1;
+    repeated Symbolgroups symbolgroups = 2;
+}

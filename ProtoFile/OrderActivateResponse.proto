@@ -1,0 +1,13 @@
+	
+syntax = "proto3";
+package Oreka;
+message OrderActivateResponse {
+
+    message Responsemessage {
+        uint32 order = 1;
+        string mtMessage = 2;
+    }
+
+    string type = 1;
+    repeated Responsemessage responseMessage = 2;
+}

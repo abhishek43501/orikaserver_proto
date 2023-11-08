@@ -1,0 +1,32 @@
+syntax = "proto3";
+package Oreka;
+message UserDetails {
+
+    message Groups {
+        string group = 1;
+        bool checked = 2;
+    }
+
+    message Tablecolumns {
+        string group = 1;
+        bool checked = 2;
+    }
+
+    message Permission {
+        string group = 1;
+        bool checked = 2;
+    }
+
+    message Data {
+        string loginuser = 1;
+        string password = 2;
+        string name = 3;
+        repeated Groups groups = 4;
+        repeated Tablecolumns tablecolumns = 5;
+        repeated Permission permission = 6;
+        repeated string fingerPrint = 7;
+    }
+
+    string type = 1;
+    Data data = 2;
+}

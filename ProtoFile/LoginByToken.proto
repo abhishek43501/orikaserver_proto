@@ -1,0 +1,8 @@
+//{"type":"loginbytoken","logintoken":"1001:33b90a2a91191097170ceb74513de3c6-14:01:30:420!~o!1001!~o!122.161.49.252!~o!1693989090"}
+
+syntax = "proto3";
+package Oreka;
+message LoginByToken {
+    string type = 1;
+    string logintoken = 2;
+}

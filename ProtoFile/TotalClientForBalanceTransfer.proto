@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Oreka;
+message TotalClientForBalanceTransfer {
+    string type = 1;
+    uint32 TOTAL_CLIENT = 2;
+}

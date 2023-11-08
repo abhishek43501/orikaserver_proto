@@ -1,0 +1,13 @@
+//For {"type":"UPDATE_CLIENTCREDIT","clientcredits":[{"login":"1001","credit":10.50}]}
+syntax = "proto3";
+package Oreka;
+message UpdateClientcredit {
+
+    message Clientcredits {
+        string login = 1;
+        double credit = 2;
+    }
+
+    string type = 1;
+    repeated Clientcredits clientcredits = 2;
+}

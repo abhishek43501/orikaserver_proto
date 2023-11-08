@@ -1,0 +1,15 @@
+
+syntax = "proto3";
+package Oreka;
+message SaveColorTemplate {
+
+    message Template {
+        string name = 1;
+        string id = 2;
+        repeated int64 range = 3;
+    }
+
+    string type = 1;
+    Template template = 2;
+    string loginUser = 3;
+}

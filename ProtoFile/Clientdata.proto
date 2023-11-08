@@ -1,0 +1,26 @@
+syntax = "proto3";
+package Oreka;
+//FETCH_CLIENTDATA_Res
+
+message Clientdata {
+
+    message Clients {
+        string login = 1;
+        string name = 2;
+        string broker = 3;
+        string subbroker = 4;
+        string extragroup = 5;
+        uint32 losslimit = 6;
+        uint32 creditlimit = 7;
+        uint32 comment = 8;
+        uint32 qtylimitmultiplayer = 9;
+        uint32 ignoretrader = 10;
+        string colour = 11;
+        string company = 12;
+        uint32 lpratio = 13;
+        uint32 maxbrokerage = 14;
+    }
+
+    string type = 1;
+    repeated Clients clients = 2;
+}

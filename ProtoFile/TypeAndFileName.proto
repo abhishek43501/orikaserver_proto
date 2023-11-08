@@ -1,0 +1,7 @@
+
+syntax = "proto3";
+package Oreka;
+message TypeAndFileName {
+    string type = 1;
+    string filename = 2;
+}

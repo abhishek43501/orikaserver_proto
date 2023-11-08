@@ -1,0 +1,38 @@
+syntax = "proto3";
+package Oreka;
+
+message Dashboard {
+
+    message Gridlayoutlocation {
+        string i = 1;
+        uint32 x = 2;
+        uint32 y = 3;
+        uint32 w = 4;
+        uint32 h = 5;
+    }
+
+    message Gridproperties {
+        bool hide = 1;
+        Gridlayoutlocation gridLayoutLocation = 2;
+    }
+
+    message Data {
+        string field = 1;
+        uint32 width = 2;
+        uint32 order = 3;
+        string pinned = 4;
+        bool rowGroup = 5;
+        bool hide = 6;
+        bool collapsed = 7;
+    }
+
+    message Gridcolumndata {
+        string field = 1;
+        string type = 2;
+        Gridproperties gridProperties = 3;
+        repeated Data data = 4;
+    }
+
+    string type = 1;
+    repeated Gridcolumndata gridcolumndata = 2;
+}

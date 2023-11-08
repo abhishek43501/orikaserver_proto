@@ -1,0 +1,14 @@
+syntax = "proto3";
+package Oreka;
+message DealingData {
+    string type = 1;
+    uint32 id = 2;
+    uint32 time = 3;
+    string login = 4;
+    string symbol = 5;
+    string buysell = 6;
+    double volume = 7;
+    double price = 8;
+    string reason = 9;
+    string dealingtype = 10;
+}

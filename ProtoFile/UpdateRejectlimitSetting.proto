@@ -1,0 +1,18 @@
+
+syntax = "proto3";
+package Oreka;
+message UpdateRejectlimitSetting {
+
+    message Clientlimits {
+        string login = 1;
+        string symbolgroup = 2;
+        uint32 symbolwisebuylimit = 3;
+        uint32 symbolwiseselllimit = 4;
+        bool symbolwisependingorderenabledisable = 5;
+        uint32 symbolPositionLimit = 6;
+        uint32 qtyLimitMultiplayer = 7;
+    }
+
+    string type = 1;
+    repeated Clientlimits clientlimits = 2;
+}

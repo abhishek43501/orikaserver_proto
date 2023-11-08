@@ -1,0 +1,82 @@
+
+syntax = "proto3";
+package Oreka;
+message ClientPositionUpdate {
+
+    message Update {
+        string login = 1;
+        string symbol = 2;
+		optional string  name=3;
+		optional string symbolExtra=4;
+		optional double previousvolume=5;
+		optional double difference=6;
+		optional double volume=7;
+		optional double average=8;
+		optional double lastrate=9;
+		optional double clientbalance=10;
+		optional double clientnetamount=11;
+		optional double maxallotedqty=12;
+		optional string company=13;
+		optional string subbroker=14;
+		optional string broker=15;
+		optional double extravolume=16;
+		optional double freemargin=17;
+		optional double totaltradedlot=18;
+		optional double totaltradedto=19;
+		optional double companyvolume=20;
+		optional double brokervolume=21;
+		optional double subbrokervolume=22;
+		optional double clientbrokerage=23;
+		optional double brokerbrokerage=24;
+		optional double subbrokerbrokerage=25;
+		optional double companybrokerage=26;
+		optional double clientexposure=27;
+		optional double Companyexposure=28;
+		optional double brokerexposure=29;
+		optional double subbrokerexposure=30;
+		optional double clientfloatingpl=31;
+		optional double companyfloatingpl=32;
+		optional double brokerfloatingpl=33;
+		optional double subbrokerfloatingpl=34;
+		optional double clientbalancepl=35;
+		optional double companybalancepl=36;
+		optional double brokerbalancepl=37;
+		optional double subbrokerbalancepl=38;
+		optional double clientplnet=39;
+		optional double companyplnet=40;
+		optional double brokerplnet=41;
+		optional double subbrokerplnet=42;
+		optional double clientpatti=43;
+		optional double companypatti=44;
+		optional double brokerpatti=45;
+		optional double subbrokerpatti=46;
+		optional double companybrokeragerate=47;
+		optional double brokerbrokeragerate=48;
+		optional double subbrokerbrokeragerate=49;
+		optional double clientbrokeragerate=510;
+		optional double clientgrossamount=51;
+		optional double brokergrossamount=52;
+		optional double subbrokergrossamount=53;
+		optional double companygrossamount=54;
+		optional string exchange=55;
+		optional string international=56;
+		optional string sector=57;
+		optional string industry=58;
+		optional string buysell=59;
+		optional string debitcredit=60;
+		optional string page=61;
+		optional string categary=62;
+		optional double rm=63;
+		optional double qtyaftermulti=64;
+		optional double rmp=65;
+		optional double qtymulti=66;
+		optional double lpratio=67;
+		optional double lpvolume=68;
+		optional string commoditygroup=69;
+		optional string currencybase=70;
+    }
+
+    string type = 1;
+    repeated string updatekey = 2;
+    repeated Update update = 3;
+}

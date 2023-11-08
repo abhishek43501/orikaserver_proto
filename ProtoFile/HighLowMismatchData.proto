@@ -1,0 +1,17 @@
+syntax = "proto3";
+package Oreka;
+message HighLowMismatchData {
+
+    message Data {
+        uint32 dealdate = 1;
+        uint32 deal = 2;
+        uint32 order = 3;
+        uint32 login = 4;
+        string symbol = 5;
+        double rate = 6;
+        string comment = 7;
+    }
+
+    string type = 1;
+    repeated Data data = 2;
+}

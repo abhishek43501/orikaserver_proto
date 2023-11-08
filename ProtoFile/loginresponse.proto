@@ -1,7 +1,12 @@
 syntax = "proto3";
-package Orika;
-message loginresponse {
+
+package Oreka;
+
+import "tabdata.proto";
+
+message LoginResponse {
     string type = 1;
     string status = 2;
     string logintoken = 3;
+    TabData data = 4;
 }

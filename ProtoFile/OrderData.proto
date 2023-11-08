@@ -1,0 +1,52 @@
+syntax = "proto3";
+package Oreka;
+message OrderData {
+    message Insert {
+        optional string login = 1;
+        optional uint32 time = 2;
+        optional uint32 deal = 3;
+        optional uint32 order = 4;
+        optional string symbol = 5;
+        optional string type = 6;
+        optional double volume = 7;
+        optional double price = 8;
+        optional string comment = 9;
+        optional string status = 10;
+        optional string select = 11;
+        optional string statustype = 12;
+        optional string subtype = 13;
+        optional uint32 contraorder = 14;
+        optional uint32 tradeexecutetime = 15;
+        optional string ourcomment = 16;
+        optional string orderstate = 17;
+    }
+	message Update {
+        optional string login = 1;
+        optional uint32 time = 2;
+        optional uint32 deal = 3;
+        optional uint32 order = 4;
+        optional string symbol = 5;
+        optional string type = 6;
+        optional double volume = 7;
+        optional double price = 8;
+        optional string comment = 9;
+        optional string status = 10;
+        optional string select = 11;
+        optional string statustype = 12;
+        optional string subtype = 13;
+        optional uint32 contraorder = 14;
+        optional uint32 tradeexecutetime = 15;
+        optional string ourcomment = 16;
+        optional string orderstate = 17;
+    }	
+	message Delete {
+        uint32 order = 1;
+    } 	
+    string type = 1;
+	repeated Insert insert = 2;
+    repeated string updatekey = 3;
+    repeated Update update = 4;
+	repeated string deletekey = 5;
+    repeated Delete delete = 6;
+    
+}

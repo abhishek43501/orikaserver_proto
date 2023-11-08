@@ -1,7 +1,8 @@
 syntax = "proto3";
 
-package Orika;
-message loginrequest 
+package Oreka;
+
+message LoginRequest 
 {
     string type = 1;
     string login = 2;

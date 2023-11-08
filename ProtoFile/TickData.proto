@@ -1,0 +1,18 @@
+syntax = "proto3";
+package Oreka;
+message TickData {
+    message Insert {
+        string symbol = 1;
+        double bid = 2;
+        double ask = 3;
+        double last = 4;
+        string ticktime = 5;
+        double open = 6;
+        double high = 7;
+        double low = 8;
+        double close = 9;
+    }
+
+    string type = 1;
+    repeated Insert insert = 2;
+}

@@ -1,0 +1,9 @@
+
+syntax = "proto3";
+package Oreka;
+message DeleteDataStatus {
+    string type = 1;
+    uint32 DELETED_DATA = 2;
+    uint32 PENDING_DATA = 3;
+    string STATUS = 4;
+}

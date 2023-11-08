@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Oreka;
+message TotalDealForTransfer {
+    string type = 1;
+    uint32 TOTAL_DEAL = 2;
+}

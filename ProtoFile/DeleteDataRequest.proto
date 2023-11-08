@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Oreka;
+message DeleteDataRequest {
+    string type = 1;
+    repeated string groups = 2;
+}

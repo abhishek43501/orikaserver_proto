@@ -1,0 +1,13 @@
+syntax = "proto3";
+package Oreka;
+message ClientAndSymbol {
+
+    message Logins {
+        string login = 1;
+        string name = 2;
+    }
+
+    string type = 1;
+    repeated Logins logins = 2;
+    repeated string symbols = 3;
+}

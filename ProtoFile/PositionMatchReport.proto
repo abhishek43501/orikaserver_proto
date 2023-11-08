@@ -1,0 +1,8 @@
+
+syntax = "proto3";
+package Oreka;
+message PositionMatchReport {
+    string type = 1;
+    repeated string message = 2;
+    string status = 3;
+}

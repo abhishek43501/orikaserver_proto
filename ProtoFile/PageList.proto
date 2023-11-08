@@ -1,0 +1,15 @@
+syntax = "proto3";
+package Oreka;
+message PageList {
+
+    message Pages {
+        string pageId = 1;
+        string name = 2;
+        string shortName = 3;
+        uint32 sequence = 4;
+    }
+
+    string type = 1;
+    string loginUser = 2;
+    repeated Pages pages = 3;
+}

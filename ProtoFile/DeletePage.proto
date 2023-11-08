@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Oreka;
+message DeletePage {
+    string type = 1;
+    string pageId = 2;
+}

@@ -1,0 +1,12 @@
+
+syntax = "proto3";
+package Oreka;
+message IgnoreClosingandsave {
+
+    message Data {
+        string mtsymbol = 1;
+    }
+
+    string type = 1;
+    repeated Data data = 2;
+}

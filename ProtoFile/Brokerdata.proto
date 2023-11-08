@@ -1,0 +1,13 @@
+syntax = "proto3";
+package Oreka;
+//FETCH_BROKERDATA_res
+message Brokerdata {
+
+    message Brokers {
+        string broker = 1;
+        uint32 maxbrokerage = 2;
+    }
+
+    string type = 1;
+    repeated Brokers brokers = 2;
+}

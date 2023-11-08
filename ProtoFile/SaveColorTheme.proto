@@ -1,0 +1,17 @@
+
+syntax = "proto3";
+package Oreka;
+message SaveColorTheme {
+
+    message Theme {
+        string id = 1;
+        string name = 2;
+        repeated string color = 3;
+        repeated string fontColor = 4;
+        bool default = 5;
+    }
+
+    string type = 1;
+    string loginUser = 2;
+    Theme theme = 3;
+}

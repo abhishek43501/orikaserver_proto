@@ -1,0 +1,35 @@
+syntax = "proto3";
+package Oreka;
+message GatewayPositiondevideratioUpdate {
+
+    message Lpentries {
+        string LpName = 1;
+        string LpSymbol = 2;
+        uint32 LpPriority = 3;
+        uint32 LpMaxLots = 4;
+        string LpSendingType = 5;
+        uint32 LpRatio = 6;
+    }
+
+    message Ratiodefinition {
+        int32 lots = 1;
+        uint32 ratio = 2;
+        uint32 stepup = 3;
+        uint32 perfect = 4;
+        uint32 rounded = 5;
+    }
+
+    message Data {
+        string symbolgroup = 1;
+        uint32 companytotalvolumeaftermulti = 2;
+        uint32 lpvolumetotal = 3;
+        string lastupdatedtime = 4;
+        repeated Lpentries LpEntries = 5;
+        repeated Ratiodefinition ratiodefinition = 6;
+        uint32 perfecttotal = 7;
+        uint32 roundedtotal = 8;
+    }
+
+    string type = 1;
+    repeated Data data = 2;
+}

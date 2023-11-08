@@ -1,0 +1,8 @@
+syntax = "proto3";
+package Oreka;
+//CLOSING_UPDATE_UPLOAD
+message ClosingUpdateUpload {
+    string key = 1;
+    string filename = 2;
+	string closingdate = 3;
+}

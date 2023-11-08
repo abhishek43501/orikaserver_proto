@@ -1,0 +1,16 @@
+	
+syntax = "proto3";
+package Oreka;
+message SymbolmappingData {
+
+    message Symboldata {
+        string mtsymbol = 1;
+        string exchangesymbol = 2;
+        string nextmtsymbol = 3;
+        uint32 exchangelotsize = 4;
+        uint32 mtlotsize = 5;
+    }
+
+    string type = 1;
+    repeated Symboldata symboldata = 2;
+}

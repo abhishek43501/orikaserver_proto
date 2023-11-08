@@ -1,0 +1,8 @@
+//{"type":"SUBSCRIBE_TICKER","tickers":["GOLDJUN"]}
+//{"type":"UNSUBSCRIBE_TICKER","tickers":["SILVERMAY","GOLDJUN"]}
+syntax = "proto3";
+package Oreka;
+message SubscribeTicker {
+     string type = 1;
+    repeated string tickers = 2;
+}

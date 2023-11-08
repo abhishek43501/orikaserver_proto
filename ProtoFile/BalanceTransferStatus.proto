@@ -1,0 +1,8 @@
+
+syntax = "proto3";
+package Oreka;
+message BalanceTransferStatus {
+    string type = 1;
+    uint32 TRANSFERED = 2;
+    uint32 PENDING = 3;
+}

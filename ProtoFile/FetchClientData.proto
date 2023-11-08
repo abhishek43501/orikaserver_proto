@@ -1,0 +1,7 @@
+syntax = "proto3";
+package Oreka;
+//FETCH_CLIENTDATA
+message FetchClientData {
+    string key = 1;
+    string login = 2;
+}

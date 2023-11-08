@@ -1,0 +1,12 @@
+syntax = "proto3";
+package Oreka;
+message UpdateSymbolmargin {
+
+    message Symbolgroupmargins {
+        string symbolgroup = 1;
+        uint32 symbolgroupmargin = 2;
+    }
+
+    string type = 1;
+    repeated Symbolgroupmargins symbolgroupmargins = 2;
+}

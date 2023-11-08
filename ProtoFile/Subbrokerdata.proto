@@ -1,0 +1,14 @@
+	
+syntax = "proto3";
+package Oreka;
+//FETCH_SUBBROKERDATA_res
+message Subbrokerdata {
+
+    message Subbrokers {
+        string subbroker = 1;
+        double maxbrokerage = 2;
+    }
+
+    string type = 1;
+    repeated Subbrokers subbrokers = 2;
+}

@@ -1,0 +1,29 @@
+syntax = "proto3";
+package Oreka;
+message SymbolMasterData {
+
+    message Data {
+        string symbol = 1;
+        double closingPrice = 2;
+        double multiplayer = 3;
+        double symbolMargin = 4;
+        double maxlimitOnsameprice = 5;
+        double symbolPendingOrderDiffFromBidAsk = 6;
+        string ltpMapping = 7;
+        double upperCircuit = 8;
+        double lowerCircuit = 9;
+        string exchangeSymbol = 10;
+        string nextSymbol = 11;
+        uint32 nselotsize = 12;
+        uint32 mtlotsize = 13;
+        double maxAllowedVolume = 14;
+        double allowedLimitPerClient = 15;
+        double symbolPositionLimit = 16;
+        string symbolGroup = 17;
+        double binsize = 18;
+        double pocketnumber = 19;
+    }
+
+    string type = 1;
+    repeated Data data = 2;
+}

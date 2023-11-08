@@ -1,0 +1,70 @@
+syntax = "proto3";
+package Oreka;
+import "google/protobuf/any.proto";
+message MetaData {
+
+    message Groupingcolumns {
+        string headerName = 1;
+        string field = 2;
+        uint32 minWidth = 3;
+        string filter = 4;
+        bool enableRowGroup = 5;
+        bool enablePivot = 6;
+        bool enableValue = 7;
+        uint32 decimalLocator = 8;
+        string dataType = 9;
+        string inputcontrol = 10;
+        bool editable = 11;
+        uint32 colorType = 12;
+        uint32 template = 13;
+    }
+
+    message Data {
+        string key = 1;
+        uint32 template = 2;
+        string displayValue = 3;
+        string dataType = 4;
+        uint32 size = 5;
+        bool editable = 6;
+        bool hidden = 7;
+        uint32 sequence = 8;
+        bool iscurrency = 9;
+        bool shouldanimate = 10;
+        bool calculateTotal = 11;
+        bool GroupingEnabled = 12;
+        bool PivotEnabled = 13;
+        repeated Groupingcolumns GroupingColumns = 14;
+    }
+
+    message Columns {
+        string colId = 1;
+        bool hide = 2;
+        google.protobuf.Any aggFunc = 3;
+        uint32 width = 4;
+        google.protobuf.Any pivotIndex = 5;
+        google.protobuf.Any pinned = 6;
+        uint32 rowGroupIndex = 7;
+        uint32 template = 8;
+    }
+
+    message Filterstate {
+    }
+
+    message Toggleview {
+        string viewName = 1;
+        uint32 viewNo = 2;
+        string metadatatype = 3;
+        repeated Columns columns = 4;
+        Filterstate filterState = 5;
+        repeated google.protobuf.Any sortingState = 6;
+        bool isDarkMode = 7;
+        bool isColorOn = 8;
+        bool isFilterOn = 9;
+        bool isPivot = 10;
+    }
+
+    string type = 1;
+    repeated Data data = 2;
+    repeated string uniqueKey = 3;
+    repeated Toggleview toggleView = 4;
+}

@@ -1,0 +1,9 @@
+syntax = "proto3";
+package Oreka;
+message TotalNoOfData {
+    string type = 1;
+    uint32 TOTAL_DATA = 2;
+    uint32 TOTAL_ORDER = 3;
+    uint32 TOTAL_DEAL = 4;
+    uint32 TOTAL_POSITION = 5;
+}

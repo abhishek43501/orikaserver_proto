@@ -1,0 +1,7 @@
+syntax = "proto3";
+package Oreka;
+//FETCH_BROKERDATA
+message FetchBrokerData {
+    string key = 1;
+    string broker = 2;
+}

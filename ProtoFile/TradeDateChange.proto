@@ -1,0 +1,9 @@
+
+syntax = "proto3";
+package Oreka;
+message TradeDateChange {
+    string type = 1;
+    uint32 FROM = 2;
+    uint32 TO = 3;
+    uint32 CHANGED_DATE = 4;
+}

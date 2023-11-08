@@ -1,0 +1,6 @@
+syntax = "proto3";
+package Oreka;
+message BalanceTransferRequest {
+    string type = 1;
+    repeated string groups = 2;
+}

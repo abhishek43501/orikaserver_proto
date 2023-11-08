@@ -1,0 +1,18 @@
+////USERS_DATA
+syntax = "proto3";
+package Oreka;
+message UserData {
+
+    message Users {
+        string loginuser = 1;
+        string name = 2;
+        string fingerprint = 3;
+        string status = 4;
+        string ipaddress = 5;
+        string sessionid = 6;
+    }
+
+    string type = 1;
+    string action = 2;
+    repeated Users users = 3;
+}

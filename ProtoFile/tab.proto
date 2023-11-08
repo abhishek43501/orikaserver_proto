@@ -1,0 +1,8 @@
+syntax = "proto3";
+package Oreka;
+import "tabcolumn.proto";
+message Tab {
+
+    string tabname = 1;
+    repeated TabColumn columns = 2;
+}

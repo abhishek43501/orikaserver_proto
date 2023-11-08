@@ -1,0 +1,10 @@
+//{"type":"FETCH_DEALING_DATA_INTERVAL","loginUser":"1001","subscriptionId":"ceaa7ae0-dc69-4fe7-941b-8862b57b193d","startTime":1692599400,"endTime":1693559242}
+syntax = "proto3";
+package Oreka;
+message FetchDealingDataInterval {
+    string type = 1;
+    string loginUser = 2;
+    string subscriptionId = 3;
+    uint32 startTime = 4;
+    uint32 endTime = 5;
+}

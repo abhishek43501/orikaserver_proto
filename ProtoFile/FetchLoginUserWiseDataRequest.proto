@@ -1,0 +1,20 @@
+//{"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+//{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+//{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+//{"type":"FETCH_COLUMN_TEMPLATE","userlogin":"1001"}
+//{"type":"FETCH_CLIENT_POSITION_META_DATA","userlogin":"1001"}
+//{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+//{"type":"FETCH_DEALING_DATA","loginUser":"1001"}
+//{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+//{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+//{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+//{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+//{ "type":"HB_R" }
+
+syntax = "proto3";
+package Oreka;
+message FetchLoginUserWiseDataRequest{
+    string type = 1;
+    string loginUser = 2;
+	
+}

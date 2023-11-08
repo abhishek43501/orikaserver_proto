@@ -1,0 +1,8 @@
+//{"type":"HB_S","RCODE":"OK"}
+
+syntax = "proto3";
+package Oreka;
+message HbS {
+    string type = 1;
+    string RCODE = 2;
+}

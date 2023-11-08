@@ -78,6 +78,13 @@ import "UpdateRejectlimitSetting.proto";
 import "SavePage.proto";
 import "SavePageRes.proto";
 import "OrderData.proto";
+import "OrderActivateRequest.proto";
+import "OrderActivateResponse.proto";
+import "SymbolmappingData.proto";
+import "UpdateSymbolmargin.proto";
+import "LoginByKey.proto";
+import "SetAuthKey.proto";	
+import "AlertMessage.proto";
 message ClientMessage 
 {
     string 										type = 1;
@@ -159,4 +166,11 @@ message ClientMessage
 	optional SavePage							savepage=77;
 	optional SavePageRes						savepageres=78;
 	optional OrderData							orderdata=79;
+	optional OrderActivateRequest				orderactivaterequest=80;
+	optional OrderActivateResponse				orderactivateresponse=81;
+	optional SymbolmappingData					symbolmappingdata=82;
+	optional UpdateSymbolmargin					updatesymbolmargin=83;
+	optional LoginByKey							loginbykey=84;
+	optional SetAuthKey							setauthkey=85;
+	optional AlertMessage						alertmessage=86;
 }

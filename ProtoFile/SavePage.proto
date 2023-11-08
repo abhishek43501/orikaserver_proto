@@ -1,0 +1,16 @@
+
+syntax = "proto3";
+package Oreka;
+message SavePage {
+
+    message Page {
+        string pageId = 1;
+        string name = 2;
+        string shortName = 3;
+		string layout=4;
+		string widgetConfigs=5;
+    }
+
+    string type = 1;
+    Page page = 2;
+}

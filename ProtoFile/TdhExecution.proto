@@ -1,0 +1,23 @@
+syntax = "proto3";
+package Oreka;
+message TdhExecution {
+
+    message Buylogin {
+        uint32 login = 1;
+        double  lot = 2;
+    }
+
+    message Selllogin {
+        uint32 login = 1;
+        double lot = 2;
+    }
+
+    string type = 1;
+    string buySymbol = 2;
+    repeated Buylogin buyLogin = 3;
+    double buyRate = 4;
+    string sellSymbol = 5;
+    repeated Selllogin sellLogin = 6;
+    double sellRate = 7;
+    string executionType = 8;
+}

@@ -1,0 +1,35 @@
+syntax = "proto3";
+package Oreka;
+message ClientMasterData {
+
+    message Data {
+        string login = 1;
+        string symbolGroup = 2;
+        string name = 3;
+        string broker = 4;
+        string subBroker = 5;
+        string extraGroup = 6;
+        double subBrokerPLRatio = 7;
+        double brokerPLRatio = 8;
+        double companyPLRatio = 9;
+        string clientBrokerageType = 10;
+        double clientBrokRate = 11;
+        double subBrokerBrokRate = 12;
+        double brokerBrokRate = 13;
+        double companyBrokRate = 14;
+        double symbolWiseBuyLimit = 15;
+        double symbolWiseSellLimit = 16;
+        uint32 symbolWisePendingOrderEnableDisable = 17;
+        uint32 symbolPositionLimit = 18;
+        double symbolPendingOrderDiffFromBidAsk = 19;
+        double lossLimit = 20;
+        double creditLimit = 21;
+        uint32 comment = 22;
+        double qtyLimitMultiplayer = 23;
+        uint32 ignoreTrader = 24;
+        string colour = 25;
+    }
+
+    string type = 1;
+    repeated Data data = 2;
+}

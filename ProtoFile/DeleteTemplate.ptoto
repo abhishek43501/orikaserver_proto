@@ -1,0 +1,8 @@
+
+syntax = "proto3";
+package Oreka;
+message DeleteTemplate {
+    string type = 1;
+    string id = 2;
+    string loginUser = 3;
+}

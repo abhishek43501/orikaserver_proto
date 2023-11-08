@@ -1,0 +1,9 @@
+
+//{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ada7e993-7ff0-4d3c-935f-effcef14908a"}
+syntax = "proto3";
+package Oreka;
+message FetchPageDetails {
+    string type = 1;
+    string loginUser = 2;
+    string pageId = 3;
+}

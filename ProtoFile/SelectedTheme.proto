@@ -1,0 +1,7 @@
+
+syntax = "proto3";
+package Oreka;
+message SelectedTheme {
+    string type = 1;
+    string theme = 2;
+}

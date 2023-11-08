@@ -1,0 +1,14 @@
+//{"type":"FETCH_CLIENT_POSITIONS","action":"refresh","time":0}
+//FETCH_CLIENT_POSITIONS_TIMERWISE_START
+//FETCH_CLIENT_POSITIONS_TIMERWISE_STOP
+//FETCH_DASHBOARD_DATA
+//FETCH_CLIENT_POSITIONS_PRENETQTY
+//FETCH_ORDER_DATA
+//FETCH_DEALING_DATA
+syntax = "proto3";
+package Oreka;
+message FetchClientPositions {
+    string type = 1;
+    string action = 2;
+    uint32 time = 3;
+}

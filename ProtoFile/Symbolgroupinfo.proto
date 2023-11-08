@@ -1,0 +1,8 @@
+
+syntax = "proto3";
+package Oreka;
+message Symbolgroupinfo {
+    string type = 1;
+    string symbolgroup = 2;
+    uint32 symbolgroupmargin = 3;
+}

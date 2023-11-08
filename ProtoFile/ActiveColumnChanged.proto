@@ -1,0 +1,9 @@
+//{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","ag-Grid-AutoColumn","subbroker","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+syntax = "proto3";
+package Oreka;
+message ActiveColumnChanged {
+    string type = 1;
+    string requestType = 2;
+    repeated string columns = 3;
+    string loginUser = 4;
+}

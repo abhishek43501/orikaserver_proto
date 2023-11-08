@@ -1,0 +1,8 @@
+syntax = "proto3";
+package Oreka;
+import "tab.proto";
+message TabData {
+    repeated Tab tabs = 1;
+    string name = 2;
+    string id = 3;
+}

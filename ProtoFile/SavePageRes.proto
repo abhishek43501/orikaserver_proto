@@ -1,0 +1,9 @@
+
+syntax = "proto3";
+package Oreka;
+message SavePageRes {
+    string type = 1;
+    bool success = 2;
+    string pageId = 3;
+    string message = 4;
+}

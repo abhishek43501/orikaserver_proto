@@ -1,0 +1,16 @@
+	
+syntax = "proto3";
+package Oreka;
+message UpdateDataByTablename {
+
+    message Uniquekey {
+        string columnname = 1;
+        string columnvalue = 2;
+    }
+
+    string type = 1;
+    string tablename = 2;
+    repeated Uniquekey uniqueKey = 3;
+    string columnforupdate = 4;
+    uint32 updatedvalue = 5;
+}

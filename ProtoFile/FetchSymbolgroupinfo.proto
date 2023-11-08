@@ -1,0 +1,7 @@
+
+syntax = "proto3";
+package Oreka;
+message FetchSymbolgroupinfo {
+    string type = 1;
+    string symbolgroup = 2;
+}

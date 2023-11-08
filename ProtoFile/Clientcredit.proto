@@ -1,0 +1,14 @@
+
+//For response of {"type":"FETCH_CLIENTCREDIT"}
+syntax = "proto3";
+package Oreka;
+message Clientcredit {
+
+    message Clientcredits {
+        string login = 1;
+        uint32 credit = 2;
+    }
+
+    string type = 1;
+    repeated Clientcredits clientcredits = 2;
+}
