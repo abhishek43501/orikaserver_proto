@@ -3544,6 +3544,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			}
 			else if (strtype == "SAVE_USER_DETAILS" && checkLoginValidate == 1)
 			{				
+				CMap<CString, LPCTSTR, int, int> m_entireGroupMap;
 				CString strloginuser = L"";
 				CString strpassword = L"";
 				CString strname = L"";
@@ -3590,6 +3591,24 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 											{
 												strgroup = vargroupvalue.GetString();
 											}
+											CString m_OGroup = strgroup;
+											CString m_parent_Group = L"";
+											CString m_parent_subGroup = L"";
+											while (m_OGroup.Find(L"\\") > 0)
+											{
+												m_parent_subGroup = m_OGroup.Mid(0, m_OGroup.Find(L"\\"));
+												if (m_parent_Group == L"")
+												{
+													m_parent_Group = m_parent_Group + m_parent_subGroup;
+												}
+												else
+												{
+													m_parent_Group = m_parent_Group+L"\\" + m_parent_subGroup;
+												}
+												m_OGroup= m_OGroup.Mid(m_OGroup.Find(L"\\")+1, m_OGroup.GetLength()- m_OGroup.Find(L"\\")-1);
+											}
+											m_parent_Group = m_parent_Group + L"\\*";
+											m_entireGroupMap.SetAt(m_parent_Group,1);
 											const Value& varchecked = vargroup["checked"];
 											if (varchecked.IsBool())
 											{
@@ -3598,17 +3617,51 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												{
 													m_int_checked = 1;
 												}
+												else
+												{
+													m_entireGroupMap.RemoveKey(m_parent_Group);
+												}
 											}
 											CString strtempcommand = L"";
 											strtempcommand.Format(L"insert into orika_userLoginAndGroupMapping(loginuser,[group],[select]) values('%s','%s','%d');", strloginuser, strgroup, m_int_checked);
 											m_strgroupCommand = m_strgroupCommand + strtempcommand;
 										}
+										else
+										{
+											if (vargroup.HasMember("group"))
+											{
+												CString strgroup = L"";
+												bool m_checked = false;
+												int m_int_checked = 0;
+												const Value& vargroupvalue = vargroup["group"];
+												if (vargroupvalue.IsString())
+												{
+													strgroup = vargroupvalue.GetString();
+												}
+												CString m_OGroup = strgroup;
+												CString m_parent_Group = L"";
+												CString m_parent_subGroup = L"";
+												while (m_OGroup.Find(L"\\") > 0)
+												{
+													m_parent_subGroup = m_OGroup.Mid(0, m_OGroup.Find(L"\\"));
+													if (m_parent_Group == L"")
+													{
+														m_parent_Group = m_parent_Group + m_parent_subGroup;
+													}
+													else
+													{
+														m_parent_Group = m_parent_Group + L"\\" + m_parent_subGroup;
+													}
+													m_OGroup = m_OGroup.Mid(m_OGroup.Find(L"\\")+1, m_OGroup.GetLength() - m_OGroup.Find(L"\\")-1);
+												}
+												m_parent_Group = m_parent_Group + L"\\*";												
+												m_entireGroupMap.RemoveKey(m_parent_Group);
+											}
+										}
 									}
 								}
 							}
 						}
-
-
 						if (vardata.HasMember("tablecolumns"))
 						{
 							const Value& vargroups = vardata["tablecolumns"];
