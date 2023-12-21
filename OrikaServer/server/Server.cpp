@@ -3545,6 +3545,8 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			else if (strtype == "SAVE_USER_DETAILS" && checkLoginValidate == 1)
 			{				
 				CMap<CString, LPCTSTR, int, int> m_entireGroupMap;
+				CMap<CString, LPCTSTR, int, int> m_notentireGroupMap;
+				CMap<CString, LPCTSTR, int, int> m_groups;
 				CString strloginuser = L"";
 				CString strpassword = L"";
 				CString strname = L"";
@@ -3605,10 +3607,15 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												{
 													m_parent_Group = m_parent_Group+L"\\" + m_parent_subGroup;
 												}
+
+												CString m_parent_Group_select = m_parent_Group + L"\\*";
+												m_entireGroupMap.SetAt(m_parent_Group_select, 1);
+												m_groups.SetAt(m_parent_Group_select, 1);
 												m_OGroup= m_OGroup.Mid(m_OGroup.Find(L"\\")+1, m_OGroup.GetLength()- m_OGroup.Find(L"\\")-1);
 											}
 											m_parent_Group = m_parent_Group + L"\\*";
 											m_entireGroupMap.SetAt(m_parent_Group,1);
+											m_groups.SetAt(m_parent_Group, 1);
 											const Value& varchecked = vargroup["checked"];
 											if (varchecked.IsBool())
 											{
@@ -3619,9 +3626,18 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												}
 												else
 												{
-													m_entireGroupMap.RemoveKey(m_parent_Group);
+													POSITION m_temp_pos = m_groups.GetStartPosition();
+													while (m_temp_pos != NULL)
+													{
+														CString m_tempstar = L"";
+														int m_check = 0;
+														m_groups.GetNextAssoc(m_temp_pos, m_tempstar, m_check);
+														m_entireGroupMap.RemoveKey(m_tempstar);
+														m_notentireGroupMap.SetAt(m_tempstar, 1);
+													}
 												}
 											}
+											m_groups.RemoveAll();
 											CString strtempcommand = L"";
 											strtempcommand.Format(L"insert into orika_userLoginAndGroupMapping(loginuser,[group],[select]) values('%s','%s','%d');", strloginuser, strgroup, m_int_checked);
 											m_strgroupCommand = m_strgroupCommand + strtempcommand;
@@ -3652,12 +3668,47 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													{
 														m_parent_Group = m_parent_Group + L"\\" + m_parent_subGroup;
 													}
+													CString m_parent_Group_select = m_parent_Group + L"\\*";
+													m_entireGroupMap.SetAt(m_parent_Group_select, 1);
+													m_groups.SetAt(m_parent_Group_select, 1);
 													m_OGroup = m_OGroup.Mid(m_OGroup.Find(L"\\")+1, m_OGroup.GetLength() - m_OGroup.Find(L"\\")-1);
 												}
-												m_parent_Group = m_parent_Group + L"\\*";												
-												m_entireGroupMap.RemoveKey(m_parent_Group);
+												m_parent_Group = m_parent_Group + L"\\*";
+												m_groups.SetAt(m_parent_Group, 1);
+
+												POSITION m_temp_pos = m_groups.GetStartPosition();
+												while (m_temp_pos != NULL)
+												{
+													CString m_tempstar = L"";
+													int m_check = 0;
+													m_groups.GetNextAssoc(m_temp_pos, m_tempstar, m_check);
+													m_entireGroupMap.RemoveKey(m_tempstar);
+													m_notentireGroupMap.SetAt(m_tempstar, 1);
+												}												
 											}
 										}
+
+										POSITION m_mapposition = m_entireGroupMap.GetStartPosition();
+										while (m_mapposition != NULL)
+										{
+											CString str_group = L"";
+											int val = 0;
+											m_entireGroupMap.GetNextAssoc(m_mapposition, str_group, val);
+											CString strtempcommand = L"";
+											strtempcommand.Format(L"delete from orika_userLoginAndGroupMapping where loginuser='%s' and [group]='%s';  insert into orika_userLoginAndGroupMapping(loginuser,[group],[select]) values('%s','%s','1');", strloginuser, str_group, strloginuser, str_group);
+											m_strgroupCommand = m_strgroupCommand + strtempcommand;
+										}
+										POSITION m_mapposition_not = m_notentireGroupMap.GetStartPosition();
+										while (m_mapposition_not != NULL)
+										{
+											CString str_group = L"";
+											int val = 0;
+											m_notentireGroupMap.GetNextAssoc(m_mapposition_not, str_group, val);
+											CString strtempcommand = L"";
+											strtempcommand.Format(L"delete from orika_userLoginAndGroupMapping where loginuser='%s' and [group]='%s';", strloginuser, str_group);
+											m_strgroupCommand = m_strgroupCommand + strtempcommand;
+										}
+
 									}
 								}
 							}

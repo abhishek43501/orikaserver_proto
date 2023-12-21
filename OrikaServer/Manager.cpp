@@ -2449,6 +2449,7 @@ void CManager::Shutdown()
 	m_manager->OrderUnsubscribe(this);
 	m_manager->UserUnsubscribe(this);
 	m_manager->SymbolUnsubscribe(this);
+	m_manager->GroupUnsubscribe(this);
 
 	m_manager->Release();
 	m_manager=NULL;
@@ -2496,7 +2497,8 @@ int CManager::login(CString server,CString login,CString password)
 	 m_manager->OrderSubscribe(this);
 	 m_manager->UserSubscribe(this);
 	 m_manager->SymbolSubscribe(this);
-	return 1;
+	 m_manager->GroupSubscribe(this);
+	 return 1;
 }
  
 
@@ -3576,6 +3578,32 @@ int CManager::login(CString server,CString login,CString password)
 	 ////CStaticClass::m_logfile.LogEvent(L"updated History Order in msmq");
  }
 
+ inline void  CManager::OnGroupAdd(const IMTConGroup* config)
+ {
+	 CString str_group_path = config->Group();
+	 CString m_OGroup = str_group_path;
+	 CString m_parent_Group = L"";
+	 CString m_parent_subGroup = L"";
+	 while (m_OGroup.Find(L"\\") > 0)
+	 {
+		 m_parent_subGroup = m_OGroup.Mid(0, m_OGroup.Find(L"\\"));
+		 if (m_parent_Group == L"")
+		 {
+			 m_parent_Group = m_parent_Group + m_parent_subGroup;
+		 }
+		 else
+		 {
+			 m_parent_Group = m_parent_Group + L"\\" + m_parent_subGroup;
+		 }
+		 CString m_parent_Group_select = m_parent_Group + L"\\*";		 		 
+		 m_OGroup = m_OGroup.Mid(m_OGroup.Find(L"\\") + 1, m_OGroup.GetLength() - m_OGroup.Find(L"\\") - 1);
+	 }
+	 m_parent_Group = m_parent_Group + L"\\*";	 
+
+	 CString strCommand = L"";
+	 strCommand.Format(L"exec updatelogin_group_Access '%s','%s';", m_parent_Group, str_group_path);
+	 CStaticClass::m_sqldata.executeCommand(strCommand);
+ }
 
 inline void CManager::OnTick(LPCWSTR symbol, const MTTickShort& tick)
 {
@@ -5513,7 +5541,7 @@ int CManager::CheckGroup(CString strgroupjson, CString strgroup)
 			return 1;
 		}
 	}
-	
+	return 0;
 }
 void CManager::DeleteMTData(CString strgroupjson)
 {		

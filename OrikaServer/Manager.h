@@ -7,7 +7,7 @@
 
 
 
-class CManager :public IMTTickSink ,public IMTDealSink,public IMTOrderSink,public IMTUserSink,public IMTConSymbolSink
+class CManager :public IMTTickSink ,public IMTDealSink,public IMTOrderSink,public IMTUserSink,public IMTConSymbolSink,public IMTConGroupSink
   {
 public:
   struct Tick_Data
@@ -129,9 +129,8 @@ public:
    virtual void		 OnOrderDelete(const IMTOrder* order);
    virtual void		 OnDealUpdate(const IMTDeal* deal);
    virtual void      OnHistoryAdd(const IMTOrder* order);
-
    virtual void      OnSymbolUpdate(const IMTConSymbol* config);
-
+   virtual void      OnGroupAdd(const IMTConGroup* config);
    void				UpdateSymbolSource();
 
 

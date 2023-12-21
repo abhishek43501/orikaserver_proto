@@ -5516,12 +5516,7 @@ CString CSqlData::generateGroupJason(CString loginuser)
 		wchar_t m_group[200];
 		int		m_select;
 	};
-	TMTArray<st_group> m_grouplist;
-
-	
-
-
-	
+	TMTArray<st_group> m_grouplist;		
 	//CGroupTable
 	CSession m_tempSession;
 	CString   strSelectGroupCommand = L"";
@@ -5541,7 +5536,6 @@ CString CSqlData::generateGroupJason(CString loginuser)
 	}
 	CString  m_clientgroup;
 	int		 m_select;
-
 	while (hr = m_groupTable.MoveNext() == S_OK)
 	{
 		m_clientgroup = m_groupTable.m_group;
@@ -5578,7 +5572,6 @@ CString CSqlData::generateGroupJason(CString loginuser)
 	writer.Flush();
 	return rval;
 }
-
 
 CString CSqlData::generateJsonLoginData_Details(CString loginuser)
 {	
