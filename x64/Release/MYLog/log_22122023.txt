@@ -1,0 +1,1026 @@
+2023/12/22 23:29:04:382 	Total Order Loaded 3889
+2023/12/22 23:36:15:980 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:51:10:322!~o!1001!~o!122.161.52.99!~o!1703182870"}}
+2023/12/22 23:36:15:980 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:51:10:322!~o!1001!~o!122.161.52.99!~o!1703182870"}
+2023/12/22 23:36:15:980 	Client RegesteredID:: Login Status 0
+2023/12/22 23:36:15:980 	Going to lock client lock loginbytoken
+2023/12/22 23:36:15:980 	Client lock locked
+2023/12/22 23:36:15:980 	Exit from client lock
+2023/12/22 23:36:16:400 	O R F Client {}
+2023/12/22 23:36:16:400 	R F Client {}
+2023/12/22 23:36:18:419 	Going to delete client For Key 
+2023/12/22 23:36:18:419 	Client thread trminated 
+2023/12/22 23:36:18:419 	Call app_on_session_close 
+2023/12/22 23:36:18:419 	Client Removed From Client Context
+2023/12/22 23:36:18:419 	Call app_on_session_close Finished 
+2023/12/22 23:36:18:420 	Client deleted 
+2023/12/22 23:36:20:068 	O R F Client {"loginrequest":{"type":"login","login":"1001","pwd":"hello12345","serialNo":"50de353a8b1cd849918862ff7dd2c628"}}
+2023/12/22 23:36:20:068 	R F Client {"type":"login","login":"1001","pwd":"hello12345","serialNo":"50de353a8b1cd849918862ff7dd2c628"}
+2023/12/22 23:36:20:068 	Client RegesteredID:: Login Status 0
+2023/12/22 23:36:20:069 	 Going to Lock 123
+2023/12/22 23:36:20:069 	123 locked
+2023/12/22 23:36:20:177 	New Key Created Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:36:20:179 	Going to register a new client with session ID 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:36:20:181 	UN321
+2023/12/22 23:36:20:483 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:36:20:483 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:36:20:483 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:487 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:36:20:487 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:36:20:487 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:489 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:36:20:489 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:36:20:489 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:490 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:36:20:490 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:36:20:490 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:491 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:36:20:491 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:36:20:491 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:670 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:36:20:670 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:36:20:670 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:673 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:36:20:673 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:36:20:673 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:673 	Going to lock client lock loginbytoken
+2023/12/22 23:36:20:673 	Client lock locked
+2023/12/22 23:36:20:673 	Exit from client lock
+2023/12/22 23:36:20:750 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:36:20:750 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:36:20:750 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:800 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:36:20:800 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:36:20:800 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:802 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:36:20:802 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:36:20:802 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:20:803 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:36:20:803 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:36:20:803 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:21:276 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:36:21:276 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:36:21:276 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:21:632 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:36:21:632 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:36:21:632 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:21:633 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:36:21:633 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:36:21:633 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:21:633 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:36:21:633 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:36:21:633 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:36:21:634 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:36:21:634 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:36:21:634 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177 Login Status 1
+2023/12/22 23:37:01:732 	O R F Client {}
+2023/12/22 23:37:01:732 	R F Client {}
+2023/12/22 23:37:01:732 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:37:01:732 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:37:01:934 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:37:01:934 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:37:01:934 	Client Removed From Client Context
+2023/12/22 23:37:01:934 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:37:01:936 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177
+2023/12/22 23:37:02:771 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:37:02:771 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:37:02:771 	Client RegesteredID:: Login Status 0
+2023/12/22 23:37:02:771 	Going to lock client lock loginbytoken
+2023/12/22 23:37:02:771 	Client lock locked
+2023/12/22 23:37:02:771 	Exit from client lock
+2023/12/22 23:37:02:771 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:37:02:771 	U122
+2023/12/22 23:37:02:771 	123
+2023/12/22 23:37:02:774 	Going to enter in critical section
+2023/12/22 23:37:02:775 	Entered in critical section
+2023/12/22 23:37:03:002 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:37:03:003 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:37:03:003 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:003 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:37:03:003 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:37:03:003 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:175 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:37:03:175 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:37:03:175 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:179 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:37:03:179 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:37:03:179 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:181 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:37:03:181 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:37:03:181 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:182 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:37:03:182 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:37:03:182 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:183 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:37:03:183 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:37:03:184 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:184 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:37:03:184 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:37:03:184 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:347 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:37:03:347 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:37:03:347 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:667 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:37:03:668 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:37:03:668 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:713 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:37:03:713 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:37:03:713 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:715 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:37:03:715 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:37:03:715 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:03:716 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:37:03:716 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:37:03:716 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:04:206 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:37:04:206 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:37:04:206 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:04:582 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:37:04:582 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:37:04:582 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:04:583 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:37:04:583 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:37:04:583 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:04:583 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:37:04:584 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:37:04:584 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:37:04:584 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:37:04:584 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:37:04:584 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771 Login Status 1
+2023/12/22 23:40:29:983 	O R F Client {}
+2023/12/22 23:40:29:983 	R F Client {}
+2023/12/22 23:40:29:983 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:40:29:983 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:40:30:185 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:40:30:185 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:40:30:185 	Client Removed From Client Context
+2023/12/22 23:40:30:185 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:40:30:187 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:37:02:771
+2023/12/22 23:40:30:883 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:40:30:883 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:40:30:883 	Client RegesteredID:: Login Status 0
+2023/12/22 23:40:30:883 	Going to lock client lock loginbytoken
+2023/12/22 23:40:30:883 	Client lock locked
+2023/12/22 23:40:30:883 	Exit from client lock
+2023/12/22 23:40:30:883 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:40:30:883 	U122
+2023/12/22 23:40:30:883 	123
+2023/12/22 23:40:30:891 	Going to enter in critical section
+2023/12/22 23:40:30:893 	Entered in critical section
+2023/12/22 23:40:31:089 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:40:31:089 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:40:31:090 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:090 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:40:31:090 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:40:31:090 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:256 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:40:31:256 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:40:31:257 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:259 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:40:31:259 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:40:31:259 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:261 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:40:31:261 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:40:31:261 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:262 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:40:31:262 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:40:31:262 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:263 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:40:31:263 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:40:31:263 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:263 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:40:31:263 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:40:31:263 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:431 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:40:31:431 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:40:31:431 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:697 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:40:31:697 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:40:31:697 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:743 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:40:31:743 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:40:31:743 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:745 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:40:31:745 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:40:31:745 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:31:746 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:40:31:746 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:40:31:746 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:32:163 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:40:32:163 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:40:32:163 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:32:533 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:40:32:533 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:40:32:533 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:32:534 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:40:32:534 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:40:32:534 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:32:535 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:40:32:535 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:40:32:535 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:40:32:535 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:40:32:535 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:40:32:535 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883 Login Status 1
+2023/12/22 23:41:12:133 	O R F Client {}
+2023/12/22 23:41:12:133 	R F Client {}
+2023/12/22 23:41:12:133 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:41:12:133 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:41:12:334 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:41:12:334 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:41:12:334 	Client Removed From Client Context
+2023/12/22 23:41:12:334 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:41:12:335 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:40:30:883
+2023/12/22 23:41:13:038 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:41:13:038 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:41:13:038 	Client RegesteredID:: Login Status 0
+2023/12/22 23:41:13:038 	Going to lock client lock loginbytoken
+2023/12/22 23:41:13:038 	Client lock locked
+2023/12/22 23:41:13:038 	Exit from client lock
+2023/12/22 23:41:13:038 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:13:038 	U122
+2023/12/22 23:41:13:038 	123
+2023/12/22 23:41:13:041 	Going to enter in critical section
+2023/12/22 23:41:13:043 	Entered in critical section
+2023/12/22 23:41:13:234 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:41:13:235 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:41:13:235 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:235 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:41:13:235 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:41:13:235 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:401 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:41:13:401 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:41:13:401 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:405 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:41:13:405 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:41:13:405 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:407 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:41:13:407 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:41:13:407 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:408 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:13:408 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:13:408 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:409 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:41:13:409 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:41:13:409 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:410 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:41:13:410 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:41:13:410 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:575 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:41:13:575 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:41:13:575 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:842 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:41:13:843 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:41:13:843 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:893 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:41:13:893 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:41:13:893 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:894 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:41:13:894 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:41:13:894 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:13:896 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:13:896 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:13:896 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:14:326 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:14:326 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:14:326 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:14:697 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:41:14:697 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:41:14:697 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:14:698 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:41:14:698 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:41:14:698 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:14:698 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:41:14:698 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:41:14:699 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:14:699 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:41:14:699 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:41:14:699 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038 Login Status 1
+2023/12/22 23:41:28:004 	O R F Client {}
+2023/12/22 23:41:28:004 	R F Client {}
+2023/12/22 23:41:28:005 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:28:005 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:28:206 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:28:206 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:28:206 	Client Removed From Client Context
+2023/12/22 23:41:28:206 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:28:207 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:41:13:038
+2023/12/22 23:41:28:952 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:41:28:952 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:41:28:952 	Client RegesteredID:: Login Status 0
+2023/12/22 23:41:28:952 	Going to lock client lock loginbytoken
+2023/12/22 23:41:28:952 	Client lock locked
+2023/12/22 23:41:28:952 	Exit from client lock
+2023/12/22 23:41:28:952 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:28:952 	U122
+2023/12/22 23:41:28:952 	123
+2023/12/22 23:41:28:955 	Going to enter in critical section
+2023/12/22 23:41:28:957 	Entered in critical section
+2023/12/22 23:41:29:177 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:41:29:177 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:41:29:177 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:179 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:41:29:179 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:41:29:179 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:346 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:41:29:346 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:41:29:346 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:349 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:41:29:349 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:41:29:349 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:351 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:41:29:351 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:41:29:351 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:352 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:29:352 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:29:352 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:353 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:41:29:353 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:41:29:353 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:354 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:41:29:354 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:41:29:354 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:521 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:41:29:521 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:41:29:521 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:792 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:41:29:792 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:41:29:792 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:837 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:41:29:837 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:41:29:837 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:839 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:41:29:839 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:41:29:839 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:29:840 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:29:840 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:29:840 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:30:255 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:30:255 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:30:255 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:30:647 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:41:30:647 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:41:30:647 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:30:648 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:41:30:648 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:41:30:648 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:30:648 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:41:30:648 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:41:30:648 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:30:649 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:41:30:649 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:41:30:649 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952 Login Status 1
+2023/12/22 23:41:40:192 	O R F Client {}
+2023/12/22 23:41:40:192 	R F Client {}
+2023/12/22 23:41:40:192 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:40:193 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:40:395 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:40:395 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:40:395 	Client Removed From Client Context
+2023/12/22 23:41:40:395 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:40:397 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:41:28:952
+2023/12/22 23:41:41:212 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:41:41:212 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:41:41:212 	Client RegesteredID:: Login Status 0
+2023/12/22 23:41:41:212 	Going to lock client lock loginbytoken
+2023/12/22 23:41:41:212 	Client lock locked
+2023/12/22 23:41:41:212 	Exit from client lock
+2023/12/22 23:41:41:212 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:41:41:212 	U122
+2023/12/22 23:41:41:212 	123
+2023/12/22 23:41:41:215 	Going to enter in critical section
+2023/12/22 23:41:41:217 	Entered in critical section
+2023/12/22 23:41:41:443 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:41:41:443 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:41:41:443 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:443 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:41:41:444 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:41:41:444 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:610 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:41:41:610 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:41:41:610 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:612 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:41:41:612 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:41:41:613 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:614 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:41:41:614 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:41:41:614 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:615 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:41:615 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:41:615 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:616 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:41:41:616 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:41:41:616 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:617 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:41:41:617 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:41:41:617 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:41:777 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:41:41:778 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:41:41:778 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:067 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:41:42:067 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:41:42:067 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:138 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:41:42:138 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:41:42:138 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:140 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:41:42:140 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:41:42:140 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:142 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:42:142 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:42:142 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:393 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:41:42:393 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:41:42:393 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:949 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:41:42:949 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:41:42:949 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:950 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:41:42:950 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:41:42:950 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:950 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:41:42:950 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:41:42:950 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:42:951 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:41:42:951 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:41:42:951 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:54:337 	O R F Client {"unsubscribe":{"type":"UNSUBSCRIBE","requestType":"FETCH_CLIENT_POSITIONS"}}
+2023/12/22 23:41:54:337 	R F Client {"type":"UNSUBSCRIBE","requestType":"FETCH_CLIENT_POSITIONS"}
+2023/12/22 23:41:54:337 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:41:54:339 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"0b4ae07a-0c62-4ce9-9b6b-4a502ee18eb9"}}
+2023/12/22 23:41:54:339 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"0b4ae07a-0c62-4ce9-9b6b-4a502ee18eb9"}
+2023/12/22 23:41:54:339 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:42:05:922 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:42:05:922 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:42:05:922 	Client RegesteredID:: Login Status 0
+2023/12/22 23:42:05:923 	Going to lock client lock loginbytoken
+2023/12/22 23:42:05:923 	Client lock locked
+2023/12/22 23:42:05:923 	Exit from client lock
+2023/12/22 23:42:05:923 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:05:923 	U122
+2023/12/22 23:42:05:923 	123
+2023/12/22 23:42:05:926 	Going to enter in critical section
+2023/12/22 23:42:05:927 	Entered in critical section
+2023/12/22 23:42:06:140 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:42:06:140 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:42:06:140 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:140 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:42:06:141 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:42:06:141 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:307 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:42:06:307 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:42:06:307 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:310 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:42:06:310 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:42:06:310 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:311 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:42:06:311 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:42:06:311 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:311 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:42:06:311 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:42:06:312 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:479 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:42:06:479 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:42:06:479 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:481 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:42:06:481 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:42:06:481 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:483 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:42:06:483 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:42:06:483 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:484 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:42:06:484 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:42:06:484 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:06:728 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:42:06:728 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:42:06:728 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923 Login Status 1
+2023/12/22 23:42:07:881 	O R F Client {}
+2023/12/22 23:42:07:881 	R F Client {}
+2023/12/22 23:42:07:881 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:07:881 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:08:082 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:08:082 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:08:082 	Client Removed From Client Context
+2023/12/22 23:42:08:082 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:08:083 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:42:05:923
+2023/12/22 23:42:09:386 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"1972d2c8-6733-40fa-927d-4694fa9a01ee"}}
+2023/12/22 23:42:09:386 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"1972d2c8-6733-40fa-927d-4694fa9a01ee"}
+2023/12/22 23:42:09:386 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:42:11:452 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"2ebf0231-f929-40e3-a74f-707e71809e95"}}
+2023/12/22 23:42:11:452 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"2ebf0231-f929-40e3-a74f-707e71809e95"}
+2023/12/22 23:42:11:452 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:42:13:535 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"4f14a2fa-8c2d-4cbf-ba5e-b9f31c141a2a"}}
+2023/12/22 23:42:13:535 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"4f14a2fa-8c2d-4cbf-ba5e-b9f31c141a2a"}
+2023/12/22 23:42:13:535 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:42:15:513 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ece33714-f888-4f08-843b-7cebe44d9364"}}
+2023/12/22 23:42:15:513 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ece33714-f888-4f08-843b-7cebe44d9364"}
+2023/12/22 23:42:15:513 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:42:24:033 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"1972d2c8-6733-40fa-927d-4694fa9a01ee"}}
+2023/12/22 23:42:24:033 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"1972d2c8-6733-40fa-927d-4694fa9a01ee"}
+2023/12/22 23:42:24:033 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:43:34:502 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:43:34:503 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:43:34:503 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:43:34:503 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:43:34:503 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:43:34:504 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:43:34:533 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:43:34:533 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:43:34:533 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:43:34:534 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:43:34:534 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:43:34:534 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:44:33:009 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:44:33:010 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:44:33:010 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:44:33:010 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:44:33:010 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:44:33:011 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:44:33:031 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:44:33:031 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:44:33:031 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:44:33:032 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:44:33:032 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:44:33:032 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:45:05:732 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl"],"loginUser":"1001"}}
+2023/12/22 23:45:05:732 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl"],"loginUser":"1001"}
+2023/12/22 23:45:05:732 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:45:05:733 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:45:05:733 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:45:05:733 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:45:05:750 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl"],"loginUser":"1001"}}
+2023/12/22 23:45:05:750 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl"],"loginUser":"1001"}
+2023/12/22 23:45:05:750 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:45:05:751 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:45:05:751 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:45:05:751 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:45:23:019 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:45:23:019 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:45:23:019 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:45:23:020 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:45:23:020 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:45:23:020 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:08:205 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage"],"loginUser":"1001"}}
+2023/12/22 23:47:08:205 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage"],"loginUser":"1001"}
+2023/12/22 23:47:08:205 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:08:206 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:08:206 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:08:206 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:08:225 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage"],"loginUser":"1001"}}
+2023/12/22 23:47:08:225 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage"],"loginUser":"1001"}
+2023/12/22 23:47:08:225 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:08:226 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:08:226 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:08:226 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:32:197 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ece33714-f888-4f08-843b-7cebe44d9364"}}
+2023/12/22 23:47:32:197 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ece33714-f888-4f08-843b-7cebe44d9364"}
+2023/12/22 23:47:32:197 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:36:334 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}}
+2023/12/22 23:47:36:334 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}
+2023/12/22 23:47:36:334 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:36:742 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:36:743 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:36:743 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:36:743 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:36:744 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:36:744 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:36:895 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:36:895 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:36:896 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:36:896 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:36:896 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:36:896 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:069 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:37:069 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:37:069 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:070 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:37:070 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:37:070 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:220 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:37:221 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:37:221 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:221 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:37:222 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:37:222 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:298 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:37:298 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:37:299 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:300 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:37:300 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:37:300 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:300 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:37:300 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:37:300 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:301 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:37:301 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:37:301 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:301 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:37:301 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:37:302 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:302 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:37:302 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:37:302 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:303 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}}
+2023/12/22 23:47:37:303 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","volume","subbrokervolume","brokervolume","companyvolume","previousvolume","difference","clientfloatingpl","brokerfloatingpl","subbrokerfloatingpl","companyfloatingpl","clientplnet","brokerplnet","subbrokerplnet","companyplnet","clientbalance","clientgrossamount","clientbrokerage","subbroker","broker"],"loginUser":"1001"}
+2023/12/22 23:47:37:303 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:47:37:303 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:47:37:304 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:47:37:304 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:51:57:368 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","clientbalance","clientfloatingpl","clientplnet","companyplnet","subbroker","broker","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:51:57:368 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","clientbalance","clientfloatingpl","clientplnet","companyplnet","subbroker","broker","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:51:57:368 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:51:57:371 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","broker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:51:57:371 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","broker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:51:57:371 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:51:57:373 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:51:57:373 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:51:57:373 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:51:57:380 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ece33714-f888-4f08-843b-7cebe44d9364"}}
+2023/12/22 23:51:57:380 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"ece33714-f888-4f08-843b-7cebe44d9364"}
+2023/12/22 23:51:57:380 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:00:635 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:52:00:635 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:52:00:635 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:01:452 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:01:452 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:01:452 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:01:453 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:01:453 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:01:453 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:01:453 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:01:454 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:01:454 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:01:454 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:01:454 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:01:454 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:072 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}}
+2023/12/22 23:52:10:072 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}
+2023/12/22 23:52:10:072 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:470 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:10:470 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:10:470 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:471 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:10:471 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:10:471 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:611 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:10:611 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:10:612 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:612 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:10:612 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:10:612 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:777 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:10:777 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:10:777 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:778 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:10:778 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:10:778 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:946 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:10:946 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:10:946 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:10:947 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:10:947 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:10:947 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:002 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:11:002 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:11:002 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:003 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:11:003 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:11:003 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:004 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:11:004 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:11:004 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:005 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:11:005 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:11:005 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:005 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:11:005 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:11:005 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:006 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:11:006 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:11:006 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:006 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:11:006 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:11:006 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:11:007 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:11:007 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:11:007 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:37:063 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","clientbalance","clientfloatingpl","clientplnet","companyplnet","subbroker","broker","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:37:063 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","clientbalance","clientfloatingpl","clientplnet","companyplnet","subbroker","broker","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:37:063 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:37:065 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","broker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:37:065 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","broker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:37:065 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:37:069 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:37:069 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","subbroker","symbol","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:37:069 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:39:329 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:52:39:329 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:52:39:330 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:40:122 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:40:122 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:40:122 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:40:123 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:40:123 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:40:123 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:40:124 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:40:124 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:40:124 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:40:124 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:40:124 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:40:124 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:41:678 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}}
+2023/12/22 23:52:41:678 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}
+2023/12/22 23:52:41:678 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:066 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:42:066 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:42:066 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:067 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:067 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:067 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:230 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:52:42:230 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:52:42:230 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:231 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:231 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:231 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:411 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:42:411 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:42:411 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:411 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:412 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:412 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:556 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:42:557 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:42:557 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:557 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:558 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:558 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:614 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:42:614 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:42:614 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:615 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:615 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:615 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:615 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:42:615 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:42:615 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:616 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:616 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:616 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:616 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:42:616 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:42:616 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:617 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:617 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:617 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:617 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:52:42:618 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:52:42:618 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:52:42:618 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:52:42:618 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:52:42:618 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212 Login Status 1
+2023/12/22 23:53:35:772 	O R F Client {}
+2023/12/22 23:53:35:772 	R F Client {}
+2023/12/22 23:53:35:772 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:53:35:772 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:53:35:975 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:53:35:975 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:53:35:975 	Client Removed From Client Context
+2023/12/22 23:53:35:975 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:53:35:976 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:41:41:212
+2023/12/22 23:53:36:696 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:53:36:696 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:53:36:696 	Client RegesteredID:: Login Status 0
+2023/12/22 23:53:36:696 	Going to lock client lock loginbytoken
+2023/12/22 23:53:36:696 	Client lock locked
+2023/12/22 23:53:36:696 	Exit from client lock
+2023/12/22 23:53:36:696 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:53:36:696 	U122
+2023/12/22 23:53:36:696 	123
+2023/12/22 23:53:36:704 	Going to enter in critical section
+2023/12/22 23:53:36:705 	Entered in critical section
+2023/12/22 23:53:36:899 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:53:36:899 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:53:36:899 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:36:899 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:53:36:899 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:53:36:899 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:070 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:53:37:070 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:53:37:070 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:074 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:53:37:074 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:53:37:074 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:076 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:53:37:076 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:53:37:076 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:077 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:53:37:077 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:53:37:077 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:078 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:53:37:078 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:53:37:078 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:079 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:53:37:079 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:53:37:079 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:241 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:53:37:241 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:53:37:241 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:534 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:53:37:534 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:53:37:534 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:582 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:53:37:582 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:53:37:582 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:584 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:53:37:584 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:53:37:584 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:37:585 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:53:37:585 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:53:37:585 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:38:032 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:53:38:032 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:53:38:032 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:38:583 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:53:38:583 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:53:38:583 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:38:584 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:53:38:584 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:53:38:584 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:38:585 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:53:38:585 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:53:38:585 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:38:585 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:53:38:585 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:53:38:585 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:53:43:365 	O R F Client {"updatepagesequence":{"type":"UPDATE_PAGE_SEQUENCE","data":[{"pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"},{"pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad","sequence":1},{"pageId":"9c28f6f0-a3b3-44c0-a498-be5f565345b3","sequence":2},{"pageId":"ece33714-f888-4f08-843b-7cebe44d9364","sequence":3},{"pageId":"0b4ae07a-0c62-4ce9-9b6b-4a502ee18eb9","sequence":4},{"pageId":"1972d2c8-6733-40fa-927d-4694fa9a01ee","sequence":5},{"pageId":"2ebf0231-f929-40e3-a74f-707e71809e95","sequence":6},{"pageId":"4f14a2fa-8c2d-4cbf-ba5e-b9f31c141a2a","sequence":7},{"pageId":"62dbbb74-4a6f-4e23-9d19-f054460606d5","sequence":8},{"pageId":"01637b0b-6a36-4964-9e7f-6bdeaab6c7f4","sequence":9},{"pageId":"e34318e1-e79c-42a9-a23f-8362842e84d5","sequence":10},{"pageId":"3fc6a7c6-0f2f-4c58-bb6b-fc81cacb2803","sequence":11},{"pageId":"c6d3a20f-4a05-4c0f-800c-9e541f4143e1","sequence":12}]}}
+2023/12/22 23:53:43:365 	R F Client {"type":"UPDATE_PAGE_SEQUENCE","data":[{"pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"},{"pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad","sequence":1},{"pageId":"9c28f6f0-a3b3-44c0-a498-be5f565345b3","sequence":2},{"pageId":"ece33714-f888-4f08-843b-7cebe44d9364","sequence":3},{"pageId":"0b4ae07a-0c62-4ce9-9b6b-4a502ee18eb9","sequence":4},{"pageId":"1972d2c8-6733-40fa-927d-4694fa9a01ee","sequence":5},{"pageId":"2ebf0231-f929-40e3-a74f-707e71809e95","sequence":6},{"pageId":"4f14a2fa-8c2d-4cbf-ba5e-b9f31c141a2a","sequence":7},{"pageId":"62dbbb74-4a6f-4e23-9d19-f054460606d5","sequence":8},{"pageId":"01637b0b-6a36-4964-9e7f-6bdeaab6c7f4","sequence":9},{"pageId":"e34318e1-e79c-42a9-a23f-8362842e84d5","sequence":10},{"pageId":"3fc6a7c6-0f2f-4c58-bb6b-fc81cacb2803","sequence":11},{"pageId":"c6d3a20f-4a05-4c0f-800c-9e541f4143e1","sequence":12}]}
+2023/12/22 23:53:43:365 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:04:956 	O R F Client {"unsubscribe":{"type":"UNSUBSCRIBE","requestType":"FETCH_CLIENT_POSITIONS"}}
+2023/12/22 23:54:04:957 	R F Client {"type":"UNSUBSCRIBE","requestType":"FETCH_CLIENT_POSITIONS"}
+2023/12/22 23:54:04:957 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:07:373 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}}
+2023/12/22 23:54:07:373 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"8d38fe32-d4e6-4a47-bc01-46e97cd7cfad"}
+2023/12/22 23:54:07:373 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:07:814 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:54:07:814 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:54:07:814 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:07:815 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:54:07:815 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:54:07:815 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:07:970 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:54:07:971 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:54:07:971 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:07:971 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:07:971 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:07:971 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:129 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:54:08:129 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:54:08:129 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:130 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:08:130 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:08:130 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:276 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:54:08:276 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:54:08:276 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:277 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:08:277 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:08:277 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:330 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:54:08:330 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:54:08:330 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:331 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:08:331 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:08:331 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:334 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:54:08:334 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:54:08:334 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:335 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:08:335 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:08:335 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:335 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:54:08:335 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:54:08:335 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:336 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:08:336 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:08:336 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:336 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}}
+2023/12/22 23:54:08:336 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","broker","clientbalance","clientfloatingpl","clientplnet","companyplnet","volume","companyvolume","previousvolume","difference"],"loginUser":"1001"}
+2023/12/22 23:54:08:338 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:54:08:339 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:54:08:339 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:54:08:339 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696 Login Status 1
+2023/12/22 23:58:14:123 	O R F Client {}
+2023/12/22 23:58:14:123 	R F Client {}
+2023/12/22 23:58:14:124 	Going to delete client For Key 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:58:14:124 	Going to trminate thread 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:58:14:326 	Client thread trminated 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:58:14:326 	Call app_on_session_close 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:58:14:326 	Client Removed From Client Context
+2023/12/22 23:58:14:326 	Call app_on_session_close Finished 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:58:14:327 	Client deleted 1001:50de353a8b1cd849918862ff7dd2c628-23:53:36:696
+2023/12/22 23:58:15:089 	O R F Client {"loginbytoken":{"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}}
+2023/12/22 23:58:15:089 	R F Client {"type":"loginbytoken","logintoken":"1001:50de353a8b1cd849918862ff7dd2c628-23:36:20:177!~o!1001!~o!122.161.52.99!~o!1703268380"}
+2023/12/22 23:58:15:089 	Client RegesteredID:: Login Status 0
+2023/12/22 23:58:15:089 	Going to lock client lock loginbytoken
+2023/12/22 23:58:15:089 	Client lock locked
+2023/12/22 23:58:15:089 	Exit from client lock
+2023/12/22 23:58:15:089 	New Key Created loginbytoken Validated 1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089
+2023/12/22 23:58:15:089 	U122
+2023/12/22 23:58:15:089 	123
+2023/12/22 23:58:15:097 	Going to enter in critical section
+2023/12/22 23:58:15:098 	Entered in critical section
+2023/12/22 23:58:15:299 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:58:15:300 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:58:15:300 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:300 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:58:15:300 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:58:15:300 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:466 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:58:15:466 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:58:15:466 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:470 	O R F Client {"typeandloginrequest":{"type":"FETCH_PAGE_LIST","loginUser":"1001"}}
+2023/12/22 23:58:15:470 	R F Client {"type":"FETCH_PAGE_LIST","loginUser":"1001"}
+2023/12/22 23:58:15:470 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:471 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:58:15:472 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:58:15:472 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:473 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:58:15:473 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:58:15:473 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:474 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:58:15:474 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:58:15:474 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:474 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:58:15:474 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:58:15:474 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:639 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:58:15:639 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:58:15:639 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:904 	O R F Client {"type":"FETCH_PAGE_DETAILS","fetchpagedetails":{"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}}
+2023/12/22 23:58:15:904 	R F Client {"type":"FETCH_PAGE_DETAILS","loginUser":"1001","pageId":"083d74f5-57a7-4d0e-9ef8-538c5629d1af"}
+2023/12/22 23:58:15:904 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:947 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLOR_THEMES","loginUser":"1001"}}
+2023/12/22 23:58:15:947 	R F Client {"type":"FETCH_COLOR_THEMES","loginUser":"1001"}
+2023/12/22 23:58:15:947 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:949 	O R F Client {"typeandloginrequest":{"type":"FETCH_SELECTED_THEME","loginUser":"1001"}}
+2023/12/22 23:58:15:949 	R F Client {"type":"FETCH_SELECTED_THEME","loginUser":"1001"}
+2023/12/22 23:58:15:949 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:15:950 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:58:15:950 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:58:15:950 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:16:378 	O R F Client {"fetchcolortemplates":{"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}}
+2023/12/22 23:58:16:378 	R F Client {"type":"FETCH_COLOR_TEMPLATES","loginUser":"1001"}
+2023/12/22 23:58:16:378 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:16:786 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:58:16:787 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:58:16:787 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:16:787 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}}
+2023/12/22 23:58:16:788 	R F Client {"type":"FETCH_CLIENT_POSITIONS","loginUser":"1001"}
+2023/12/22 23:58:16:788 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:16:788 	O R F Client {"activecolumnchagerequest":{"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}}
+2023/12/22 23:58:16:788 	R F Client {"type":"ACTIVE_COLUMNS_CHANGED","requestType":"FETCH_CLIENT_POSITIONS","columns":["login","symbol","subbroker","clientbalance","clientfloatingpl","clientplnet","companyplnet"],"loginUser":"1001"}
+2023/12/22 23:58:16:788 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:58:16:789 	O R F Client {"type":"FETCH_CLIENT_POSITIONS","fetchclientposition":{"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}}
+2023/12/22 23:58:16:789 	R F Client {"type":"FETCH_CLIENT_POSITIONS","action":"refresh"}
+2023/12/22 23:58:16:789 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:02:052 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:59:02:052 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:59:02:052 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:02:053 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:59:02:053 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:59:02:053 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:02:223 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:59:02:223 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:59:02:223 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:04:950 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:59:04:950 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:59:04:950 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:04:950 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:59:04:950 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:59:04:950 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:05:116 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:59:05:116 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:59:05:116 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:07:137 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:59:07:137 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:59:07:137 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:07:137 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:59:07:137 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:59:07:137 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:07:308 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:59:07:308 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:59:07:308 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:08:473 	O R F Client {"typeandloginrequest":{"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}}
+2023/12/22 23:59:08:473 	R F Client {"type":"FETCH_COLUMN_TEMPLATE","loginUser":"1001"}
+2023/12/22 23:59:08:473 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:08:474 	O R F Client {"typeandloginrequest":{"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}}
+2023/12/22 23:59:08:474 	R F Client {"type":"FETCH_CLIENT_POSITION_META_DATA","loginUser":"1001"}
+2023/12/22 23:59:08:474 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:08:643 	O R F Client {"typeandloginrequest":{"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}}
+2023/12/22 23:59:08:643 	R F Client {"type":"FETCH_ALL_LOGIN_AND_SYMBOL"}
+2023/12/22 23:59:08:643 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+2023/12/22 23:59:14:075 	O R F Client {"typeandloginrequest":{"type":"LOGOUT_USER"}}
+2023/12/22 23:59:14:075 	R F Client {"type":"LOGOUT_USER"}
+2023/12/22 23:59:14:075 	Client RegesteredID:1001:50de353a8b1cd849918862ff7dd2c628-23:58:15:089 Login Status 1
+
+===============Finish Loging================
+

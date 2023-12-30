@@ -67,6 +67,7 @@ void app_on_session_recv(SSL_session *psession)
 		WebsocketHandshakeMessage* wshs = new WebsocketHandshakeMessage(buffer, strlen(buffer));
 		wshs->Parse();
 		string r_str = wshs->Serialize();
+		delete wshs;
 		int test = 0;		
 		sendData = const_cast<char*>(r_str.c_str());
 		int datasize = strlen(sendData);		
@@ -90,6 +91,8 @@ void app_on_session_recv(SSL_session *psession)
 		CString  strlogin = psession->login; 
 		CString  strHDSLno = psession->HDSLno;		
 		MessageReceived(psession, DataForReceive.GetBuffer(), DataForReceive.GetDataSize(), strkey, strlogin, strHDSLno);
+		strHDSLno = psession->HDSLno;
+
 	}	
 	
 }
@@ -246,7 +249,7 @@ bool Matchvalue(CString strval)
 
 
 void MessageReceived(SSL_session* psession, char* c_message, int datasize,CString  key, CString login, CString HDSLno)
-{
+{	
 	if (c_message == "")
 	{
 		return;

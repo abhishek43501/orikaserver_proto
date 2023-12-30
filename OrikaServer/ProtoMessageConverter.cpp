@@ -23,6 +23,7 @@ string ProtoMessageConverter::convertprotoToString(const char* protomessge, int 
 	Oreka::ClientMessage* m_clientmessage = new Oreka::ClientMessage();
 	m_clientmessage->ParseFromArray(protomessge, datasize);
 	google::protobuf::util::MessageToJsonString(*m_clientmessage, &rval);
+	delete m_clientmessage;
 	return rval;
 }
 
