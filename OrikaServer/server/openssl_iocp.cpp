@@ -4,6 +4,8 @@
 #include <process.h>
 #include "..\server\FrameAndDeframeMessage.h"
 #include "..\\StaticClass.h"
+#include <openssl/crypto.h>
+#include <openssl/opensslv.h>
 #pragma comment (lib, "ws2_32.lib")
 #pragma comment (lib, "mswsock.lib")
 
@@ -135,9 +137,10 @@ void ssl_init()
 	}
 
 #ifdef _DEBUG
-	CRYPTO_malloc_debug_init();
+	/*CRYPTO_malloc_debug_init();
 	CRYPTO_dbg_set_options(V_CRYPTO_MDEBUG_ALL);
-	CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);
+	CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);*/
+	
 #endif
 
 	CRYPTO_set_locking_callback(&ssl_lock_callback);
@@ -148,9 +151,23 @@ void ssl_init()
 	SSL_load_error_strings();
 	SSL_library_init();
 
-	const SSL_METHOD* meth = SSLv23_method();
+	//const SSL_METHOD* meth = SSLv23_method();
+
+
+	const SSL_METHOD* meth = TLS_server_method();
 	ssl_ctx = SSL_CTX_new(meth);
+
+	if (!SSL_CTX_load_verify_locations(ssl_ctx, "gd_bundle.crt", NULL)) 
+	{
+		BIO* bio = BIO_new_file("error_log.txt", "w");
+		ERR_print_errors(bio);
+		BIO_free(bio);
+	}
+	//SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+	 
 	SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE, nullptr);
+	//SSL_set_verify()
+	//SSL_CTX_load_verify_locations(ssl_ctx, "C:\\SllCertificate\\21-04-2025\\certificate.crt", NULL);
 
 	InitializeCriticalSection(&lock_connect_ex);
 }
@@ -187,7 +204,7 @@ void ssl_deinit()
 
 	EVP_cleanup();
 	CRYPTO_cleanup_all_ex_data();
-	ERR_remove_state(0);
+	//ERR_remove_state(0);
 	ERR_free_strings();
 
 	if (nullptr != ssl_locks)
@@ -477,12 +494,12 @@ void session_recv(SSL_session* psession)
 			session_close(psession);
 		}
 	}
-	////CStaticClass::m_logfile.LogEvent(L"11");
+	////(L"11");
 }
 
 bool session_process(SSL_session* psession)
 {
-	////CStaticClass::m_logfile.LogEvent(L"101");
+	////(L"101");
 	bool fatal_error_occurred = false;
 	if (nullptr != psession->ssl)
 	{
@@ -507,7 +524,7 @@ bool session_process(SSL_session* psession)
 			int bytes = 0;
 			do
 			{
-				////CStaticClass::m_logfile.LogEvent(L"102");
+				////(L"102");
 				bytes = SSL_read(psession->ssl, psession->ssl_buffer_Rev, BUFFER_SIZE);
 				int ssl_error = ssl_get_error(psession->ssl, bytes);
 				if (bytes > 0)
@@ -523,27 +540,27 @@ bool session_process(SSL_session* psession)
 					app_on_session_connect(psession);
 
 				}
-				////CStaticClass::m_logfile.LogEvent(L"103");
+				////(L"103");
 				if (bytes > 0)
 				{
 					psession->ssl_buffer_size[RECV] = bytes;
-					////CStaticClass::m_logfile.LogEvent(L"Going To receive Data");
+					////(L"Going To receive Data");
 					app_on_session_recv(psession);
-					////CStaticClass::m_logfile.LogEvent(L"Data received");
+					////(L"Data received");
 					psession->ssl_buffer_size[RECV] = 0;
 				}
 				else if (ssl_is_fatal_error(ssl_error))
 				{
 					fatal_error_occurred = true;
 				}
-				////CStaticClass::m_logfile.LogEvent(L"104");
+				////(L"104");
 			} while (bytes > 0);
 
 		}
 
 		if (psession->ssl_buffer_size[SEND] > 0)
 		{
-			////CStaticClass::m_logfile.LogEvent(L"105");
+			////(L"105");
 			int bytes = SSL_write(psession->ssl, psession->ssl_buffer_Send, psession->ssl_buffer_size[SEND]);
 			int ssl_error = ssl_get_error(psession->ssl, bytes);
 			if (bytes == psession->ssl_buffer_size[SEND])
@@ -569,13 +586,13 @@ bool session_process(SSL_session* psession)
 			{
 				fatal_error_occurred = true;
 			}
-			////CStaticClass::m_logfile.LogEvent(L"106");
+			////(L"106");
 		}
 
 		if (fatal_error_occurred)
 			session_close(psession);
 	}
-	////CStaticClass::m_logfile.LogEvent(L"10");
+	////(L"10");
 	session_send(psession);
 	session_recv(psession);
 
@@ -668,16 +685,16 @@ void session_on_send(SSL_session* psession)
 void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lpCompletionKey, LPOVERLAPPED pOverlapped)
 {
 	session_overlapped* p = (session_overlapped*)pOverlapped;
-	////CStaticClass::m_logfile.LogEvent(L"pT");
+	////(L"pT");
 	session_lock(p->psession);
-	////CStaticClass::m_logfile.LogEvent(L"pTL");
+	////(L"pTL");
 	DWORD dwOverlappeddNumberOfBytesTransferred = 0, dwOverlappedFlags = 0;
 	BOOL succeeded = WSAGetOverlappedResult(p->psession->s, pOverlapped, &dwOverlappeddNumberOfBytesTransferred, TRUE, &dwOverlappedFlags);
 	p->result = WSAGetLastError();
 
 	if (pOverlapped == &p->psession->overlapped[CONNECT].overlapped)
 	{
-		////CStaticClass::m_logfile.LogEvent(L"1");
+		////(L"1");
 		if (0 == p->psession->s_listening)
 			session_on_connect(p->psession);
 		else
@@ -685,14 +702,14 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 	}
 	else if (pOverlapped == &p->psession->overlapped[RECV].overlapped)
 	{
-		////CStaticClass::m_logfile.LogEvent(L"2");
+		////(L"2");
 		p->psession->bytes_transferred[RECV] = dwNumberOfBytesTransferred;
 
 		session_on_recv(p->psession);
 	}
 	else if (pOverlapped == &p->psession->overlapped[SEND].overlapped)
 	{
-		////CStaticClass::m_logfile.LogEvent(L"3");
+		////(L"3");
 		p->psession->bytes_transferred[SEND] = dwNumberOfBytesTransferred;
 		session_on_send(p->psession);
 	}
@@ -700,12 +717,12 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 	CString strLogString = L"";
 	int int_SocketStatus = p->psession->status;
 	//strLogString.Format(L"Socket Status %d", int_SocketStatus);
-	////CStaticClass::m_logfile.LogEvent(strLogString);
+	////(strLogString);
 	bool close_session = (CLOSED == p->psession->status);
-	////CStaticClass::m_logfile.LogEvent(L"UnLocked Event 02");
-	////CStaticClass::m_logfile.LogEvent(L"Going ro UnLock UpT");
+	////(L"UnLocked Event 02");
+	////(L"Going ro UnLock UpT");
 	session_unlock(p->psession);
-	////CStaticClass::m_logfile.LogEvent(L"UpT");
+	////(L"UpT");
 	if (close_session)
 	{
 		CString m_key = L"";
@@ -715,13 +732,17 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 		m_deletedClientlist.Lookup(m_key, deleteclientFlag);
 		if (deleteclientFlag == 1)
 		{
+			// S3: release this completion's ref before bailing out.
+			// Another worker is already handling the close-and-delete.
+			session_release(p->psession);
 			return;
 		}
 		deleteclientFlag = 1;
 		m_deletedClientlist.SetAt(m_key, deleteclientFlag);
 		CString m_log = L"";
-		m_log.Format(L"Going to delete client For Key %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);
+		/*m_log.Format(L"Going to delete client For Key %s", m_key);
+		CStaticClass::m_logfile.LogEvent(m_log);*/
+
 
 		CStaticClass::m_mutex_dealingClientList.Lock();
 		CStaticClass::m_ClientList_forDeal.RemoveKey(m_key);
@@ -772,11 +793,11 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 		session_unlock(p->psession);
 
 
-		m_log.Format(L"Call app_on_session_close %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);
+		/*m_log.Format(L"Call app_on_session_close %s", m_key);
+		CStaticClass::m_logfile.LogEvent(m_log);*/
 		app_on_session_close(m_key);
-		m_log.Format(L"Call app_on_session_close Finished %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);
+		/*m_log.Format(L"Call app_on_session_close Finished %s", m_key);
+		CStaticClass::m_logfile.LogEvent(m_log);*/
 
 		session_delete(p->psession);
 		m_log.Format(L"Client deleted %s", m_key);
@@ -800,7 +821,7 @@ int session_send_data(SSL_session* psession, const char* data, int len, CString 
 		UINT64 CurrentTime = _time64(NULL);
 		if (CurrentTime - LoopEnterTime > 5)
 		{
-			//CStaticClass::m_logfile.LogEvent(L"Going To Terminate While Loop and delete Client in client list Because Sending Time is more than 5 sec");
+			//(L"Going To Terminate While Loop and delete Client in client list Because Sending Time is more than 5 sec");
 			CStaticClass::m_mutex_ClientList.Lock();
 			CStaticClass::st_ClientContext m_tmp_st = {};
 			CStaticClass::m_ClientContext.Lookup(strkey, m_tmp_st);
@@ -821,13 +842,13 @@ int session_send_data(SSL_session* psession, const char* data, int len, CString 
 
 			if (ActiveClient == 0)
 			{
-				//CStaticClass::m_logfile.LogEvent(L"Client is not Active");
+				//(L"Client is not Active");
 				return 0;
 			}
 
 			if (psession == nullptr)
 			{
-				//CStaticClass::m_logfile.LogEvent(L"Client  Session is null");
+				//(L"Client  Session is null");
 				return 0;
 			}
 			if (psession->ssl == nullptr || psession->ssl == NULL)
@@ -851,21 +872,24 @@ int session_send_data(SSL_session* psession, const char* data, int len, CString 
 
 		}
 
-		////CStaticClass::m_logfile.LogEvent(L"p"+ strkey);
+		////(L"p"+ strkey);
+		
 		session_lock(psession);
-		////CStaticClass::m_logfile.LogEvent(L"p1"+ strkey);
+		
+		////(L"p1"+ strkey);
 		if (psession->ssl_buffer_size[SEND] == 0)
 		{
 			bytes_sent = min(BUFFER_SIZE, len);
 			memcpy_s(psession->ssl_buffer_Send, BUFFER_SIZE, data, bytes_sent);
 			psession->ssl_buffer_size[SEND] = bytes_sent;
-			////CStaticClass::m_logfile.LogEvent(L"p");
+			////(L"p");
 			session_process(psession);
-			////CStaticClass::m_logfile.LogEvent(L"Up");
+			////(L"Up");
 
 		}
 		session_unlock(psession);
-		////CStaticClass::m_logfile.LogEvent(L"Up"+ strkey);
+		
+		////(L"Up"+ strkey);
 		if (0 == bytes_sent)
 			Sleep(0);
 	}
@@ -884,7 +908,7 @@ int session_send_data_AllClient(SSL_session* psession, const char* data, int len
 		UINT64 CurrentTime = _time64(NULL);
 		if (CurrentTime - LoopEnterTime > 5)
 		{
-			//CStaticClass::m_logfile.LogEvent(L"Going To Terminate While Loop and delete Client in client list Because Sending Time is more than 5 sec");
+			//(L"Going To Terminate While Loop and delete Client in client list Because Sending Time is more than 5 sec");
 			//CStaticClass::m_mutex_ClientList.Lock();
 			CStaticClass::st_ClientContext m_tmp_st = {};
 			CStaticClass::m_ClientContext.Lookup(strkey, m_tmp_st);
@@ -896,7 +920,7 @@ int session_send_data_AllClient(SSL_session* psession, const char* data, int len
 			//CStaticClass::m_mutex_ClientList.Lock();
 			CStaticClass::m_ClientContext.RemoveKey(strkey);
 			//CStaticClass::m_mutex_ClientList.Unlock();
-			//CStaticClass::m_logfile.LogEvent(L"While Loop Terminated and  Client has been deleted in client list Because Sending Time is more than 5 sec");
+			//(L"While Loop Terminated and  Client has been deleted in client list Because Sending Time is more than 5 sec");
 			return 0;
 		}
 
@@ -905,18 +929,18 @@ int session_send_data_AllClient(SSL_session* psession, const char* data, int len
 
 			if (ActiveClient == 0)
 			{
-				//CStaticClass::m_logfile.LogEvent(L"Client is not Active");
+				//(L"Client is not Active");
 				return 0;
 			}
 
 			if (psession == nullptr)
 			{
-				//CStaticClass::m_logfile.LogEvent(L"Client  Session is null");
+				//(L"Client  Session is null");
 				return 0;
 			}
 			if (psession->ssl == nullptr || psession->ssl == NULL)
 			{
-				//CStaticClass::m_logfile.LogEvent(L"Going To Terminate While Loop and delete Client in client list");
+				//(L"Going To Terminate While Loop and delete Client in client list");
 				//CStaticClass::m_mutex_ClientList.Lock();
 
 				CStaticClass::st_ClientContext m_tmp_st = {};
@@ -930,26 +954,26 @@ int session_send_data_AllClient(SSL_session* psession, const char* data, int len
 				//CStaticClass::m_mutex_ClientList.Lock();
 				CStaticClass::m_ClientContext.RemoveKey(strkey);
 				//CStaticClass::m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"While Loop Terminated and  Client has been deleted in client list");
+				//(L"While Loop Terminated and  Client has been deleted in client list");
 				return 0;
 			}
 
 		}
-		////CStaticClass::m_logfile.LogEvent(L"p"+ strkey);
+		////(L"p"+ strkey);
 		session_lock(psession);
-		////CStaticClass::m_logfile.LogEvent(L"p1"+ strkey);
+		////(L"p1"+ strkey);
 		if (psession->ssl_buffer_size[SEND] == 0)
 		{
 			bytes_sent = min(BUFFER_SIZE, len);
 			memcpy_s(psession->ssl_buffer_Send, BUFFER_SIZE, data, bytes_sent);
 			psession->ssl_buffer_size[SEND] = bytes_sent;
-			////CStaticClass::m_logfile.LogEvent(L"p");
+			////(L"p");
 			session_process(psession);
-			////CStaticClass::m_logfile.LogEvent(L"Up");
+			////(L"Up");
 
 		}
 		session_unlock(psession);
-		////CStaticClass::m_logfile.LogEvent(L"Up"+ strkey);
+		////(L"Up"+ strkey);
 		if (0 == bytes_sent)
 			Sleep(0);
 	}
@@ -990,7 +1014,9 @@ std::string ssl_get_cert_issuer_info_by_id(X509_NAME* issuer, int id)
 		ASN1_STRING* asn1_data = X509_NAME_ENTRY_get_data(entry);
 		if (asn1_data > 0)
 		{
-			unsigned char* info = ASN1_STRING_data(asn1_data);
+			//unsigned char* info = ASN1_STRING_data(asn1_data);
+			const unsigned char* info = ASN1_STRING_get0_data(asn1_data);
+
 			if (info > 0)
 				issuer_info = (char*)info;
 		}

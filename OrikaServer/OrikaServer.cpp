@@ -1,7 +1,3 @@
-
-// OrikaServer.cpp : Defines the class behaviors for the application.
-//
-
 #include "stdafx.h"
 #include "OrikaServer.h"
 #include "OrikaServerDlg.h"

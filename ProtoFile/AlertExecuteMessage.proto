@@ -1,0 +1,12 @@
+syntax = "proto3";
+package Oreka;
+message AlertExecuteMessage
+{
+    string alertname = 1;
+    uint32 alertcreatetime = 2;
+    uint32 alertexecutetime = 3;
+    string alertcondisition = 4;
+    string login = 5;
+    string symbol = 6;
+    string alertmessage = 7;
+}

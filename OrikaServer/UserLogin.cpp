@@ -31,7 +31,7 @@ bool CUserLogin::validateSerialno(CString loginuser,CString hdno)
 	strCommand.Format(L"select userlogin,HDno from orika_userLoginHDkeyMapping where userlogin='%s' and (HDno='%s' or HDno='*' );",loginuser,hdno);  
 	
 	CSession m_tempSession;
-	////CStaticClass::m_logfile.LogEvent(L"L12");
+	////(L"L12");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -44,7 +44,7 @@ bool CUserLogin::validateSerialno(CString loginuser,CString hdno)
 	while(hr=data_table.MoveNext()==S_OK)
 	{			
 		m_sl_validated = 1;
-		////CStaticClass::m_logfile.LogEvent(L"UL12");			
+		////(L"UL12");			
 	}
 
 	m_tempSession.Close();
@@ -52,7 +52,7 @@ bool CUserLogin::validateSerialno(CString loginuser,CString hdno)
 	{
 		return true;		
 	}
-	////CStaticClass::m_logfile.LogEvent(L"UL12");
+	////(L"UL12");
 	
 	return false;
 }
@@ -101,13 +101,13 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 					strCommand.Format(L"select pwd,name from orika_userlogin where UserLogin='%s';",struser);
 					
 					CSession m_tempSession;
-					////CStaticClass::m_logfile.LogEvent(L"L11");
+					////(L"L11");
 					m_tempSession.Open(CStaticClass::connection);
 					hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 					if(FAILED(hr))
 					{
 						
-						////CStaticClass::m_logfile.LogEvent(L"UL11");
+						////(L"UL11");
 						return 1;
 					}
 					CString m_password=L"" ;
@@ -119,7 +119,7 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 					}
 					m_tempSession.Close();
 					
-					////CStaticClass::m_logfile.LogEvent(L"UL11");
+					////(L"UL11");
 
 					if (m_password==strpwd)
 					{
@@ -160,7 +160,7 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 				strCommand.Format(L"select pwd,name from orika_userlogin where UserLogin='%s' and apilogin=1;", struser);
 
 				CSession m_tempSession;
-				////CStaticClass::m_logfile.LogEvent(L"L11");
+				////(L"L11");
 				m_tempSession.Open(CStaticClass::connection);
 				hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 				if (FAILED(hr))
@@ -176,7 +176,7 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 				}
 				m_tempSession.Close();
 				
-				////CStaticClass::m_logfile.LogEvent(L"UL11");
+				////(L"UL11");
 
 				if (m_password == strpwd)
 				{

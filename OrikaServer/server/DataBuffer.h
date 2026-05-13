@@ -16,7 +16,8 @@ public:
 
     void Allocate(unsigned int uMaxSize);
     bool Append(char* _pBuffer, unsigned int _uSize);
-	void Clear();         
+	void Clear();   
+    void Delete();
     bool Append(unsigned char* _pBuffer, unsigned int _uSize);
     void Pop(int _uSize);
     unsigned int GetDataSize();

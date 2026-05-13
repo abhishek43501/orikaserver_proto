@@ -1,0 +1,20 @@
+syntax = "proto3";
+package Oreka;
+message  TimewiseData 
+{
+    message DataArray 
+	{
+        string imefrom = 1;
+        string timeto = 2;
+        string login = 3;
+        string symbol = 4;
+        string side = 5;
+        uint32 volume = 6;
+		string subbroker = 7;
+		string broker = 8;
+		string company = 9;
+    }
+
+    string type = 1;
+    repeated DataArray dataarray = 2;
+}

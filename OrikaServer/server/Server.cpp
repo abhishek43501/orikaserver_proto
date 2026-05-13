@@ -1,4 +1,4 @@
-// servers.cpp : Defines the entry point for the console application.
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // servers.cpp : Defines the entry point for the console application.
 #include "stdafx.h"
 #include <atlbase.h>
 #include <stdio.h>
@@ -54,39 +54,36 @@ void app_on_session_send(SSL_session *psession)
 void app_on_session_recv(SSL_session *psession)
 {
 	DataBuffer DataForReceive;
-	DataForReceive.Allocate(1500000);
+	DataForReceive.Allocate(1500000);	
 	//printf("Received %d bytes from %s:", psession->ssl_buffer_size[RECV], psession->addresses_sz[REMOTE]);
 	char buffer[BUFFER_SIZE+1] = {0};
 	strncpy_s(buffer, psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV]);
 	buffer[psession->ssl_buffer_size[RECV]] = 0;
 	//printf("%s\n", buffer);		
 	if (psession->handsake  == 0)
-	{
-		psession->handsake = 1;
+	{		
 		char* sendData;
-		WebsocketHandshakeMessage* wshs = new WebsocketHandshakeMessage(buffer, strlen(buffer));
-		wshs->Parse();
-		string r_str = wshs->Serialize();
-		delete wshs;
-		int test = 0;		
-		sendData = const_cast<char*>(r_str.c_str());
-		int datasize = strlen(sendData);		
-		session_send_data(psession, sendData, strlen(sendData),L"",1);		
+		WebsocketHandshakeMessage* wshs = new WebsocketHandshakeMessage(buffer, strlen(buffer));		
+		if (wshs->Parse() == true)
+		{
+			psession->handsake = 1;
+			string r_str = wshs->Serialize();
+			delete wshs;
+			int test = 0;
+			sendData = const_cast<char*>(r_str.c_str());
+			int datasize = strlen(sendData);
+			session_send_data(psession, sendData, strlen(sendData), L"", 1);
+		}
+		
+		//delete wshs;
 	}
 	else
 	{
 		FrameAndDeframeMessage FDObj;
 		string strReceivedMSG = "";		
-		
-		BYTE payloadFlags = psession->ssl_buffer_Rev[0];
-		if (payloadFlags == 129|| payloadFlags == 130)
-		{
-			FDObj.deframeIncomingMessage(psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV], psession, DataForReceive);
-		}
-		else
-		{
-			 FDObj.deframeLargeIncomingMessage(psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV], psession, DataForReceive);
-		}						
+				
+		FDObj.deframeIncomingMessage(psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV], psession, DataForReceive);
+								
 		CString  strkey= psession->key ; 
 		CString  strlogin = psession->login; 
 		CString  strHDSLno = psession->HDSLno;		
@@ -94,28 +91,31 @@ void app_on_session_recv(SSL_session *psession)
 		strHDSLno = psession->HDSLno;
 
 	}	
+	DataForReceive.Delete();
 	
 }
 
 void app_on_session_close(CString strKey)
 {
-	////CStaticClass::m_logfile.LogEvent(L"Going to Delete Data From Client Context");	
+	////(L"Going to Delete Data From Client Context");	
 
 	CStaticClass::m_mutex_ClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"17");	
+	//(L"17");	
 	CStaticClass::st_ClientContext m_tmp_st = {};
 	CStaticClass::m_ClientContext.Lookup(strKey, m_tmp_st);
 	CString logintoken = m_tmp_st.m_logintoken;
 	CStaticClass::m_sqldata.removelogintoken(logintoken,strKey);	
 	CStaticClass::m_mutex_ClientList.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"Going to Delete Client From List");
+	//(L"Going to Delete Client From List");
 	//Sleep(5000);
 	
 		
-	//CStaticClass::m_logfile.LogEvent(L"Client Session Deleted");
+	//(L"Client Session Deleted");
 	CStaticClass::m_mutex_ClientList.Lock();
-		CStaticClass::st_ClientContext m_st = {};		
-		CStaticClass::m_ClientContext.RemoveKey(strKey);				
+		CStaticClass::st_ClientContext m_st = {};	
+		int totalclient = CStaticClass::m_ClientContext.GetCount();
+		CStaticClass::m_ClientContext.RemoveKey(strKey);
+		int remainingclient = CStaticClass::m_ClientContext.GetCount();
 		//Wait for Complete All sending Data
 		//No need to Unlock Session because session object is being deleted.				
 	CStaticClass::m_mutex_ClientList.Unlock();
@@ -125,7 +125,14 @@ void app_on_session_close(CString strKey)
 		strjason.Format(L"{\"type\": \"USERS_DATA\",\"action\": \"delete\",\"uniquekey\":\"sessionid\",\"sessionid\":\"%s\"}", strKey);
 		//sendDataToAll_Other_Client(strjason, strKey);
 	}
-	CStaticClass::m_logfile.LogEvent(L"Client Removed From Client Context");
+	CString strlogW = L"";
+	strlogW.Format(L"TotalClient %d", totalclient);
+	CStaticClass::m_logfile.LogEvent(strlogW);
+	strlogW.Format(L"Client Removed From Client Context %s ", strKey);
+	CStaticClass::m_logfile.LogEvent(strlogW);
+	strlogW.Format(L"Remaining Client %d", remainingclient);
+	CStaticClass::m_logfile.LogEvent(strlogW);
+	
 }
 // create a listening socket and associate it with iocp
 SOCKET create_listen_socket(int port)
@@ -143,16 +150,28 @@ SOCKET create_listen_socket(int port)
 	return s;
 }
 
-// load server certificate and RSA private key from memory and use them on glocal SSL_CTX object.
+// load server certificate and RSA private key 
+// from memory and use them on glocal SSL_CTX object.
 void set_cert()
 {
+
+	
+	
 	int length = strlen(server_cert_key_pem);
 	BIO *bio_cert = BIO_new_mem_buf((void*)server_cert_key_pem, length);
-	X509 *cert = PEM_read_bio_X509(bio_cert, nullptr, nullptr, nullptr);
+	X509 *cert = PEM_read_bio_X509(bio_cert, nullptr, nullptr, nullptr);		
+	
 	//printf("Certificate used for server:\n");
 	//ssl_print_cert_info(cert);
 	EVP_PKEY *pkey = PEM_read_bio_PrivateKey(bio_cert, 0, 0, 0);
 	ssl_set_ctx_cert_and_key(cert, pkey);
+
+
+	/*BIO* bio = BIO_new_file("error_log.txt", "w");
+	ERR_print_errors(bio);
+	BIO_free(bio);*/
+
+
 	X509_free(cert);
 	EVP_PKEY_free(pkey);
 	BIO_free(bio_cert);
@@ -254,16 +273,16 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 	{
 		return;
 	}
-	/*CString strBLogFile(c_message.c_str());
-	CStaticClass::m_logfile.LogEvent(strBLogFile);*/
+	
 	std::string message = "";	
 	ProtoMessageConverter obj_converter;		
 	message = obj_converter.convertprotoToString(c_message, datasize);
 	
 	CString strOLogFile(message.c_str());
-	CStaticClass::m_logfile.LogEvent(L"O R F Client " + strOLogFile);
+		
 
-	
+	CStaticClass::m_logfile.LogEvent(strOLogFile);
+
 	rapidjson::Document sub_document;
 	if (!sub_document.Parse<0>(message.c_str()).HasParseError())
 	{
@@ -290,12 +309,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 	int checkLoginValidate = 0;
 	int m_clientType = 0;
 	
-	//CStaticClass::m_logfile.LogEvent(L"Client Request Received");
+	
 	CString strLogFile(message.c_str());
-	if (strLogFile != L"{ \"type\":\"HB_R\" }")
-	{
-		CStaticClass::m_logfile.LogEvent(L"R F Client "+strLogFile);
-	}
+	
 
 	if (strLogFile == L"{}")
 	{
@@ -307,10 +323,10 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 		
 	CString strloginuser= login + ":" + HDSLno;
 	CString strKey = strloginuser;
-	//CStaticClass::m_logfile.LogEvent(L"Going to lock lock1");
+	//(L"Going to lock lock1");
 	
 	CStaticClass::m_mutex_ClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"lock1 Locked");
+	//(L"lock1 Locked");
 	CStaticClass::st_ClientContext m_tmp_st = {};
 	CStaticClass::m_ClientContext.Lookup(strKey, m_tmp_st);
 	checkLoginValidate = m_tmp_st.m_loginValidate;
@@ -318,10 +334,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 	m_clientType = m_tmp_st.m_ClientType;
 	CStaticClass::m_mutex_ClientList.Unlock();
 	
-	CString strL = L"";
-	strL.Format(L"Client RegesteredID:%s Login Status %d", strKey, checkLoginValidate);
-
-	CStaticClass::m_logfile.LogEvent(strL);
+	
 
 	strloginuser = strloginuser.Mid(0, strloginuser.Find(L":"));
 	std::string str = message;
@@ -334,7 +347,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 	CString strtype = L"";
 	CString _action = L"";
 	CString tmpjson(str.c_str());
-	////CStaticClass::m_logfile.LogEvent(tmpjson);
+	////(tmpjson);
 	if (!d.Parse<0>(strforjson).HasParseError())
 	{
 		if (d.HasMember("action") == true)
@@ -354,9 +367,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				returnVal = m_CUserLogin.userValideate(strforjson, L"");
 				if (returnVal == 0 || returnVal == 4)
 				{											
-					CStaticClass::m_logfile.LogEvent(L" Going to Lock 123");
+					
 					CStaticClass::m_mutex_ClientList.Lock();
-					CStaticClass::m_logfile.LogEvent(L"123 locked");
+					
 					const Value& Keylogin = d["login"];
 					CString strLogin = L"";
 					strLogin = Keylogin.GetString();
@@ -406,8 +419,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					strKey = strKeyCraete;
 
 					CString strLog = L"";
-					strLog.Format(L"New Key Created Validated %s", strKey);
-					CStaticClass::m_logfile.LogEvent(strLog);
+					
 
 					CMTStr::Copy(psession->key, strKeyCraete);
 					CMTStr::Copy(psession->login, strLogin);
@@ -439,15 +451,15 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						if (!SUCCEEDED(hr))
 						{
 							CStaticClass::m_mutex_ClientList.Unlock();
-							////CStaticClass::m_logfile.LogEvent(L"U123");
+							////(L"U123");
 							return;
 						}
-
+						//4
 						CString   strCommand = L"";
 						strCommand.Format(L"exec GetUserLoginList '%s';", strLogin);
 
 						
-						////CStaticClass::m_logfile.LogEvent(L"L10");
+						////(L"L10");
 						CSession m_temoSession;
 						m_temoSession.Open(CStaticClass::connection);
 						hr = data_table.Open(m_temoSession, (LPCTSTR)strCommand);
@@ -455,7 +467,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						{
 							CStaticClass::m_mutex_ClientList.Unlock();
 							
-							////CStaticClass::m_logfile.LogEvent(L"UL10");
+							////(L"UL10");
 							return;
 						}
 						int i = 0;
@@ -466,7 +478,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						}
 						m_temoSession.Close();
 						
-						////CStaticClass::m_logfile.LogEvent(L"UL10");
+						////(L"UL10");
 					}
 					m_st.m_clientConnection = client;
 
@@ -476,13 +488,13 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CStaticClass::m_ClientContext.SetAt(strKeyCraete, m_st);
 					///End of storing Login Details					
 					CStaticClass::m_mutex_ClientList.Unlock();
-					//CStaticClass::m_logfile.LogEvent(L"123 UnLocked");
+					//(L"123 UnLocked");
 					SendDataToClient(client, strjson, strKey, m_st.m_activeClient);
 					//CString strLog = L"";
-					strLog.Format(L"Going to register a new client with session ID %s", strKeyCraete);
-					CStaticClass::m_logfile.LogEvent(strLog);
+					//strLog.Format(L"Going to register a new client with session ID %s", strKeyCraete);
+					//(strLog);
 					
-					//CStaticClass::m_logfile.LogEvent(L"U321");
+					//(L"U321");
 
 					//Start A thread for New Client
 					EnterCriticalSection(&CStaticClass::m_cs_Thread);
@@ -502,7 +514,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					
 					CString strname = m_stuser.m_name;					
 					CStaticClass::m_mutex_ClientList.Unlock();
-					CStaticClass::m_logfile.LogEvent(L"UN321");
+					//(L"UN321");
 
 
 					CString m_silgleData = L"";
@@ -531,15 +543,15 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 
 			if (strtype == "loginbytoken")
 			{
-				CStaticClass::m_logfile.LogEvent(L"Going to lock client lock loginbytoken");
+				//(L"Going to lock client lock loginbytoken");
 				CStaticClass::m_mutex_ClientList.Lock();
-				CStaticClass::m_logfile.LogEvent(L"Client lock locked");
+				//(L"Client lock locked");
 					CStaticClass::st_ClientContext m_check_allreadyRegister = {};
 					CStaticClass::m_ClientContext.Lookup(strKey, m_check_allreadyRegister);
 					CString m_registeredKey = L"";
 					m_registeredKey = m_check_allreadyRegister.m_userlogin;
 				CStaticClass::m_mutex_ClientList.Unlock();
-				CStaticClass::m_logfile.LogEvent(L"Exit from client lock");
+				//(L"Exit from client lock");
 				if (m_registeredKey.Trim() != L"")
 				{
 					return;
@@ -572,17 +584,17 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CString strKeyCraete = strLogin + ":" + strslno + "-" + strTime;
 					strKey = strKeyCraete;
 					CString strLog = L"";
-					strLog.Format(L"New Key Created loginbytoken Validated %s", strKey);
-					CStaticClass::m_logfile.LogEvent(strLog);
+					//strLog.Format(L"New Key Created loginbytoken Validated %s", strKey);
+					//(strLog);
 					//CStaticClass::m_mutex_ClientList.Lock();
-					//////CStaticClass::m_logfile.LogEvent(L"122");
+					//////(L"122");
 					//CStaticClass::m_ClientContext.RemoveKey(strKey);
 					//CStaticClass::m_mutex_ClientList.Unlock();
-					CStaticClass::m_logfile.LogEvent(L"U122");
+					//(L"U122");
 
 
 					CStaticClass::m_mutex_ClientList.Lock();
-					CStaticClass::m_logfile.LogEvent(L"123");
+					//(L"123");
 					
 					
 
@@ -630,9 +642,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CString strtoken = L"";
 					//m_st.m_primary_connection = 1;
 					CMTStr::Copy(m_st.m_logintoken, strtoken);
-					//CStaticClass::m_logfile.LogEvent(L"123_1");
+					//(L"123_1");
 					CStaticClass::m_sqldata.updatelogintoken(strtoken, 1, CurrentTime, 0, strLogin, strKeyCraete, strslno, strIP);
-					//CStaticClass::m_logfile.LogEvent(L"123_2");
+					//(L"123_2");
 					string sstoken = string(CT2CA(strtoken));
 					string  strjson = "{\"type\":\"LOGIN_STATUS\",\"status\":\"success\"," + LoginData + "}";									
 						HRESULT hr = NULL;
@@ -640,15 +652,15 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						if (!SUCCEEDED(hr))
 						{
 							CStaticClass::m_mutex_ClientList.Unlock();
-							////CStaticClass::m_logfile.LogEvent(L"U123");
+							////(L"U123");
 							return;
 						}
-
+						//2
 						CString   strCommand = L"";
 						strCommand.Format(L"exec GetUserLoginList '%s';", strLogin);
 
 						//CStaticClass::m_mutex_order.Lock();
-						////CStaticClass::m_logfile.LogEvent(L"L10");
+						////(L"L10");
 						CSession m_sqlsession;
 						m_sqlsession.Open(CStaticClass::connection);
 						hr = data_table.Open(m_sqlsession, (LPCTSTR)strCommand);
@@ -656,7 +668,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						{
 							CStaticClass::m_mutex_ClientList.Unlock();
 							//CStaticClass::m_mutex_order.Unlock();
-							////CStaticClass::m_logfile.LogEvent(L"UL10");
+							////(L"UL10");
 							return;
 						}
 						int i = 0;
@@ -667,7 +679,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						}
 						m_sqlsession.Close();
 						//CStaticClass::m_mutex_order.Unlock();
-						//CStaticClass::m_logfile.LogEvent(L"UL10");
+						//(L"UL10");
 					
 					m_st.m_clientConnection = client;
 
@@ -689,22 +701,22 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CStaticClass::m_mutex_ClientList.Unlock();
 					SendDataToClient(client, strjson, strKey, m_st.m_activeClient);
 
-					//CStaticClass::m_logfile.LogEvent(L"U123");
+					//(L"U123");
 
 					//Start A thread for New Client
 					EnterCriticalSection(&CStaticClass::m_cs_Thread);
 					CStaticClass::strKeyTransfer = strKey;
-					CStaticClass::m_logfile.LogEvent(L"Going to enter in critical section");
+					//(L"Going to enter in critical section");
 					m_st.m_localThred=AfxBeginThread(threadForLoginWiseCalculate, NULL);
-					CStaticClass::m_logfile.LogEvent(L"Entered in critical section");
+					//(L"Entered in critical section");
 					SleepConditionVariableCS(&CStaticClass::m_cv_Thread, &CStaticClass::m_cs_Thread, INFINITE);
 					LeaveCriticalSection(&CStaticClass::m_cs_Thread);
-					//CStaticClass::m_logfile.LogEvent(L"U123_21");
+					//(L"U123_21");
 					CStaticClass::m_mutex_ClientList.Lock();
 					CStaticClass::m_ClientContext.SetAt(strKeyCraete, m_st);
 					///End of storing Login Details					
 					CStaticClass::m_mutex_ClientList.Unlock();
-					//CStaticClass::m_logfile.LogEvent(L"U123_1");
+					//(L"U123_1");
 				}
 				else if (m_temp.returnval == 1)
 				{
@@ -727,15 +739,15 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			}
 			if (strtype == "LOGIN_BY_KEY")
 			{
-				CStaticClass::m_logfile.LogEvent(L"Going to lock client lock loginbytoken");
+				//(L"Going to lock client lock loginbytoken");
 				CStaticClass::m_mutex_ClientList.Lock();
-				CStaticClass::m_logfile.LogEvent(L"Client lock locked");
+				//(L"Client lock locked");
 				CStaticClass::st_ClientContext m_check_allreadyRegister = {};
 				CStaticClass::m_ClientContext.Lookup(strKey, m_check_allreadyRegister);
 				CString m_registeredKey = L"";
 				m_registeredKey = m_check_allreadyRegister.m_userlogin;
 				CStaticClass::m_mutex_ClientList.Unlock();
-				CStaticClass::m_logfile.LogEvent(L"Exit from client lock");
+				//(L"Exit from client lock");
 				if (m_registeredKey.Trim() != L"")
 				{
 					return;
@@ -776,17 +788,17 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CString strKeyCraete = strLogin + ":" + strslno + "-" + strTime;
 					strKey = strKeyCraete;
 					CString strLog = L"";
-					strLog.Format(L"New Key Created loginbytoken Validated %s", strKey);
-					CStaticClass::m_logfile.LogEvent(strLog);
+					//strLog.Format(L"New Key Created loginbytoken Validated %s", strKey);
+					//(strLog);
 					//CStaticClass::m_mutex_ClientList.Lock();
-					//////CStaticClass::m_logfile.LogEvent(L"122");
+					//////(L"122");
 					//CStaticClass::m_ClientContext.RemoveKey(strKey);
 					//CStaticClass::m_mutex_ClientList.Unlock();
-					CStaticClass::m_logfile.LogEvent(L"U122");
+					//(L"U122");
 
 
 					CStaticClass::m_mutex_ClientList.Lock();
-					CStaticClass::m_logfile.LogEvent(L"123");
+					//(L"123");
 
 
 
@@ -834,9 +846,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CString strtoken = L"";
 					//m_st.m_primary_connection = 1;
 					CMTStr::Copy(m_st.m_logintoken, strtoken);
-					//CStaticClass::m_logfile.LogEvent(L"123_1");
+					//(L"123_1");
 					CStaticClass::m_sqldata.updatelogintoken(strtoken, 1, CurrentTime, 0, strLogin, strKeyCraete, strslno, strIP);
-					//CStaticClass::m_logfile.LogEvent(L"123_2");
+					//(L"123_2");
 					string sstoken = string(CT2CA(strtoken));
 					string  strjson = "{\"type\":\"LOGIN_STATUS\",\"status\":\"success\"," + LoginData + "}";
 
@@ -845,15 +857,15 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					if (!SUCCEEDED(hr))
 					{
 						CStaticClass::m_mutex_ClientList.Unlock();
-						////CStaticClass::m_logfile.LogEvent(L"U123");
+						////(L"U123");
 						return;
 					}
-
+					//3
 					CString   strCommand = L"";
 					strCommand.Format(L"exec GetUserLoginList '%s';", strLogin);
 
 					//CStaticClass::m_mutex_order.Lock();
-					////CStaticClass::m_logfile.LogEvent(L"L10");
+					////(L"L10");
 					CSession m_sqlsession;
 					m_sqlsession.Open(CStaticClass::connection);
 					hr = data_table.Open(m_sqlsession, (LPCTSTR)strCommand);
@@ -861,7 +873,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					{
 						CStaticClass::m_mutex_ClientList.Unlock();
 						//CStaticClass::m_mutex_order.Unlock();
-						////CStaticClass::m_logfile.LogEvent(L"UL10");
+						////(L"UL10");
 						return;
 					}
 					int i = 0;
@@ -872,7 +884,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					}
 					m_sqlsession.Close();
 					//CStaticClass::m_mutex_order.Unlock();
-					//CStaticClass::m_logfile.LogEvent(L"UL10");
+					//(L"UL10");
 
 					m_st.m_clientConnection = client;
 
@@ -894,22 +906,22 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					CStaticClass::m_mutex_ClientList.Unlock();
 					SendDataToClient(client, strjson, strKey, m_st.m_activeClient);
 
-					//CStaticClass::m_logfile.LogEvent(L"U123");
+					//(L"U123");
 
 					//Start A thread for New Client
 					EnterCriticalSection(&CStaticClass::m_cs_Thread);
 					CStaticClass::strKeyTransfer = strKey;
-					CStaticClass::m_logfile.LogEvent(L"Going to enter in critical section");
+					//(L"Going to enter in critical section");
 					m_st.m_localThred = AfxBeginThread(threadForLoginWiseCalculate, NULL);
-					CStaticClass::m_logfile.LogEvent(L"Entered in critical section");
+					//(L"Entered in critical section");
 					SleepConditionVariableCS(&CStaticClass::m_cv_Thread, &CStaticClass::m_cs_Thread, INFINITE);
 					LeaveCriticalSection(&CStaticClass::m_cs_Thread);
-					//CStaticClass::m_logfile.LogEvent(L"U123_21");
+					//(L"U123_21");
 					CStaticClass::m_mutex_ClientList.Lock();
 					CStaticClass::m_ClientContext.SetAt(strKeyCraete, m_st);
 					///End of storing Login Details					
 					CStaticClass::m_mutex_ClientList.Unlock();
-					//CStaticClass::m_logfile.LogEvent(L"U123_1");
+					//(L"U123_1");
 				}
 				else if (m_temp.returnval == 1)
 				{
@@ -930,7 +942,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				CStaticClass::st_ClientContext m_st = {};
 				
 				CStaticClass::m_mutex_ClientList.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"P122");
+				//(L"P122");
 				CStaticClass::m_ClientContext.Lookup(strKey, m_st);
 				m_st.m_fetch_client_position_timerwise = 1;
 				//m_st.m_clientrequests_List.Assign(m_ColumnsData);
@@ -956,7 +968,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 
 				CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 				CStaticClass::m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"UP122");
+				//(L"UP122");
 			}
 			else if (strtype == L"FETCH_CLIENT_POSITIONS_TIMERWISE_STOP")
 			{
@@ -1044,12 +1056,12 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
  			else if ((strtype == L"SUBSCRIBE_POSITION_FOR_TRANSFER" ) && checkLoginValidate == 1 && m_clientType==1)
 			{
 				CStaticClass::st_ClientContext m_st = {};
-				//CStaticClass::m_logfile.LogEvent(L"P123");
+				//(L"P123");
 				CStaticClass::m_mutex_ClientList.Lock();				
 					CStaticClass::m_ClientContext.Lookup(strKey, m_st);
 					m_st.m_SubscribedRequest.push_back(SUBSCRIBE_POSITION_FOR_TRANSFER);
 				CStaticClass::m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"UP123");
+				//(L"UP123");
 			}			
 			else if ((strtype == L"FETCH_DEALING_DATA_INTERVAL") && checkLoginValidate == 1 && m_clientType == 1)
 			{
@@ -1091,7 +1103,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 
 			}
-			else if ((strtype == L"FETCH_CLIENT_POSITIONS" || strtype == L"FETCH_CLIENT_POSITIONS_PRENETQTY" || strtype == L"FETCH_ORDER_DATA" || strtype == L"FETCH_DEALING_DATA" || strtype == L"EXISTING_COMMENT_CHANGE_DATA") && checkLoginValidate == 1)
+			else if ((strtype == L"FETCH_CLIENT_POSITIONS" || strtype == L"FETCH_CLIENT_POSITIONS_PRENETQTY" || strtype == L"FETCH_ORDER_DATA" || strtype == L"FETCH_DEALING_DATA" || strtype == L"FETCH_LOGIN_DEVICE_LOG" || strtype == L"EXISTING_COMMENT_CHANGE_DATA") && checkLoginValidate == 1)
 			{									
 				CStaticClass::st_ClientContext m_st = {};						
 				CStaticClass::m_mutex_ClientList.Lock();						
@@ -1103,9 +1115,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						//m_st.m_logins.push_back(strTabName);
 
 						////Udating Subscribed Column
-						////CStaticClass::m_logfile.LogEvent(L"P124");
+						////(L"P124");
 						//CStaticClass::m_mutex_ClientList.Lock();
-						////CStaticClass::m_logfile.LogEvent(L"P124_Locked");
+						////(L"P124_Locked");
 						///*CStaticClass::st_ClientContext m_st = {};
 						//CStaticClass::m_ClientContext.Lookup(strKey, m_st);*/
 
@@ -1121,7 +1133,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						//	int i = 0;
 						//}
 						//CStaticClass::m_mutex_ClientList.Unlock();
-						////CStaticClass::m_logfile.LogEvent(L"UP124");
+						////(L"UP124");
 						////End of Udating Subscribed Column
 
 						if (strTabName == "FETCH_CLIENT_POSITIONS")
@@ -1138,11 +1150,13 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 								}
 							}
 									m_st.m_calculatePreNetPosition = 1;
-											
+										
+									m_st.m_firstTimeDataSended = 0;
+
 									if (_action == L"refresh")
 									{
 										m_st.m_refreshClientPosition = 1;
-										m_st.m_firstTimeDataSended = 0;
+										
 									}
 									
 																			
@@ -1173,13 +1187,19 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 							}
 						}								
 						if (strTabName == L"FETCH_ORDER_DATA")
-						{
-							
-							m_st.m_firstTimeDataSended = 0;
+						{													
 							CStaticClass::m_mutex_ClientList.Lock();
+							m_st.m_firstTimeDataSended = 0;
 							m_st.m_FETCH_ORDER_DATA_FirstTime = 1;
 							CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 							CStaticClass::m_mutex_ClientList.Unlock();
+							
+
+							CString strjson = CStaticClass::m_sqldata.getOrderData(strKey);
+							string strforsend = CT2A(strjson.GetString());
+							SendDataToClient(client, strforsend, strKey, m_st.m_activeClient);
+
+
 						}								
 						
 						if (strTabName == L"FETCH_DEALING_DATA")
@@ -1227,6 +1247,49 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 								CStaticClass::m_mutex_dealingClientList.Unlock();
 							
 						}
+
+
+						if (strTabName == L"FETCH_LOGIN_DEVICE_LOG")
+						{
+							CString  strclientkey = L"";
+							strclientkey = client->key;
+							UINT64 m_datefrom = 0;
+							UINT64 m_dateto = 0;
+							CString m_subscriptionId = L"";							
+							if (d.HasMember("startTime"))
+							{
+								const Value& valstartTime = d["startTime"];
+								if (valstartTime.IsNumber())
+								{
+									m_datefrom = valstartTime.GetInt64();
+								}
+							}
+							if (d.HasMember("endTime"))
+							{
+								const Value& valendTime = d["endTime"];
+								if (valendTime.IsNumber())
+								{
+									m_dateto = valendTime.GetInt64();
+								}
+							}
+							UINT64 m_datetosplit = 0;
+							while (m_datefrom <= m_dateto)
+							{
+								CString m_logdata = L"";
+								m_datetosplit= m_datefrom + (5 * 3600);
+								m_logdata = CStaticClass::m_mtmanager.FetchLogFromMemory(m_datefrom, m_datetosplit, L"");
+
+								string strforsend = CT2A(m_logdata.GetString());
+								SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+								m_datefrom = m_datetosplit+1;
+								if (m_datefrom > m_dateto)
+								{
+									m_datefrom = m_dateto+1;
+								}
+							}
+
+						}
+
 						//FETCH_DEALING_DATA								
 						if (strTabName == "EXISTING_COMMENT_CHANGE_DATA")
 						{
@@ -1240,8 +1303,8 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				CStaticClass::m_mutex_ClientList.Lock();
 				CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 				CStaticClass::m_mutex_ClientList.Unlock();
-				////CStaticClass::m_logfile.LogEvent(L"U124");
-				////CStaticClass::m_logfile.LogEvent(L"Unlocklock3");
+				////(L"U124");
+				////(L"Unlocklock3");
 
 					
 
@@ -1310,8 +1373,8 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			CStaticClass::m_mutex_ClientList.Lock();
 			CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 			CStaticClass::m_mutex_ClientList.Unlock();
-			////CStaticClass::m_logfile.LogEvent(L"U124");
-			////CStaticClass::m_logfile.LogEvent(L"Unlocklock3");
+			////(L"U124");
+			////(L"Unlocklock3");
 
 
 
@@ -2421,7 +2484,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						{
 							m_pageId = varpageId.GetString();
 						}
-
+						//(m_pageId);
 						m_loginUser = login;
 
 						Value& varname = varpage["name"];
@@ -2456,14 +2519,16 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						CString Page_String = L"";
 						string strjson = JsonAsString(varpage);
 
-						/*Page_String = strjson.c_str();
-						CString FilePath = m_pageId + L".json";
+						Page_String = strjson.c_str();
+						CString FilePath = CStaticClass::APIFolderPath+m_pageId + L".json";
 						CStdioFile	myFile;
+						//(FilePath);
+						//(Page_String);
 						if (myFile.Open(FilePath, CFile::modeCreate| CFile::modeWrite))
 						{
 							myFile.WriteString(Page_String);
 						}
-						myFile.Close();*/
+						myFile.Close();
 
 
 
@@ -2888,7 +2953,16 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					m_pageId = varpageId.GetString();
 				}
 
+				CString m_login_and_Page = L"";
+				m_login_and_Page.Format(L"Login:%s  and PageID:%s", m_loginUser, m_pageId);
+
+				//(m_login_and_Page);
+
 				CString StrFilePath = CStaticClass::APIFolderPath + m_pageId + L".json";
+
+				//(StrFilePath);
+
+
 				CStdioFile	myFile;
 				CString strval = L"";
 				CString m_FnalStng = L"";
@@ -2918,6 +2992,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				//returnJson = CStaticClass::m_mtmanager.CreateFETCH_PAGE_DETAILS(m_loginUser, m_pageId);
 				int datalength = returnJson.GetLength();
 				string strforsend = CT2A(returnJson.GetString());
+				//(returnJson);
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 			}
 			}
@@ -3039,7 +3114,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 							m_st_updateOrder.m_order = m_intcolumnvalue;
 							m_st_updateOrder.m_select_update = 1;
 							m_st_updateOrder.m_select= _wtoi(m_updatedvalue);
-							////CStaticClass::m_logfile.LogEvent(L"lock8");
+							////(L"lock8");
 
 							CStaticClass::m_mutex_order.Lock();
 							CStaticClass::st_order st = {};
@@ -3054,7 +3129,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 
 
 							CStaticClass::m_mutex_ClientList.Lock();
-							//CStaticClass::m_logfile.LogEvent(L"22");
+							//(L"22");
 							POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 							while (pos != NULL)
 							{
@@ -3070,6 +3145,48 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 							CStaticClass::m_mutex_ClientList.Unlock();
 						}
 
+					}
+					else
+					{
+						if (m_tablename == L"orika_order")
+						{
+							
+							m_updatedvalue=L"0";
+							m_intcolumnvalue = _wtoi64(m_columnvalue);
+							CStaticClass::st_order_ForUpdate m_st_updateOrder = {};
+							m_st_updateOrder.m_order = m_intcolumnvalue;
+							m_st_updateOrder.m_select_update = 1;
+							m_st_updateOrder.m_select = _wtoi(m_updatedvalue);
+							////(L"lock8");
+
+							CStaticClass::m_mutex_order.Lock();
+							CStaticClass::st_order st = {};
+							CStaticClass::m_Orika_orderHastable.Lookup(m_intcolumnvalue, st);
+							st.m_select = _wtoi(m_updatedvalue);
+							CStaticClass::m_Orika_orderHastable.SetAt(m_intcolumnvalue, st);
+							CStaticClass::m_mutex_order.Unlock();
+
+
+
+
+
+
+							CStaticClass::m_mutex_ClientList.Lock();
+							//(L"22");
+							POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
+							while (pos != NULL)
+							{
+								CString strclientkey = L"";
+								CStaticClass::st_ClientContext m_st = {};
+								CStaticClass::m_ClientContext.GetNextAssoc(pos, strclientkey, m_st);
+								if (m_st.m_FETCH_ORDER_DATA_start == 1)
+								{
+									m_st.m_orderarray_ForEdit.Add(&m_st_updateOrder);
+									CStaticClass::m_ClientContext.SetAt(strclientkey, m_st);
+								}
+							}
+							CStaticClass::m_mutex_ClientList.Unlock();
+						}
 					}
 				}
 				
@@ -3123,6 +3240,247 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				string strforsend = "{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Canvas Data Has Been Updated.\"}";
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 			}
+			else if (strtype == "GET_ALL_ALERT" && checkLoginValidate == 1)
+			{
+				CString m_alertName = L"";
+				if (d.HasMember("alertName"))
+				{
+					Value& val_alertName = d["alertName"];
+					if (val_alertName.IsString())
+					{
+						m_alertName = val_alertName.GetString();
+					}
+				}
+				CString returnJson=CStaticClass::m_sqldata.getAlertSetting(m_alertName);
+				string strforsend = CT2A(returnJson.GetString());
+				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+			}
+			else if (strtype == "SAVE_UPDATE_ALERT" && checkLoginValidate == 1)
+			{
+				CString m_alertName = L"";
+				CString m_triggerType = L"";
+				CString 	m_startTime = L"";
+				CString 	m_expiryTime = L"";
+				int m_repetitions=0;
+				int m_hours = 0;
+				int m_minutes = 0;
+				int m_days = 0;
+				CString 	m_daysOfMonth = L"";
+				CString 	m_daysOfWeek = L"";
+				CString 	m_selectedMonths = L"";
+				if (d.HasMember("alertName"))
+				{
+					Value& val_alertName = d["alertName"];
+					if (val_alertName.IsString())
+					{
+						m_alertName = val_alertName.GetString();
+					}					
+				}
+				/*if (d.HasMember("triggerType"))
+				{
+					Value& val_triggerType = d["triggerType"];
+					if (val_triggerType.IsString())
+					{
+						m_triggerType = val_triggerType.GetString();
+					}
+				}
+
+				if (d.HasMember("startTime"))
+				{
+					Value& val_startTime = d["startTime"];
+					if (val_startTime.IsString())
+					{
+						m_startTime = val_startTime.GetString();
+					}
+				}
+				if (d.HasMember("expiryTime"))
+				{
+					Value& val_expiryTime = d["expiryTime"];
+					if (val_expiryTime.IsString())
+					{
+						m_expiryTime = val_expiryTime.GetString();
+					}
+				}
+
+				if (d.HasMember("repetitions"))
+				{
+					Value& val_repetitions = d["repetitions"];
+					if (val_repetitions.IsNumber())
+					{
+						m_repetitions = val_repetitions.GetInt();
+					}
+				}
+				if (d.HasMember("hours"))
+				{
+					Value& val_hours = d["hours"];
+					if (val_hours.IsNumber())
+					{
+						m_hours = val_hours.GetInt();
+					}
+				}
+
+				if (d.HasMember("minutes"))
+				{
+					Value& val_minutes = d["minutes"];
+					if (val_minutes.IsNumber())
+					{
+						m_minutes = val_minutes.GetInt();
+					}
+				}
+				if (d.HasMember("days"))
+				{
+					Value& val_days = d["days"];
+					if (val_days.IsNumber())
+					{
+						m_days = val_days.GetInt();
+					}
+				}
+				if (d.HasMember("daysOfMonth"))
+				{
+					Value& val_dayofMonth = d["daysOfMonth"];
+
+					rapidjson::StringBuffer buffer;
+					rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+					val_dayofMonth.Accept(writer);
+
+					string str_dayofMonth = buffer.GetString();
+
+					CString mt_dayofMonth(str_dayofMonth.c_str());
+					m_daysOfMonth = mt_dayofMonth;
+				}
+				if (d.HasMember("daysOfWeek"))
+				{
+					Value& val_daysOfWeek = d["daysOfWeek"];
+					
+					rapidjson::StringBuffer buffer;
+					rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+					val_daysOfWeek.Accept(writer);
+
+					string str_daysOfWeek = buffer.GetString();
+
+					CString mt_daysOfWeek(str_daysOfWeek.c_str());
+					m_daysOfWeek = mt_daysOfWeek;
+					
+					
+				}
+				if (d.HasMember("selectedMonths"))
+				{
+					Value& val_selectedMonths = d["selectedMonths"];
+					rapidjson::StringBuffer buffer;
+					rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+					val_selectedMonths.Accept(writer);
+
+					string str_selectedMonths = buffer.GetString();
+
+					CString mt_selectedMonths(str_selectedMonths.c_str());
+					m_selectedMonths = mt_selectedMonths;
+				}*/
+
+				d.RemoveMember("type");
+
+				Document::AllocatorType& allocator = d.GetAllocator();
+				if (d.HasMember("hours")==false)
+				{
+					d.AddMember("hours", 0, allocator);
+				}
+
+				if (d.HasMember("minutes") == false)
+				{
+					d.AddMember("minutes", 0, allocator);
+				}
+				if (d.HasMember("days") == false)
+				{
+					d.AddMember("days", 0, allocator);  
+				}
+
+				StringBuffer buffer;
+				Writer<StringBuffer> writer(buffer);
+				d.Accept(writer);
+				string m_str_jasonString = buffer.GetString();
+				CString m_jasonString(m_str_jasonString.c_str());
+
+				CString strFinalCommand = L"";
+				strFinalCommand.Format(L"delete from orika_Event_Setting where alertName='%s';insert into orika_Event_Setting (alertName,alertsetting_jason)values('%s','%s')",m_alertName, m_alertName, m_jasonString);
+				int m_status = CStaticClass::m_sqldata.executeCommandwiterrorcode(strFinalCommand);
+				string strforsend = "";
+				if (m_status == 0)
+				{
+					CStaticClass::m_loginuserlist.RemoveKey(strloginuser);
+					strforsend = "{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Event Has Been Updated Successfully.\"}";
+				}
+				else
+				{
+					strforsend = "{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Error while updating data\"}";
+				}
+				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+				
+				
+				
+				CString returnJson = CStaticClass::m_sqldata.getAlertSetting(m_alertName);
+				
+
+				sendDataToAllClient(returnJson);
+				//SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+
+				
+
+
+
+
+
+			}
+
+			else if (strtype == "DELETE_ALERT" && checkLoginValidate == 1)
+			{
+				CString m_alertName = L"";
+				CString m_triggerType = L"";
+				CString 	m_startTime = L"";
+				CString 	m_expiryTime = L"";
+				int m_repetitions = 0;
+				int m_hours = 0;
+				int m_minutes = 0;
+				int m_days = 0;
+				CString 	m_daysOfMonth = L"";
+				CString 	m_daysOfWeek = L"";
+				CString 	m_selectedMonths = L"";
+				if (d.HasMember("alertName"))
+				{
+					Value& val_alertName = d["alertName"];
+					if (val_alertName.IsString())
+					{
+						m_alertName = val_alertName.GetString();
+					}
+				}				
+				
+
+				StringBuffer buffer;
+				Writer<StringBuffer> writer(buffer);
+				d.Accept(writer);
+				string m_str_jasonString = buffer.GetString();
+				CString m_jasonString(m_str_jasonString.c_str());
+
+				CString strFinalCommand = L"";
+				strFinalCommand.Format(L"delete from orika_Event_Setting where alertName='%s';", m_alertName);
+				int m_status = CStaticClass::m_sqldata.executeCommandwiterrorcode(strFinalCommand);
+				string strforsend = "";
+				if (m_status == 0)
+				{
+					CStaticClass::m_loginuserlist.RemoveKey(strloginuser);
+					strforsend = "{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Event Has Been Deleted Successfully.\"}";
+				}
+				else
+				{
+					strforsend = "{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Error while deleting data\"}";
+				}
+				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+
+
+
+
+				}
+
+
+
 			else if (strtype == "GET_SYMBOLMAPPING" && checkLoginValidate == 1)
 			{
 				CString returnJson = L"";
@@ -3147,9 +3505,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						CStaticClass::st_ClientContext m_st = {};
 						int positionTime = 0;
 						positionTime = Keytime.GetInt();
-						////CStaticClass::m_logfile.LogEvent(L"lock4");
+						////(L"lock4");
 						CStaticClass::m_mutex_ClientList.Lock();
-						//CStaticClass::m_logfile.LogEvent(L"125");
+						//(L"125");
 						CStaticClass::m_ClientContext.Lookup(strKey, m_st);
 						m_st.m_calculatePreNetPosition = 1;
 						if (_action == L"refresh")
@@ -3159,7 +3517,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						m_st.m_netPositionTime = positionTime;
 						CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 						CStaticClass::m_mutex_ClientList.Unlock();
-						//CStaticClass::m_logfile.LogEvent(L"U125");
+						//(L"U125");
 					}
 				}
 			}
@@ -3343,7 +3701,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				CString strjson = CStaticClass::m_sqldata.getClientwisePreQty(strKey, requestTime);
 				string strforsend = CT2A(strjson.GetString());
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
-				//////CStaticClass::m_logfile.LogEvent(L" Netposition data has been send");
+				//////(L" Netposition data has been send");
 			}
 			
 			else if (strtype == "DELETE_COMMENT_CHANGE_DATA" && checkLoginValidate == 1)
@@ -3383,9 +3741,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 				if (strjson.Find(L"Data Has Been Deleted") >= 0)
 				{
-					////CStaticClass::m_logfile.LogEvent(L"lock5");
+					////(L"lock5");
 					CStaticClass::m_mutex_ClientList.Lock();
-					//CStaticClass::m_logfile.LogEvent(L"126");
+					//(L"126");
 					POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 					while (pos != NULL)
 					{
@@ -3399,7 +3757,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 						}
 					}
 					CStaticClass::m_mutex_ClientList.Unlock();
-					//CStaticClass::m_logfile.LogEvent(L"U126");
+					//(L"U126");
 					tmpdealarray.Clear();
 				}
 			}
@@ -3445,9 +3803,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				string strforsend = CT2A(strjson.GetString());
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 				CStaticClass::st_ClientContext m_st = {};
-				////CStaticClass::m_logfile.LogEvent(L"lock6");
+				////(L"lock6");
 				CStaticClass::m_mutex_ClientList.Lock();
-				////CStaticClass::m_logfile.LogEvent(L"127");
+				////(L"127");
 				CStaticClass::m_ClientContext.Lookup(strKey, m_st);
 				m_st.m_ClientWiseNetPositionStart = 1;
 				if (_action == L"refresh")
@@ -3456,29 +3814,29 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				}				
 				CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 				CStaticClass::m_mutex_ClientList.Unlock();
-				////CStaticClass::m_logfile.LogEvent(L"U127");
+				////(L"U127");
 
 			}
 			
 			else if (strtype == "FETCH_SYMBOL_MASTER_DATA" && checkLoginValidate == 1)
 			{
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_11");
+				//////(L"Enter in handle_11");
 				CString strjson = CStaticClass::m_sqldata.generateSymbolMasterJson();
 				string strforsend = CT2A(strjson.GetString());
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_12");
+				//////(L"Enter in handle_12");
 			}								
 			else if (strtype == "FETCH_USERS_DATA" && checkLoginValidate == 1)
 			{
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_11");
+				//////(L"Enter in handle_11");
 				CString strjson = CStaticClass::m_sqldata.generateJsonLoginData();
 				string strforsend = CT2A(strjson.GetString());
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_12");
+				//////(L"Enter in handle_12");
 			}
 			else if (strtype == "FETCH_USER_DETAILS" && checkLoginValidate == 1)
 			{
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_11");
+				//////(L"Enter in handle_11");
 				CString strloginuser = L"";
 				if (d.HasMember("loginuser"))
 				{
@@ -3493,7 +3851,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				CString strjson = CStaticClass::m_sqldata.generateJsonLoginData_Details(strloginuser);
 				string strforsend = CT2A(strjson.GetString());
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_12");
+				//////(L"Enter in handle_12");
 			}
 			else if (strtype == "DELETE_USER_DETAILS" && checkLoginValidate == 1)
 			{
@@ -3841,7 +4199,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			}
 			else if (strtype == "FETCH_ALL_GROUP_DATA" && checkLoginValidate == 1)
 			{
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_11");
+				//////(L"Enter in handle_11");
 				CString strloginuser = L"";
 				if (d.HasMember("loginuser"))
 				{
@@ -3856,7 +4214,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				CString strjson = CStaticClass::m_sqldata.generateGroupJason(strloginuser);
 				string strforsend = CT2A(strjson.GetString());
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_12");
+				//////(L"Enter in handle_12");
 			}
 
 			//generateJsonForFetchUserData
@@ -3904,7 +4262,8 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			}
 			else if (strtype == "ACTIVE_COLUMNS_CHANGED" && checkLoginValidate == 1)
 			{
-				//CStaticClass::m_logfile.LogEvent(L"Enter in ACTIVE_COLUMNS_CHANGED");
+
+				//(L"Enter in ACTIVE_COLUMNS_CHANGED");
 				if (d.HasMember("loginUser") && d.HasMember("columns"))
 				{
 					CString strjson = L"";
@@ -3964,6 +4323,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 								m_st.m_clientrequests_List.Delete(i);
 							}
 						}
+						int allow_columns_count = columnsArray.Size();
 						for (SizeType i = 0; i < columnsArray.Size(); i++)
 						{
 							const Value& loginData = columnsArray[i];
@@ -3976,18 +4336,29 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 								wchar_t  strloginCompany[250];
 								CMTStr::Copy(strloginCompany, userLoginColumnKey);								
 								//Update From The Request Active column Change
-								m_st.m_clientrequests_List.Add(&strloginCompany);																	
-								
+								m_st.m_clientrequests_List.Add(&strloginCompany);
+								//CString m_logStr = L"";
+								//m_logStr.Format(L"Column Added in column List %s", userLoginColumnKey);
+								//(m_logStr);
 							}
 						}
-						CStaticClass::m_ClientContext.SetAt(strKey, m_st);						
+						CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 						
+						CStaticClass::st_ClientContext m_st_test = {};
+
+						CStaticClass::m_ClientContext.Lookup(strKey, m_st_test);
+						int test_count = m_st.m_clientrequests_List.Total();
+						for (int i = 0; i < test_count; i++)
+						{
+							CString  m_ColumnsData = L"";
+							m_ColumnsData = m_st_test.m_clientrequests_List[i];																					
+						}						
 						CStaticClass::m_mutex_ClientList.Unlock();
 					}										
 					string strforsend = "{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Column Subscription Has Been Updated.\"}";
 					SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 				}
-				//CStaticClass::m_logfile.LogEvent(L"Exit From ACTIVE_COLUMNS_CHANGED");
+				//(L"Exit From ACTIVE_COLUMNS_CHANGED");
 			}
 			else if (strtype == "ACTIVE_COLUMNS_DELETE" && checkLoginValidate == 1)
 			{
@@ -4078,7 +4449,6 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					{
 						m_buySymbol = m_buySymbol_Value.GetString();
 					}
-
 				}
 
 				struct     TDHLogin
@@ -4223,6 +4593,26 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 					SendDataToClient(client, strforsend, strKey, m_ActiveClient);
 				}
 			}
+
+			else if (strtype == "ALERT_MESSAGE" && checkLoginValidate == 1)
+			{
+				if (d.HasMember("RCODE") )
+				{
+					CString m_alert_message = L"";
+					CString strFinalJson = L"";
+					const Value& rcodeVal = d["RCODE"];
+					if (rcodeVal.IsString())
+					{
+						m_alert_message = rcodeVal.GetString();
+						strFinalJson.Format(L"{\"type\":\"SERVER_MESSAGE\",\"responseMessage\":\"Alert From Alert Engine:%s\"}", m_alert_message);						
+						sendDataToAllClient(strFinalJson);
+						
+					}
+				}
+			}
+
+
+
 			else if (strtype == "SET_AUTH_KEY" && checkLoginValidate == 1)
 			{
 				if (d.HasMember("loginUser") && d.HasMember("spreadSheetId") && d.HasMember("authKey"))
@@ -4260,7 +4650,17 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				{
 					string strforsend = "{\"type\": \"LOGOUT_STATUS\", \"status\": \"logout\"}";
 					SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+					send_close_message_to_client(psession);
 				}
+
+			}
+			else if (strtype == "LOGOUT_USER" && checkLoginValidate == 1)
+			{
+				
+					string strforsend = "{\"type\": \"LOGOUT_STATUS\", \"status\": \"logout\"}";
+					SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+					send_close_message_to_client(psession);
+				
 
 			}
 			else if (strtype == "SUBSCRIBE_TICKER" && checkLoginValidate == 1)
@@ -4454,7 +4854,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			}
 			else if (strtype.Find(L"META_DATA") >= 0 && checkLoginValidate == 1)
 			{	
-				//CStaticClass::m_logfile.LogEvent(L"Enter in Fetch Meta Data");
+				//(L"Enter in Fetch Meta Data");
 				CString strjson = L"";
 				//FETCH_CLIENTMETA_DATA
 				if (strtype == "FETCH_CLIENT_META_DATA"|| strtype == "FETCH_BROKER_META_DATA"|| strtype == "FETCH_SUBBROKER_META_DATA" || strtype == "FETCH_DEALING_META_DATA")
@@ -4481,7 +4881,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				SendDataToClient(client, strforsend, strKey, m_ActiveClient);	
 
 
-				//CStaticClass::m_logfile.LogEvent(L"End Of Fetching Meta Data");
+				//(L"End Of Fetching Meta Data");
 			}
 			/*else if (strtype.Find(L"DASHBOARD_META_DATA") >= 0 && checkLoginValidate == 1)
 			{
@@ -4493,18 +4893,18 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 			else if (strtype.Find(L"START_HEART_BEAT") >= 0 && checkLoginValidate == 1)
 			{
 				//CStaticClass::st_ClientContext m_st = {};
-				//////CStaticClass::m_logfile.LogEvent(L"lock7");
+				//////(L"lock7");
 				//CStaticClass::m_mutex_ClientList.Lock();
-				//////CStaticClass::m_logfile.LogEvent(L"128");
+				//////(L"128");
 				//CStaticClass::m_ClientContext.Lookup(strKey, m_st);
 				//m_st.m_heartBeatStart = 1;
 				//CStaticClass::m_ClientContext.SetAt(strKey, m_st);
 				//CStaticClass::m_mutex_ClientList.Unlock();
-				////CStaticClass::m_logfile.LogEvent(L"U128");
+				////(L"U128");
 			}
 			else if (strtype.Find(L"FETCH_TICK_DATA") >= 0 && checkLoginValidate == 1)
 			{
-				//////CStaticClass::m_logfile.LogEvent(L"Enter in handle_19");
+				//////(L"Enter in handle_19");
 
 				CStaticClass::st_ClientContext m_st={};
 				CStaticClass::m_mutex_ClientList.Lock();
@@ -4688,9 +5088,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													m_st_updateOrder.m_select = 1;
 												}
 												m_st_updateOrder.m_select_update = 1;
-												////CStaticClass::m_logfile.LogEvent(L"lock8");
+												////(L"lock8");
 												CStaticClass::m_mutex_ClientList.Lock();
-												//CStaticClass::m_logfile.LogEvent(L"22");
+												//(L"22");
 												POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 												while (pos != NULL)
 												{
@@ -4704,7 +5104,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													}
 												}
 												CStaticClass::m_mutex_ClientList.Unlock();
-												//CStaticClass::m_logfile.LogEvent(L"U22");
+												//(L"U22");
 											}
 										}
 									}
@@ -4736,9 +5136,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												m_st_updateOrder.m_order = m_order;
 												CMTStr::Copy(m_st_updateOrder.m_selecttype, strValue);
 												m_st_updateOrder.m_selecttype_update = 1;
-												////CStaticClass::m_logfile.LogEvent(L"lock9");
+												////(L"lock9");
 												CStaticClass::m_mutex_ClientList.Lock();
-												//CStaticClass::m_logfile.LogEvent(L"23");
+												//(L"23");
 												POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 												while (pos != NULL)
 												{
@@ -4752,7 +5152,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													}
 												}
 												CStaticClass::m_mutex_ClientList.Unlock();
-												//CStaticClass::m_logfile.LogEvent(L"U23");
+												//(L"U23");
 											}
 										}
 									}
@@ -4784,9 +5184,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												m_st_updateOrder.m_order = m_order;
 												CMTStr::Copy(m_st_updateOrder.m_subtype, strValue);
 												m_st_updateOrder.m_subtype_update = 1;
-												////CStaticClass::m_logfile.LogEvent(L"lock10");
+												////(L"lock10");
 												CStaticClass::m_mutex_ClientList.Lock();
-												//CStaticClass::m_logfile.LogEvent(L"24");
+												//(L"24");
 												POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 												while (pos != NULL)
 												{
@@ -4800,7 +5200,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													}
 												}
 												CStaticClass::m_mutex_ClientList.Unlock();
-												//CStaticClass::m_logfile.LogEvent(L"U24");
+												//(L"U24");
 											}
 										}
 									}
@@ -4832,9 +5232,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												m_st_updateOrder.m_order = m_order;
 												m_st_updateOrder.m_contraorder = _wtoi64(strValue);
 												m_st_updateOrder.m_contraorder_updtae = 1;
-												////CStaticClass::m_logfile.LogEvent(L"lock11");
+												////(L"lock11");
 												CStaticClass::m_mutex_ClientList.Lock();
-												//CStaticClass::m_logfile.LogEvent(L"25");
+												//(L"25");
 												POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 												while (pos != NULL)
 												{
@@ -4848,7 +5248,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													}
 												}
 												CStaticClass::m_mutex_ClientList.Unlock();
-												//CStaticClass::m_logfile.LogEvent(L"U25");
+												//(L"U25");
 											}
 										}
 									}
@@ -4880,9 +5280,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												m_st_updateOrder.m_order = m_order;
 												m_st_updateOrder.m_tradeexecutetime = intValue;
 												m_st_updateOrder.m_tradeexecutetime_update = 1;
-												////CStaticClass::m_logfile.LogEvent(L"lock12");
+												////(L"lock12");
 												CStaticClass::m_mutex_ClientList.Lock();
-												//CStaticClass::m_logfile.LogEvent(L"26");
+												//(L"26");
 												POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 												while (pos != NULL)
 												{
@@ -4896,7 +5296,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													}
 												}
 												CStaticClass::m_mutex_ClientList.Unlock();
-												//CStaticClass::m_logfile.LogEvent(L"U26");
+												//(L"U26");
 											}
 										}
 									}
@@ -4928,9 +5328,9 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 												m_st_updateOrder.m_order = m_order;
 												CMTStr::Copy(m_st_updateOrder.m_ourcomment, strValue);
 												m_st_updateOrder.m_ourcomment_update = 1;
-												////CStaticClass::m_logfile.LogEvent(L"lock13");
+												////(L"lock13");
 												CStaticClass::m_mutex_ClientList.Lock();
-												//CStaticClass::m_logfile.LogEvent(L"27");
+												//(L"27");
 												POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 												while (pos != NULL)
 												{
@@ -4944,7 +5344,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 													}
 												}
 												CStaticClass::m_mutex_ClientList.Unlock();
-												//CStaticClass::m_logfile.LogEvent(L"U27");
+												//(L"U27");
 											}
 										}
 									}
@@ -5074,6 +5474,66 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 				writer.Flush();
 				CStaticClass::m_mutex_Tick.Unlock();
 			}
+			else if (strtype == "FETCH_ALL_LOGIN_AND_SYMBOL_TDH" && checkLoginValidate == 1)
+			{
+				CStaticClass::m_mutex_Tick.Lock();
+				StringBuffer s;
+				Writer<StringBuffer> writer(s);
+				writer.StartObject();
+				writer.Key("type");
+				writer.String("CLIENT_AND_SYMBOL");
+				writer.Key("logins");
+				writer.StartArray();
+				//	CStaticClass::m_Orika_clientmasterHastable
+				POSITION pos = CStaticClass::m_Orika_clientmasterHastable.GetStartPosition();
+				while (pos != NULL)
+				{
+					writer.StartObject();
+					CString strclientkey = L"";
+					CStaticClass::st_Orika_clientmaster m_st = {};
+					CStaticClass::m_Orika_clientmasterHastable.GetNextAssoc(pos, strclientkey, m_st);
+					CString m_login = m_st.m_login;
+					string strLogin = CT2A(m_login);
+					const char* login = strLogin.c_str();
+					writer.Key("login");
+					writer.String(login);
+					writer.Key("name");
+					CString m_name = m_st.m_name;
+					string strname = CT2A(m_name);
+					const char* name = strname.c_str();
+					writer.String(name);
+					writer.EndObject();
+				}
+
+				writer.EndArray();
+				writer.Key("symbols");
+				writer.StartArray();
+				//CStaticClass::m_Orika_symbolmasterHastable
+
+				CSqlData::columnArray  tmparray;
+				CStaticClass::m_sqldata.getStringColumnList(L"exec TDHSYMBOL", &tmparray);
+				int totalDtataCount = tmparray.Total();
+				for (int i = 0; i < totalDtataCount; i++)
+				{
+					CString m_symbol;
+					m_symbol = tmparray[i];
+					string strSymbol = CT2A(m_symbol);
+					const char* symbol = strSymbol.c_str();
+					writer.String(symbol);
+				}
+				writer.EndArray();
+				writer.EndObject();
+
+
+				CString strFinalJson = L"";
+				strFinalJson = s.GetString();
+				string strforsend = CT2A(strFinalJson.GetString());
+				SendDataToClient(client, strforsend, strKey, m_ActiveClient);
+				s.Clear();
+				writer.Flush();
+				CStaticClass::m_mutex_Tick.Unlock();
+				}
+
 			else if (strtype == "VERIFY_POSITION" && checkLoginValidate == 1)
 			{
 				CString FilePath = L"";
@@ -5684,7 +6144,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 		send_close_message_to_client(psession);
 	}
 
-	//////CStaticClass::m_logfile.LogEvent(L"Finish handle");
+	//////(L"Finish handle");
 }
 
 
@@ -5699,9 +6159,18 @@ void sendDataToAllClient(CString  msg)
 	protodata.Allocate(1500000);
 	obj_converter.JasonToProto(str, protodata);
 
+	DataBuffer DataForSend;
+	DataForSend.Allocate(1500000);
+
+
+	FrameAndDeframeMessage FDObj;
+	FDObj.frameOutgoingMessage(protodata.GetBuffer(), DataForSend, protodata.GetDataSize());
+
+
+
 
 	CStaticClass::m_mutex_ClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"119");
+	//(L"119");
 	POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
 	while (pos != NULL)
 	{
@@ -5709,10 +6178,11 @@ void sendDataToAllClient(CString  msg)
 		CStaticClass::st_ClientContext m_st = {};
 		CStaticClass::m_ClientContext.GetNextAssoc(pos, strclientkey, m_st);
 		//string strforsend = CT2A(msg.GetString());
-		SendDataToClient_AllClient(m_st.m_clientConnection, protodata.GetBuffer(), strclientkey, m_st.m_activeClient);
+		session_send_data_AllClient(m_st.m_clientConnection, DataForSend.GetBuffer(), DataForSend.GetDataSize(), strclientkey, m_st.m_activeClient);		
 	}
 	CStaticClass::m_mutex_ClientList.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U119");
+	protodata.Delete();
+	//(L"U119");
 }
 
 void sendDataToAll_Other_Client(CString  msg,CString m_ignoreClient)
@@ -5725,7 +6195,7 @@ void sendDataToAll_Other_Client(CString  msg,CString m_ignoreClient)
 
 
 
-	////CStaticClass::m_logfile.LogEvent(L"Enter sendDataToAllClient");
+	////(L"Enter sendDataToAllClient");
 	CStaticClass::ClientContext m_ClientContext_Local;
 
 	CStaticClass::m_mutex_ClientList.Lock();
@@ -5752,15 +6222,18 @@ void sendDataToAll_Other_Client(CString  msg,CString m_ignoreClient)
 		m_ClientContext_Local.GetNextAssoc(pos_tmp, strclientkey, m_st);
 		SSL_session* client = NULL;
 		client = m_st.m_clientConnection;
-		//CStaticClass::m_logfile.LogEvent(L"Going To Send Data To Client");		
+		//(L"Going To Send Data To Client");		
 		SendDataToClient(client, protodata.GetBuffer(), strclientkey, m_st.m_activeClient);
-		//CStaticClass::m_logfile.LogEvent(L"Data Has Been Sent To Client");
+		//(L"Data Has Been Sent To Client");
 	}
-
-	////CStaticClass::m_logfile.LogEvent(L"Exit sendDataToAllClient");
+	protodata.Delete();
+	////(L"Exit sendDataToAllClient");
 }
 void SendDataToClient(SSL_session* sslsession,string msg,CString strkey, int ActiveClient)
 {		
+
+	//CString m_strLog(msg.c_str());
+	//( m_strLog);
 	if (sslsession ==  nullptr)
 	{				
 		return;
@@ -5770,13 +6243,7 @@ void SendDataToClient(SSL_session* sslsession,string msg,CString strkey, int Act
 	
 	DataBuffer protodata;
 	protodata.Allocate(1500000);
-	obj_converter.JasonToProto(msg, protodata);
-	
-
-	/*string base64data = base64_encode1(strforsend);
-	CString strBase64(base64data.c_str());
-	CStaticClass::m_logfile.LogEvent(L"Base64Data Send To Client:" + strBase64);*/
-
+	obj_converter.JasonToProto(msg, protodata);			
 
 	if (sslsession!=NULL )
 	{ 
@@ -5790,15 +6257,11 @@ void SendDataToClient(SSL_session* sslsession,string msg,CString strkey, int Act
 		
 	string utf8_UncompressedData = "";	
 	
-	int Datalen = protodata.GetDataSize();
-	CString stlog = L"";
-	/*stlog.Format(L"Const Char Data Size:%d ", Datalen);
-	CStaticClass::m_logfile.LogEvent(stlog);*/
+	
 	//char* chrData = const_cast<char*>(strforsend.data());
 
 	
 	
-
 	/*int Datalen = strlen(chrData);
 	QString  strUnCompressData = QString::fromUtf8((const char*)chrData, Datalen);	
 	QString strcompressed = m_obj.compressToUTF16(strUnCompressData);
@@ -5808,15 +6271,14 @@ void SendDataToClient(SSL_session* sslsession,string msg,CString strkey, int Act
 
 	FrameAndDeframeMessage FDObj;
 	
-	FDObj.frameOutgoingMessage(protodata.GetBuffer(), DataForSend, protodata.GetDataSize());
-
-
-	//FDObj.frameOutgoingMessage(chrData, DataForSend, strlen(chrData));
+	FDObj.frameOutgoingMessage(protodata.GetBuffer(), DataForSend, protodata.GetDataSize());		
 	
 	session_send_data(sslsession, DataForSend.GetBuffer(), DataForSend.GetDataSize(), strkey, ActiveClient);		
 	
 	
+	DataForSend.Delete();
 	}	
+	protodata.Delete();
 }
 
 
@@ -5826,27 +6288,15 @@ void SendDataToClient_AllClient(SSL_session* sslsession, string msg, CString str
 	if (sslsession == nullptr)
 	{
 		return;
-	}
-
-	ProtoMessageConverter obj_converter;
-	DataBuffer protodata;
-	protodata.Allocate(1500000);
-	obj_converter.JasonToProto(msg, protodata);
-
-
+	}	
 	if (sslsession != NULL)
 	{
 		DataBuffer DataForSend;
-		DataForSend.Allocate(1500000);
-
-
-		
+		DataForSend.Allocate(1500000);		
 		string utf8_CompressedData = "";
-
-
 		string utf8_UncompressedData = "";
 
-		//char* chrData = const_cast<char*>(strforsend.c_str());
+		char* chrDataForSend = const_cast<char*>(msg.c_str());
 
 
 
@@ -5857,18 +6307,19 @@ void SendDataToClient_AllClient(SSL_session* sslsession, string msg, CString str
 		//utf8_CompressedData = strcompressed.toUtf8().constData();
 		//char* chrDataCompressed = const_cast<char*>(utf8_CompressedData.c_str());
 
-
+		//int check_data_length_befoeFrame = protodata.GetDataSize();
 
 		FrameAndDeframeMessage FDObj;
-		FDObj.frameOutgoingMessage(protodata.GetBuffer(), DataForSend, protodata.GetDataSize());
+		FDObj.frameOutgoingMessage(chrDataForSend, DataForSend, msg.length());
 
-
+		//int check_data_length_AfterFrame = DataForSend.GetDataSize();
 		//FDObj.frameOutgoingMessage(chrData, DataForSend, strlen(chrData));
 
 		session_send_data_AllClient(sslsession, DataForSend.GetBuffer(), DataForSend.GetDataSize(), strkey, ActiveClient);
 
 
 	}
+	
 }
 
 void SendDataToClient_UnRegistered(SSL_session* sslsession, string msg)
@@ -5914,6 +6365,7 @@ void SendDataToClient_UnRegistered(SSL_session* sslsession, string msg)
 
 		session_send_dataToUnregisteredClient(sslsession, DataForSend.GetBuffer(), DataForSend.GetDataSize());
 
-
+		DataForSend.Delete();
 	}
+	protodata.Delete();
 }

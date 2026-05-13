@@ -6,24 +6,34 @@
 #include "..\ProtoFile\tabcolumn.pb.h"
 #include "..\ProtoFile\tabdata.pb.h"
 #include "..\ProtoFile\tab.pb.h"
-#include <google/protobuf/stubs/status_macros.h>
+//#include <google/protobuf/stubs/status_macros.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/util/json_util.h>
 #include "StaticClass.h"
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include "document.h"
-#include <lzo1z.h>
-#include <lzoconf.h>
-#include "LZ\lzstring.h"
+//#include <lzo1z.h>
+//#include <lzoconf.h>
+//#include "LZ\lzstring.h"
 using namespace rapidjson;
 string ProtoMessageConverter::convertprotoToString(const char* protomessge, int datasize)
 {
 	string rval = "";
-	Oreka::ClientMessage* m_clientmessage = new Oreka::ClientMessage();
+	/*Oreka::ClientMessage* m_clientmessage = new Oreka::ClientMessage();
 	m_clientmessage->ParseFromArray(protomessge, datasize);
 	google::protobuf::util::MessageToJsonString(*m_clientmessage, &rval);
-	delete m_clientmessage;
+    m_clientmessage->Clear();*/
+
+
+	Oreka::ClientMessage m_clientmessage;
+	m_clientmessage.ParseFromArray(protomessge, datasize);
+	google::protobuf::util::MessageToJsonString(m_clientmessage, &rval);
+	m_clientmessage.Clear();
+
+
+
+
 	return rval;
 }
 
@@ -92,8 +102,7 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 			strType = Keyuser.GetString();
 		}
 	}
-	CString strRealJason(jason.c_str());
-	//CStaticClass::m_logfile.LogEvent(L"Request: " + strRealJason);
+	CString strRealJason(jason.c_str());	
 	CString strprototype = L"";
 	CStaticClass::m_protoandjsonmessage.Lookup(strType, strprototype);
 	CString finaljason=L"";
@@ -106,22 +115,49 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 
 	string strforconvert = CT2A(finaljason.GetString());
 
-	auto status = google::protobuf::util::JsonStringToMessage(strforconvert, &m_clientmessage, jsonOptions);
-	std::string serializeData;
-	m_clientmessage.SerializeToString(&serializeData);
-	//CString msg(serializeData.c_str());
+
+  auto status = google::protobuf::util::JsonStringToMessage(strforconvert, &m_clientmessage, jsonOptions);
+	if (!status.ok()) 
+	{
+		string strerror = status.ToString();
+		CString m_strLog(strerror.c_str());
+		CStaticClass::m_logfile.LogEvent(L"Error when convert jason to proto object " + m_strLog);
+	}
+
+	//auto status = google::protobuf::util::JsonStringToMessage(strforconvert, &m_clientmessage, jsonOptions);
+	
+	
+	
 
 	
 
 	int serializedSize = m_clientmessage.ByteSizeLong();
-	// Create a buffer to store the serialized data
+	if (serializedSize == 0)
+	{
+		CString str_log = L"";
+		str_log.Format(L"Binary Data Size %d", serializedSize);
+		CStaticClass::m_logfile.LogEvent(str_log);
+		CStaticClass::m_logfile.LogEvent(strRealJason);
+	}
+	// Create a buffer to store the serialiszed data
 	char* charBuffer = new char[serializedSize];
 	// Serialize the message into the charBuffer
 	m_clientmessage.SerializeToArray(charBuffer, serializedSize);
 	buffer.Append(charBuffer, serializedSize);
+
+
+
+	std::string strJsonResult = "";
+	google::protobuf::util::MessageToJsonString(m_clientmessage, &strJsonResult);
+	//CString logstr(strJsonResult.c_str());
+	
+	//(L"Response: " + logstr);
+	
+
+
+
+
 	delete[] charBuffer;
-
-
 	//////Extra Code for comment
 
 
@@ -130,7 +166,7 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 
 	//CString stlog = L"";
 	//stlog.Format(L"Binary Data Size:%d ", dataSize);
-	//CStaticClass::m_logfile.LogEvent(stlog);
+	//(stlog);
 
 
 	// string base64data = base64_encode(serializeData);
@@ -147,9 +183,9 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 	//CString logstr(strJsonResult.c_str());
 	//dataSize = logstr.GetLength();
 	//stlog.Format(L"Jason Format Data Size:%d ", dataSize);
-	//CStaticClass::m_logfile.LogEvent(L"Response: " + logstr);
+	//(L"Response: " + logstr);
 	//stlog.Format(L"Jason Data Size:%d ", logstr.GetLength());
-	//CStaticClass::m_logfile.LogEvent(stlog);
+	//(stlog);
 
 
 
@@ -166,7 +202,7 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 	//int Datalen = strlen(chrData);
 	//CString strLog = L"";
 	////strLog.Format(L"Uncompressed Data Size %d", Datalen);
-	////CStaticClass::m_logfile.LogEvent(strLog);
+	////(strLog);
 	//QString  strUnCompressData = QString::fromUtf8((const char*)chrData, Datalen);
 	//QString strcompressed = m_obj.compressToUTF16(strUnCompressData);
 	//utf8_CompressedData = strcompressed.toUtf8().constData();
@@ -175,7 +211,7 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 
 	//int ConpressedDataSize = strlen(chrDataCompressed);
 	//strLog.Format(L"Compressed Data Size of Jason %d", ConpressedDataSize);
-	//CStaticClass::m_logfile.LogEvent(strLog);
+	//(strLog);
 
 	
 }

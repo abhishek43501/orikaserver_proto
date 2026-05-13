@@ -8,9 +8,52 @@
 #include "server/server.h"
 #include "ClientSocket/DataSource.h"
 #include "..\ClientSocket\ClientSocket.h"
+#include "SocketServer.h"
+#include "SocketServer/IOCPServer.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+// IOCP-based multi-client socket server (see SocketServer/ folder).
+static iocp::IOCPServer g_iocpServer;
+
+static void StartIOCPSocketServer(unsigned short port)
+{
+	g_iocpServer.SetOnConnect([](iocp::ClientContext* c) {
+		CString log;
+		log.Format(L"[IOCP] Client %llu connected (port=%u)",
+			c->clientId, ntohs(c->remoteAddr.sin_port));
+		CStaticClass::m_logfile.LogEvent(log);
+	});
+
+	g_iocpServer.SetOnDisconnect([](unsigned long long id) {
+		CString log;
+		log.Format(L"[IOCP] Client %llu disconnected", id);
+		CStaticClass::m_logfile.LogEvent(log);
+	});
+
+	g_iocpServer.SetOnData([](iocp::ClientContext* c, const char* data, int len) {
+		// Echo by default. Replace with the real request handler when ready.
+		g_iocpServer.Send(c->clientId, data, len);
+	});
+
+	g_iocpServer.SetOnError([](const std::string& msg, int code) {
+		CString log;
+		log.Format(L"[IOCP] %S (code=%d)", msg.c_str(), code);
+		CStaticClass::m_logfile.LogEvent(log);
+	});
+
+	if (!g_iocpServer.Start(port)) {
+		CString err;
+		err.Format(L"[IOCP] Failed to start on port %u", port);
+		CStaticClass::m_logfile.LogEvent(err);
+		return;
+	}
+
+	CString ok;
+	ok.Format(L"[IOCP] Server listening on port %u", port);
+	CStaticClass::m_logfile.LogEvent(ok);
+}
 
 void COrikaServerDlg::checkandremovetoken()
 {
@@ -109,6 +152,25 @@ UINT SendTickData(LPVOID pParam)
 	return 0;
 }
 
+UINT StartLogWriteThread(void*);
+UINT StartLogWriteThread(void* pParam)
+{
+	COrikaServerDlg* obj = (COrikaServerDlg*)pParam;
+	obj->ThreadProc_Log();
+	return 0;
+}
+
+
+UINT compareposition_and_update(LPVOID pParam)
+{
+	CStaticClass m_staticclass;
+	m_staticclass.sendUpdatedTick();
+	return 0;
+}
+
+
+
+
 UINT CopyAllPendingTickDataFromManager(LPVOID pParam);
 UINT CopyAllPendingTickDataFromManager(LPVOID pParam)
 {
@@ -125,7 +187,6 @@ UINT SendHeartbeat(LPVOID pParam)
 	m_staticclass.sendHeartBeattoAllClient();
 	return 0;
 }
-
 
 
 class CAboutDlg : public CDialogEx
@@ -190,8 +251,7 @@ END_MESSAGE_MAP()
 
 
 BOOL COrikaServerDlg::OnInitDialog()
-{
-	
+{	
 	CDialogEx::OnInitDialog();
 
 	// Add "About..." menu item to system menu.
@@ -231,6 +291,11 @@ BOOL COrikaServerDlg::OnInitDialog()
 	}
 	CStaticClass::m_mtmanager.LoadConfigFile(exePath + L"\\oreka.config");
 	m_txtport.SetWindowText(CStaticClass::orikaPort);
+	if (CStaticClass::APIFolderPath == L"")
+	{
+		CStaticClass::APIFolderPath = exePath + L"\\Page\\";
+	}
+
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
@@ -337,6 +402,10 @@ void COrikaServerDlg::OnBnClickedStart()
 	CStaticClass::m_sqldata.loadMessageCodeDesc();
 		
 	CStaticClass::m_sqldata.loadDataOrika_dealsHighLow();
+
+
+	
+
 	//Loading Pending Data
 		CStaticClass::m_mtmanager.UpdatePendingSaudaToMSMQ();
 	//End of Loading Pending Data
@@ -418,7 +487,7 @@ void COrikaServerDlg::OnBnClickedStart()
 	
 	CStaticClass::startTickData=1;	
 	AfxBeginThread(SendTickData,this);
-	////CStaticClass::m_logfile.LogEvent(L"Server Started");
+	////(L"Server Started");
 	/*CStaticClass::heartBeatStart=1;
 	AfxBeginThread(SendHeartbeat,this);*/
 	CStaticClass::startSendingNetpositionClientWise=1;
@@ -426,6 +495,10 @@ void COrikaServerDlg::OnBnClickedStart()
 	CStaticClass::startCalculatingNetpositionClientWise=1;
 	AfxBeginThread(DataCalNetPositionclientwiseFromTickDataThread,this);
 	AfxBeginThread(CopyAllPendingTickDataFromManager, this);
+
+	SocketServer::m_Serverislive = 1;
+	StartIOCPSocketServer(static_cast<unsigned short>(CStaticClass::APISERVER_PORT));
+
 	Sleep(2000);
 	CStaticClass::m_mtmanager.loadLastTickFromMT();
 	CStaticClass::MSMQReaderStartStop=1;
@@ -433,6 +506,7 @@ void COrikaServerDlg::OnBnClickedStart()
 	AfxBeginThread(Read_Data_From_MSMQ,this);
 	CStaticClass::TokenCheckingStartStop = 1;
 	AfxBeginThread(CheckToken, this);	
+	AfxBeginThread(StartLogWriteThread, this);
 	//AfxBeginThread(SymbolwisePositionSendingThread,this);	
 }
 
@@ -463,8 +537,11 @@ void COrikaServerDlg::OnBnClickedExit()
 
 void COrikaServerDlg::OnBnClickedStop()
 {
+	CStaticClass::startComparePosition = 0;
 	CStaticClass::startTickData=0;
-	CStaticClass::MSMQReaderStartStop=0;	
+	CStaticClass::MSMQReaderStartStop=0;
+	SocketServer::m_Serverislive = 0;
+	g_iocpServer.Stop();
 	m_btnstart.EnableWindow(true);
 	m_btnstop.EnableWindow(false);
 	m_btnexit.EnableWindow(true);
@@ -479,5 +556,55 @@ void COrikaServerDlg::OnBnClickedImportMasterdata()
 		CStaticClass::m_mtmanager.UpdateClientMaster_Manual();
 		CStaticClass::m_mtmanager.UpdateSymbolMaster();		
 		AfxMessageBox(L"All Master Data Has Been Updated");
+	}
+}
+
+void COrikaServerDlg::ThreadProc_Log()
+{
+	//SMTTime::STToTime(s_date);
+	CString str_interval = L"";
+str_interval=L"10000";
+CString m_searchString = L"";
+	wchar_t       tmp[256];
+	//SYSTEMTIME    from,to;
+	SYSTEMTIME    from;
+	CMTStr256     str, stype;
+	
+	//m_To.GetTime(&to);	   
+	UINT64 INT_from, INT_to, Pre_to;
+	INT_from = 1714248000;
+	Pre_to = INT_from;
+
+	
+	
+
+	while (true)
+	{
+		SYSTEMTIME curr_To;
+		GetLocalTime(&curr_To);
+		INT_to = SMTTime::STToTime(curr_To);
+
+		//m_manager.LogTransfer(Pre_to+1,INT_to,L"");
+
+		
+		CStaticClass::m_mtmanager.DeviceLogTransfer(Pre_to + 1, INT_to, L"");
+		Pre_to = INT_to;
+
+		/*int search_count=CManager::m_SearchString.Total();
+		for(int s=0;s<search_count;s++)
+		{
+			CString SearchStr=CManager::m_SearchString[s];
+			if (SearchStr.Find(L"deal")>=0)
+			{
+				m_manager.LogTransfer(Pre_to+1,INT_to,SearchStr);
+			}
+			if (SearchStr.Find(L"login")>=0)
+			{
+				m_manager.LogTransferLogin(Pre_to+1,INT_to,SearchStr);
+			}
+			Pre_to=INT_to;
+		}*/
+
+		Sleep(10000);
 	}
 }

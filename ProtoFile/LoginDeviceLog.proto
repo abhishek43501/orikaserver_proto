@@ -1,0 +1,13 @@
+syntax = "proto3";
+package Oreka;
+message LoginDeviceLog {
+    message LogData {
+		optional uint32 time = 1;
+		optional string ip = 2;
+        optional string login = 3;        
+        optional string deviceid = 4;         
+    }
+	 	
+    string type = 1;
+	repeated LogData logdata = 2;        
+}

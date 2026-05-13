@@ -67,7 +67,7 @@
 #include "FetchColorTheme.pb.h"
 #include "ColorTheme.pb.h"
 #include "SaveColorTemplate.pb.h"
-#include "DeleteTemplate.ptoto.pb.h"
+#include "DeleteTemplate.pb.h"
 #include "DeleteColorTheme.pb.h"
 #include "FetchColorTemplates.pb.h"
 #include "PageDetails.pb.h"
@@ -116,6 +116,12 @@
 #include "LoginByKey.pb.h"
 #include "SetAuthKey.pb.h"
 #include "AlertMessage.pb.h"
+#include "FetchLoginDevice.pb.h"
+#include "LoginDeviceLog.pb.h"
+#include "AlertSetting.pb.h"
+#include "GetAllEventsSetting.pb.h"
+#include "AlertSettingList.pb.h"
+#include "TimewiseData.pb.h"
 // @@protoc_insertion_point(includes)
 
 // Must be included last.
@@ -366,6 +372,12 @@ class ClientMessage final :
     kLoginbykeyFieldNumber = 84,
     kSetauthkeyFieldNumber = 85,
     kAlertmessageFieldNumber = 86,
+    kFetchlogindeviceFieldNumber = 87,
+    kLogindevicelogFieldNumber = 88,
+    kAlertsettingFieldNumber = 89,
+    kGetalleventssettingFieldNumber = 90,
+    kAlertsettinglistFieldNumber = 91,
+    kTimewisedataFieldNumber = 92,
   };
   // string type = 1;
   void clear_type() ;
@@ -1577,6 +1589,90 @@ class ClientMessage final :
   void unsafe_arena_set_allocated_alertmessage(
       ::Oreka::AlertMessage* alertmessage);
   ::Oreka::AlertMessage* unsafe_arena_release_alertmessage();
+  // optional .Oreka.FetchLoginDevice fetchlogindevice = 87;
+  bool has_fetchlogindevice() const;
+  void clear_fetchlogindevice() ;
+  const ::Oreka::FetchLoginDevice& fetchlogindevice() const;
+  PROTOBUF_NODISCARD ::Oreka::FetchLoginDevice* release_fetchlogindevice();
+  ::Oreka::FetchLoginDevice* mutable_fetchlogindevice();
+  void set_allocated_fetchlogindevice(::Oreka::FetchLoginDevice* fetchlogindevice);
+  private:
+  const ::Oreka::FetchLoginDevice& _internal_fetchlogindevice() const;
+  ::Oreka::FetchLoginDevice* _internal_mutable_fetchlogindevice();
+  public:
+  void unsafe_arena_set_allocated_fetchlogindevice(
+      ::Oreka::FetchLoginDevice* fetchlogindevice);
+  ::Oreka::FetchLoginDevice* unsafe_arena_release_fetchlogindevice();
+  // optional .Oreka.LoginDeviceLog logindevicelog = 88;
+  bool has_logindevicelog() const;
+  void clear_logindevicelog() ;
+  const ::Oreka::LoginDeviceLog& logindevicelog() const;
+  PROTOBUF_NODISCARD ::Oreka::LoginDeviceLog* release_logindevicelog();
+  ::Oreka::LoginDeviceLog* mutable_logindevicelog();
+  void set_allocated_logindevicelog(::Oreka::LoginDeviceLog* logindevicelog);
+  private:
+  const ::Oreka::LoginDeviceLog& _internal_logindevicelog() const;
+  ::Oreka::LoginDeviceLog* _internal_mutable_logindevicelog();
+  public:
+  void unsafe_arena_set_allocated_logindevicelog(
+      ::Oreka::LoginDeviceLog* logindevicelog);
+  ::Oreka::LoginDeviceLog* unsafe_arena_release_logindevicelog();
+  // optional .Oreka.AlertSetting alertsetting = 89;
+  bool has_alertsetting() const;
+  void clear_alertsetting() ;
+  const ::Oreka::AlertSetting& alertsetting() const;
+  PROTOBUF_NODISCARD ::Oreka::AlertSetting* release_alertsetting();
+  ::Oreka::AlertSetting* mutable_alertsetting();
+  void set_allocated_alertsetting(::Oreka::AlertSetting* alertsetting);
+  private:
+  const ::Oreka::AlertSetting& _internal_alertsetting() const;
+  ::Oreka::AlertSetting* _internal_mutable_alertsetting();
+  public:
+  void unsafe_arena_set_allocated_alertsetting(
+      ::Oreka::AlertSetting* alertsetting);
+  ::Oreka::AlertSetting* unsafe_arena_release_alertsetting();
+  // optional .Oreka.GetAllEventsSetting getalleventssetting = 90;
+  bool has_getalleventssetting() const;
+  void clear_getalleventssetting() ;
+  const ::Oreka::GetAllEventsSetting& getalleventssetting() const;
+  PROTOBUF_NODISCARD ::Oreka::GetAllEventsSetting* release_getalleventssetting();
+  ::Oreka::GetAllEventsSetting* mutable_getalleventssetting();
+  void set_allocated_getalleventssetting(::Oreka::GetAllEventsSetting* getalleventssetting);
+  private:
+  const ::Oreka::GetAllEventsSetting& _internal_getalleventssetting() const;
+  ::Oreka::GetAllEventsSetting* _internal_mutable_getalleventssetting();
+  public:
+  void unsafe_arena_set_allocated_getalleventssetting(
+      ::Oreka::GetAllEventsSetting* getalleventssetting);
+  ::Oreka::GetAllEventsSetting* unsafe_arena_release_getalleventssetting();
+  // optional .Oreka.AlertSettingList alertsettinglist = 91;
+  bool has_alertsettinglist() const;
+  void clear_alertsettinglist() ;
+  const ::Oreka::AlertSettingList& alertsettinglist() const;
+  PROTOBUF_NODISCARD ::Oreka::AlertSettingList* release_alertsettinglist();
+  ::Oreka::AlertSettingList* mutable_alertsettinglist();
+  void set_allocated_alertsettinglist(::Oreka::AlertSettingList* alertsettinglist);
+  private:
+  const ::Oreka::AlertSettingList& _internal_alertsettinglist() const;
+  ::Oreka::AlertSettingList* _internal_mutable_alertsettinglist();
+  public:
+  void unsafe_arena_set_allocated_alertsettinglist(
+      ::Oreka::AlertSettingList* alertsettinglist);
+  ::Oreka::AlertSettingList* unsafe_arena_release_alertsettinglist();
+  // optional .Oreka.TimewiseData timewisedata = 92;
+  bool has_timewisedata() const;
+  void clear_timewisedata() ;
+  const ::Oreka::TimewiseData& timewisedata() const;
+  PROTOBUF_NODISCARD ::Oreka::TimewiseData* release_timewisedata();
+  ::Oreka::TimewiseData* mutable_timewisedata();
+  void set_allocated_timewisedata(::Oreka::TimewiseData* timewisedata);
+  private:
+  const ::Oreka::TimewiseData& _internal_timewisedata() const;
+  ::Oreka::TimewiseData* _internal_mutable_timewisedata();
+  public:
+  void unsafe_arena_set_allocated_timewisedata(
+      ::Oreka::TimewiseData* timewisedata);
+  ::Oreka::TimewiseData* unsafe_arena_release_timewisedata();
   // @@protoc_insertion_point(class_scope:Oreka.ClientMessage)
  private:
   class _Internal;
@@ -1673,6 +1769,12 @@ class ClientMessage final :
     ::Oreka::LoginByKey* loginbykey_;
     ::Oreka::SetAuthKey* setauthkey_;
     ::Oreka::AlertMessage* alertmessage_;
+    ::Oreka::FetchLoginDevice* fetchlogindevice_;
+    ::Oreka::LoginDeviceLog* logindevicelog_;
+    ::Oreka::AlertSetting* alertsetting_;
+    ::Oreka::GetAllEventsSetting* getalleventssetting_;
+    ::Oreka::AlertSettingList* alertsettinglist_;
+    ::Oreka::TimewiseData* timewisedata_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_clientmessage_2eproto;
@@ -8879,6 +8981,510 @@ inline void ClientMessage::set_allocated_alertmessage(::Oreka::AlertMessage* ale
   }
   _impl_.alertmessage_ = alertmessage;
   // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.alertmessage)
+}
+
+// optional .Oreka.FetchLoginDevice fetchlogindevice = 87;
+inline bool ClientMessage::has_fetchlogindevice() const {
+  bool value = (_impl_._has_bits_[2] & 0x00200000u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.fetchlogindevice_ != nullptr);
+  return value;
+}
+inline const ::Oreka::FetchLoginDevice& ClientMessage::_internal_fetchlogindevice() const {
+  const ::Oreka::FetchLoginDevice* p = _impl_.fetchlogindevice_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Oreka::FetchLoginDevice&>(
+      ::Oreka::_FetchLoginDevice_default_instance_);
+}
+inline const ::Oreka::FetchLoginDevice& ClientMessage::fetchlogindevice() const {
+  // @@protoc_insertion_point(field_get:Oreka.ClientMessage.fetchlogindevice)
+  return _internal_fetchlogindevice();
+}
+inline void ClientMessage::unsafe_arena_set_allocated_fetchlogindevice(
+    ::Oreka::FetchLoginDevice* fetchlogindevice) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.fetchlogindevice_);
+  }
+  _impl_.fetchlogindevice_ = fetchlogindevice;
+  if (fetchlogindevice) {
+    _impl_._has_bits_[2] |= 0x00200000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x00200000u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Oreka.ClientMessage.fetchlogindevice)
+}
+inline ::Oreka::FetchLoginDevice* ClientMessage::release_fetchlogindevice() {
+  _impl_._has_bits_[2] &= ~0x00200000u;
+  ::Oreka::FetchLoginDevice* temp = _impl_.fetchlogindevice_;
+  _impl_.fetchlogindevice_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Oreka::FetchLoginDevice* ClientMessage::unsafe_arena_release_fetchlogindevice() {
+  // @@protoc_insertion_point(field_release:Oreka.ClientMessage.fetchlogindevice)
+  _impl_._has_bits_[2] &= ~0x00200000u;
+  ::Oreka::FetchLoginDevice* temp = _impl_.fetchlogindevice_;
+  _impl_.fetchlogindevice_ = nullptr;
+  return temp;
+}
+inline ::Oreka::FetchLoginDevice* ClientMessage::_internal_mutable_fetchlogindevice() {
+  _impl_._has_bits_[2] |= 0x00200000u;
+  if (_impl_.fetchlogindevice_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Oreka::FetchLoginDevice>(GetArenaForAllocation());
+    _impl_.fetchlogindevice_ = p;
+  }
+  return _impl_.fetchlogindevice_;
+}
+inline ::Oreka::FetchLoginDevice* ClientMessage::mutable_fetchlogindevice() {
+  ::Oreka::FetchLoginDevice* _msg = _internal_mutable_fetchlogindevice();
+  // @@protoc_insertion_point(field_mutable:Oreka.ClientMessage.fetchlogindevice)
+  return _msg;
+}
+inline void ClientMessage::set_allocated_fetchlogindevice(::Oreka::FetchLoginDevice* fetchlogindevice) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.fetchlogindevice_);
+  }
+  if (fetchlogindevice) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
+                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(fetchlogindevice));
+    if (message_arena != submessage_arena) {
+      fetchlogindevice = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, fetchlogindevice, submessage_arena);
+    }
+    _impl_._has_bits_[2] |= 0x00200000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x00200000u;
+  }
+  _impl_.fetchlogindevice_ = fetchlogindevice;
+  // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.fetchlogindevice)
+}
+
+// optional .Oreka.LoginDeviceLog logindevicelog = 88;
+inline bool ClientMessage::has_logindevicelog() const {
+  bool value = (_impl_._has_bits_[2] & 0x00400000u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.logindevicelog_ != nullptr);
+  return value;
+}
+inline const ::Oreka::LoginDeviceLog& ClientMessage::_internal_logindevicelog() const {
+  const ::Oreka::LoginDeviceLog* p = _impl_.logindevicelog_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Oreka::LoginDeviceLog&>(
+      ::Oreka::_LoginDeviceLog_default_instance_);
+}
+inline const ::Oreka::LoginDeviceLog& ClientMessage::logindevicelog() const {
+  // @@protoc_insertion_point(field_get:Oreka.ClientMessage.logindevicelog)
+  return _internal_logindevicelog();
+}
+inline void ClientMessage::unsafe_arena_set_allocated_logindevicelog(
+    ::Oreka::LoginDeviceLog* logindevicelog) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.logindevicelog_);
+  }
+  _impl_.logindevicelog_ = logindevicelog;
+  if (logindevicelog) {
+    _impl_._has_bits_[2] |= 0x00400000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x00400000u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Oreka.ClientMessage.logindevicelog)
+}
+inline ::Oreka::LoginDeviceLog* ClientMessage::release_logindevicelog() {
+  _impl_._has_bits_[2] &= ~0x00400000u;
+  ::Oreka::LoginDeviceLog* temp = _impl_.logindevicelog_;
+  _impl_.logindevicelog_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Oreka::LoginDeviceLog* ClientMessage::unsafe_arena_release_logindevicelog() {
+  // @@protoc_insertion_point(field_release:Oreka.ClientMessage.logindevicelog)
+  _impl_._has_bits_[2] &= ~0x00400000u;
+  ::Oreka::LoginDeviceLog* temp = _impl_.logindevicelog_;
+  _impl_.logindevicelog_ = nullptr;
+  return temp;
+}
+inline ::Oreka::LoginDeviceLog* ClientMessage::_internal_mutable_logindevicelog() {
+  _impl_._has_bits_[2] |= 0x00400000u;
+  if (_impl_.logindevicelog_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Oreka::LoginDeviceLog>(GetArenaForAllocation());
+    _impl_.logindevicelog_ = p;
+  }
+  return _impl_.logindevicelog_;
+}
+inline ::Oreka::LoginDeviceLog* ClientMessage::mutable_logindevicelog() {
+  ::Oreka::LoginDeviceLog* _msg = _internal_mutable_logindevicelog();
+  // @@protoc_insertion_point(field_mutable:Oreka.ClientMessage.logindevicelog)
+  return _msg;
+}
+inline void ClientMessage::set_allocated_logindevicelog(::Oreka::LoginDeviceLog* logindevicelog) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.logindevicelog_);
+  }
+  if (logindevicelog) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
+                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(logindevicelog));
+    if (message_arena != submessage_arena) {
+      logindevicelog = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, logindevicelog, submessage_arena);
+    }
+    _impl_._has_bits_[2] |= 0x00400000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x00400000u;
+  }
+  _impl_.logindevicelog_ = logindevicelog;
+  // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.logindevicelog)
+}
+
+// optional .Oreka.AlertSetting alertsetting = 89;
+inline bool ClientMessage::has_alertsetting() const {
+  bool value = (_impl_._has_bits_[2] & 0x00800000u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.alertsetting_ != nullptr);
+  return value;
+}
+inline const ::Oreka::AlertSetting& ClientMessage::_internal_alertsetting() const {
+  const ::Oreka::AlertSetting* p = _impl_.alertsetting_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Oreka::AlertSetting&>(
+      ::Oreka::_AlertSetting_default_instance_);
+}
+inline const ::Oreka::AlertSetting& ClientMessage::alertsetting() const {
+  // @@protoc_insertion_point(field_get:Oreka.ClientMessage.alertsetting)
+  return _internal_alertsetting();
+}
+inline void ClientMessage::unsafe_arena_set_allocated_alertsetting(
+    ::Oreka::AlertSetting* alertsetting) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.alertsetting_);
+  }
+  _impl_.alertsetting_ = alertsetting;
+  if (alertsetting) {
+    _impl_._has_bits_[2] |= 0x00800000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x00800000u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Oreka.ClientMessage.alertsetting)
+}
+inline ::Oreka::AlertSetting* ClientMessage::release_alertsetting() {
+  _impl_._has_bits_[2] &= ~0x00800000u;
+  ::Oreka::AlertSetting* temp = _impl_.alertsetting_;
+  _impl_.alertsetting_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Oreka::AlertSetting* ClientMessage::unsafe_arena_release_alertsetting() {
+  // @@protoc_insertion_point(field_release:Oreka.ClientMessage.alertsetting)
+  _impl_._has_bits_[2] &= ~0x00800000u;
+  ::Oreka::AlertSetting* temp = _impl_.alertsetting_;
+  _impl_.alertsetting_ = nullptr;
+  return temp;
+}
+inline ::Oreka::AlertSetting* ClientMessage::_internal_mutable_alertsetting() {
+  _impl_._has_bits_[2] |= 0x00800000u;
+  if (_impl_.alertsetting_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Oreka::AlertSetting>(GetArenaForAllocation());
+    _impl_.alertsetting_ = p;
+  }
+  return _impl_.alertsetting_;
+}
+inline ::Oreka::AlertSetting* ClientMessage::mutable_alertsetting() {
+  ::Oreka::AlertSetting* _msg = _internal_mutable_alertsetting();
+  // @@protoc_insertion_point(field_mutable:Oreka.ClientMessage.alertsetting)
+  return _msg;
+}
+inline void ClientMessage::set_allocated_alertsetting(::Oreka::AlertSetting* alertsetting) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.alertsetting_);
+  }
+  if (alertsetting) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
+                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(alertsetting));
+    if (message_arena != submessage_arena) {
+      alertsetting = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, alertsetting, submessage_arena);
+    }
+    _impl_._has_bits_[2] |= 0x00800000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x00800000u;
+  }
+  _impl_.alertsetting_ = alertsetting;
+  // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.alertsetting)
+}
+
+// optional .Oreka.GetAllEventsSetting getalleventssetting = 90;
+inline bool ClientMessage::has_getalleventssetting() const {
+  bool value = (_impl_._has_bits_[2] & 0x01000000u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.getalleventssetting_ != nullptr);
+  return value;
+}
+inline const ::Oreka::GetAllEventsSetting& ClientMessage::_internal_getalleventssetting() const {
+  const ::Oreka::GetAllEventsSetting* p = _impl_.getalleventssetting_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Oreka::GetAllEventsSetting&>(
+      ::Oreka::_GetAllEventsSetting_default_instance_);
+}
+inline const ::Oreka::GetAllEventsSetting& ClientMessage::getalleventssetting() const {
+  // @@protoc_insertion_point(field_get:Oreka.ClientMessage.getalleventssetting)
+  return _internal_getalleventssetting();
+}
+inline void ClientMessage::unsafe_arena_set_allocated_getalleventssetting(
+    ::Oreka::GetAllEventsSetting* getalleventssetting) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.getalleventssetting_);
+  }
+  _impl_.getalleventssetting_ = getalleventssetting;
+  if (getalleventssetting) {
+    _impl_._has_bits_[2] |= 0x01000000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x01000000u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Oreka.ClientMessage.getalleventssetting)
+}
+inline ::Oreka::GetAllEventsSetting* ClientMessage::release_getalleventssetting() {
+  _impl_._has_bits_[2] &= ~0x01000000u;
+  ::Oreka::GetAllEventsSetting* temp = _impl_.getalleventssetting_;
+  _impl_.getalleventssetting_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Oreka::GetAllEventsSetting* ClientMessage::unsafe_arena_release_getalleventssetting() {
+  // @@protoc_insertion_point(field_release:Oreka.ClientMessage.getalleventssetting)
+  _impl_._has_bits_[2] &= ~0x01000000u;
+  ::Oreka::GetAllEventsSetting* temp = _impl_.getalleventssetting_;
+  _impl_.getalleventssetting_ = nullptr;
+  return temp;
+}
+inline ::Oreka::GetAllEventsSetting* ClientMessage::_internal_mutable_getalleventssetting() {
+  _impl_._has_bits_[2] |= 0x01000000u;
+  if (_impl_.getalleventssetting_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Oreka::GetAllEventsSetting>(GetArenaForAllocation());
+    _impl_.getalleventssetting_ = p;
+  }
+  return _impl_.getalleventssetting_;
+}
+inline ::Oreka::GetAllEventsSetting* ClientMessage::mutable_getalleventssetting() {
+  ::Oreka::GetAllEventsSetting* _msg = _internal_mutable_getalleventssetting();
+  // @@protoc_insertion_point(field_mutable:Oreka.ClientMessage.getalleventssetting)
+  return _msg;
+}
+inline void ClientMessage::set_allocated_getalleventssetting(::Oreka::GetAllEventsSetting* getalleventssetting) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.getalleventssetting_);
+  }
+  if (getalleventssetting) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
+                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(getalleventssetting));
+    if (message_arena != submessage_arena) {
+      getalleventssetting = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, getalleventssetting, submessage_arena);
+    }
+    _impl_._has_bits_[2] |= 0x01000000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x01000000u;
+  }
+  _impl_.getalleventssetting_ = getalleventssetting;
+  // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.getalleventssetting)
+}
+
+// optional .Oreka.AlertSettingList alertsettinglist = 91;
+inline bool ClientMessage::has_alertsettinglist() const {
+  bool value = (_impl_._has_bits_[2] & 0x02000000u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.alertsettinglist_ != nullptr);
+  return value;
+}
+inline const ::Oreka::AlertSettingList& ClientMessage::_internal_alertsettinglist() const {
+  const ::Oreka::AlertSettingList* p = _impl_.alertsettinglist_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Oreka::AlertSettingList&>(
+      ::Oreka::_AlertSettingList_default_instance_);
+}
+inline const ::Oreka::AlertSettingList& ClientMessage::alertsettinglist() const {
+  // @@protoc_insertion_point(field_get:Oreka.ClientMessage.alertsettinglist)
+  return _internal_alertsettinglist();
+}
+inline void ClientMessage::unsafe_arena_set_allocated_alertsettinglist(
+    ::Oreka::AlertSettingList* alertsettinglist) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.alertsettinglist_);
+  }
+  _impl_.alertsettinglist_ = alertsettinglist;
+  if (alertsettinglist) {
+    _impl_._has_bits_[2] |= 0x02000000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x02000000u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Oreka.ClientMessage.alertsettinglist)
+}
+inline ::Oreka::AlertSettingList* ClientMessage::release_alertsettinglist() {
+  _impl_._has_bits_[2] &= ~0x02000000u;
+  ::Oreka::AlertSettingList* temp = _impl_.alertsettinglist_;
+  _impl_.alertsettinglist_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Oreka::AlertSettingList* ClientMessage::unsafe_arena_release_alertsettinglist() {
+  // @@protoc_insertion_point(field_release:Oreka.ClientMessage.alertsettinglist)
+  _impl_._has_bits_[2] &= ~0x02000000u;
+  ::Oreka::AlertSettingList* temp = _impl_.alertsettinglist_;
+  _impl_.alertsettinglist_ = nullptr;
+  return temp;
+}
+inline ::Oreka::AlertSettingList* ClientMessage::_internal_mutable_alertsettinglist() {
+  _impl_._has_bits_[2] |= 0x02000000u;
+  if (_impl_.alertsettinglist_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Oreka::AlertSettingList>(GetArenaForAllocation());
+    _impl_.alertsettinglist_ = p;
+  }
+  return _impl_.alertsettinglist_;
+}
+inline ::Oreka::AlertSettingList* ClientMessage::mutable_alertsettinglist() {
+  ::Oreka::AlertSettingList* _msg = _internal_mutable_alertsettinglist();
+  // @@protoc_insertion_point(field_mutable:Oreka.ClientMessage.alertsettinglist)
+  return _msg;
+}
+inline void ClientMessage::set_allocated_alertsettinglist(::Oreka::AlertSettingList* alertsettinglist) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.alertsettinglist_);
+  }
+  if (alertsettinglist) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
+                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(alertsettinglist));
+    if (message_arena != submessage_arena) {
+      alertsettinglist = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, alertsettinglist, submessage_arena);
+    }
+    _impl_._has_bits_[2] |= 0x02000000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x02000000u;
+  }
+  _impl_.alertsettinglist_ = alertsettinglist;
+  // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.alertsettinglist)
+}
+
+// optional .Oreka.TimewiseData timewisedata = 92;
+inline bool ClientMessage::has_timewisedata() const {
+  bool value = (_impl_._has_bits_[2] & 0x04000000u) != 0;
+  PROTOBUF_ASSUME(!value || _impl_.timewisedata_ != nullptr);
+  return value;
+}
+inline const ::Oreka::TimewiseData& ClientMessage::_internal_timewisedata() const {
+  const ::Oreka::TimewiseData* p = _impl_.timewisedata_;
+  return p != nullptr ? *p : reinterpret_cast<const ::Oreka::TimewiseData&>(
+      ::Oreka::_TimewiseData_default_instance_);
+}
+inline const ::Oreka::TimewiseData& ClientMessage::timewisedata() const {
+  // @@protoc_insertion_point(field_get:Oreka.ClientMessage.timewisedata)
+  return _internal_timewisedata();
+}
+inline void ClientMessage::unsafe_arena_set_allocated_timewisedata(
+    ::Oreka::TimewiseData* timewisedata) {
+  if (GetArenaForAllocation() == nullptr) {
+    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.timewisedata_);
+  }
+  _impl_.timewisedata_ = timewisedata;
+  if (timewisedata) {
+    _impl_._has_bits_[2] |= 0x04000000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x04000000u;
+  }
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Oreka.ClientMessage.timewisedata)
+}
+inline ::Oreka::TimewiseData* ClientMessage::release_timewisedata() {
+  _impl_._has_bits_[2] &= ~0x04000000u;
+  ::Oreka::TimewiseData* temp = _impl_.timewisedata_;
+  _impl_.timewisedata_ = nullptr;
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  auto* old =  reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(temp);
+  temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  if (GetArenaForAllocation() == nullptr) { delete old; }
+#else  // PROTOBUF_FORCE_COPY_IN_RELEASE
+  if (GetArenaForAllocation() != nullptr) {
+    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
+  }
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+  return temp;
+}
+inline ::Oreka::TimewiseData* ClientMessage::unsafe_arena_release_timewisedata() {
+  // @@protoc_insertion_point(field_release:Oreka.ClientMessage.timewisedata)
+  _impl_._has_bits_[2] &= ~0x04000000u;
+  ::Oreka::TimewiseData* temp = _impl_.timewisedata_;
+  _impl_.timewisedata_ = nullptr;
+  return temp;
+}
+inline ::Oreka::TimewiseData* ClientMessage::_internal_mutable_timewisedata() {
+  _impl_._has_bits_[2] |= 0x04000000u;
+  if (_impl_.timewisedata_ == nullptr) {
+    auto* p = CreateMaybeMessage<::Oreka::TimewiseData>(GetArenaForAllocation());
+    _impl_.timewisedata_ = p;
+  }
+  return _impl_.timewisedata_;
+}
+inline ::Oreka::TimewiseData* ClientMessage::mutable_timewisedata() {
+  ::Oreka::TimewiseData* _msg = _internal_mutable_timewisedata();
+  // @@protoc_insertion_point(field_mutable:Oreka.ClientMessage.timewisedata)
+  return _msg;
+}
+inline void ClientMessage::set_allocated_timewisedata(::Oreka::TimewiseData* timewisedata) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaForAllocation();
+  if (message_arena == nullptr) {
+    delete reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::MessageLite*>(_impl_.timewisedata_);
+  }
+  if (timewisedata) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
+        ::PROTOBUF_NAMESPACE_ID::Arena::InternalGetOwningArena(
+                reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(timewisedata));
+    if (message_arena != submessage_arena) {
+      timewisedata = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, timewisedata, submessage_arena);
+    }
+    _impl_._has_bits_[2] |= 0x04000000u;
+  } else {
+    _impl_._has_bits_[2] &= ~0x04000000u;
+  }
+  _impl_.timewisedata_ = timewisedata;
+  // @@protoc_insertion_point(field_set_allocated:Oreka.ClientMessage.timewisedata)
 }
 
 #ifdef __GNUC__

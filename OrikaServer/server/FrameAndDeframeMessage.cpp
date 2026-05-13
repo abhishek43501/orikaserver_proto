@@ -12,6 +12,7 @@
 // 1 MB is well above any legitimate JSON message in this protocol; raise only
 // after auditing every consumer for int-overflow safety.
 static const unsigned __int64 MAX_WEBSOCKET_PAYLOAD_SIZE = 1ULL * 1024ULL * 1024ULL;
+
 FrameAndDeframeMessage::FrameAndDeframeMessage()
 {}
 FrameAndDeframeMessage::~FrameAndDeframeMessage(void)
@@ -22,248 +23,163 @@ char FrameAndDeframeMessage::getAt(char* Buffer,int offset)
 }
 void FrameAndDeframeMessage::deframeIncomingMessage(char* incomingBuffer,int bufferSize, SSL_session* psession, DataBuffer& buffer)
 {
-	if (bufferSize == 47)
-	{
-		memcpy(psession->pending_socket_buffer_Rev + psession->pendingdataSize, incomingBuffer, bufferSize);		
-		BYTE payloadFlags = getAt(incomingBuffer, 1);
-		payloadFlags = getAt(incomingBuffer+1, 2);
-		payloadFlags = getAt(incomingBuffer+2, 3);
-		payloadFlags = getAt(incomingBuffer+3, 4);
-		payloadFlags = getAt(incomingBuffer+4, 5);
-		payloadFlags = getAt(incomingBuffer+5, 6);
-		payloadFlags = getAt(incomingBuffer+6, 7);
-		payloadFlags = getAt(incomingBuffer+7, 8);	
-	}
-
-	if (psession->datapending == 1)
-	{		
-		memcpy(psession->pending_socket_buffer_Rev+ psession->pendingdataSize, incomingBuffer, bufferSize);
-
-		memcpy(incomingBuffer, psession->pending_socket_buffer_Rev, bufferSize+ psession->pendingdataSize);
-		bufferSize = bufferSize + psession->pendingdataSize;
-	}
-	string  returnval="";
+	DataBuffer m_databuffer;
+	m_databuffer.Allocate(100000);
+	m_databuffer.Append(psession->unprocessBuffer, psession->unprocessBuffer_size);
+	m_databuffer.Append(incomingBuffer, bufferSize);
+	psession->unprocessBuffer_size = 0;
+	int payloadSize = 0;
+	int masksOffset = 0;
+	int extra_headerSize = 0;
+	char frameHeader = m_databuffer.GetBuffer()[0];
+	string  returnval = "";
+	string preMessage_t_s = "";
 	//In the other cases, we should expect a data message : 
 	int nMinExpectedSize = 6;
-	if (bufferSize < nMinExpectedSize)
-		return ;
-
-
-
-	bool isFin = (getAt(incomingBuffer,0) & 0x80) != 0;
-	bool isContinuation = (getAt(incomingBuffer, 0) & 0x0F) == 0x0;
-	uint8_t opcode = getAt(incomingBuffer + 1, 1) & 0x0F;
-
-
-
-
-	BYTE payloadFlags = getAt(incomingBuffer, 0);
-	if (payloadFlags != 129 && payloadFlags != 130)
+	if (m_databuffer.GetDataSize() < nMinExpectedSize)
 	{
+		m_databuffer.Clear();
 		return ;
-	}		
-	BYTE basicSize = getAt(incomingBuffer, 1) & 0x7F;
-	unsigned __int64 payloadSize;
-	int masksOffset;
-
-	if (basicSize <= 125)
-	{
-		payloadSize = basicSize;
-		masksOffset = 2;
 	}
-	else if (basicSize == 126)
-	{
-		nMinExpectedSize += 2;
-		if (bufferSize < nMinExpectedSize)
-			return ;
-		payloadSize = ntohs(*(u_short*)(incomingBuffer + 2));
-		masksOffset = 4;
-	}
-	else if (basicSize == 127)
-	{
-		nMinExpectedSize += 8;
-		if (bufferSize < nMinExpectedSize)
-			return ;
-		// S4: 8-byte length, big-endian. The previous code read 4 bytes from
-		// offset 2 with ntohl, then re-assigned native byte order from the
-		// same 4 bytes - dropping the high 32 bits and corrupting the value.
-		unsigned __int64 lenHi = (unsigned __int64)ntohl(*(u_long*)(incomingBuffer + 2));
-		unsigned __int64 lenLo = (unsigned __int64)ntohl(*(u_long*)(incomingBuffer + 6));
-		payloadSize = (lenHi << 32) | lenLo;
-		masksOffset = 10;
-	}
-	else
-		return ;
-
-	// S4: reject oversized payloads BEFORE adding to nMinExpectedSize (which
-	// is int and would overflow) and BEFORE the new char[payloadSize+1] alloc.
-	if (payloadSize > MAX_WEBSOCKET_PAYLOAD_SIZE)
-		return ;
 
 	// S4: RFC 6455 requires MASK bit on every client->server frame. The code
 	// below XORs payload bytes with mask[i%4] unconditionally; if MASK is 0,
 	// mask[] is unset noise and the payload is corrupted. Reject early.
-	if ((getAt(incomingBuffer, 1) & 0x80) == 0)
-		return ;
-
-	nMinExpectedSize += (int)payloadSize;
-	if (bufferSize < nMinExpectedSize)
+	if (psession->frame_buffer_size == 0 && (getAt(m_databuffer.GetBuffer(), 1) & 0x80) == 0)
 	{
-		//psession->pending_socket_buffer_Rev = new char[bufferSize];
-		psession->datapending = 1;
-		psession->pendingdataSize = bufferSize;
-		memcpy(psession->pending_socket_buffer_Rev, incomingBuffer, bufferSize);		 
+		m_databuffer.Clear();
 		return ;
+	}
+
+	bool isFin = (frameHeader & 0x80) != 0;
+	bool isContinuation = (getAt(m_databuffer.GetBuffer(), 0) & 0x0F) == 0x0;
+	BYTE payloadFlags = getAt(m_databuffer.GetBuffer(), 0);
+	if (psession->frame_buffer_size == 0)
+	{
+		BYTE basicSize = getAt(m_databuffer.GetBuffer(), 1) & 0x7F;
+		if (basicSize <= 125)
+		{
+			payloadSize = basicSize;
+			masksOffset = 2;
+			extra_headerSize = 4;
+		}
+
+		else if (basicSize == 126)
+		{
+			nMinExpectedSize += 2;
+			if (m_databuffer.GetDataSize() < nMinExpectedSize)
+			{
+				m_databuffer.Clear();
+				return ;
+			}
+
+			payloadSize = ntohs(*(u_short*)(m_databuffer.GetBuffer() + 2));
+			masksOffset = 4;
+			extra_headerSize = 4;
+		}
+		else if (basicSize == 127)
+		{
+			nMinExpectedSize += 8;
+			if (m_databuffer.GetDataSize() < nMinExpectedSize)
+			{
+				m_databuffer.Clear();
+				return ;
+			}
+			// S4: 8-byte length, big-endian. The previous code read only 4
+			// bytes from offset 6, dropping the high 32 bits and corrupting
+			// any payload above ~4 GB.
+			unsigned __int64 lenHi = (unsigned __int64)ntohl(*(u_long*)(m_databuffer.GetBuffer() + 2));
+			unsigned __int64 lenLo = (unsigned __int64)ntohl(*(u_long*)(m_databuffer.GetBuffer() + 6));
+			unsigned __int64 fullLen = (lenHi << 32) | lenLo;
+			// S4: reject oversized payloads before they can drive the int
+			// payloadSize / nMinExpectedSize math to overflow.
+			if (fullLen > MAX_WEBSOCKET_PAYLOAD_SIZE)
+			{
+				m_databuffer.Clear();
+				return ;
+			}
+			payloadSize = (int)fullLen;
+			masksOffset = 10;
+			extra_headerSize = 4;
+		}
+		else
+		{
+			m_databuffer.Clear();
+			return ;
+		}
+		psession->fin = isFin;
+		memcpy(psession->frame_buffer, m_databuffer.GetBuffer() + masksOffset + extra_headerSize, m_databuffer.GetDataSize() - masksOffset - extra_headerSize);
+		psession->frame_buffer_size = (m_databuffer.GetDataSize() - masksOffset - extra_headerSize);
+		psession->remaining_frame_buffer_size = payloadSize - psession->frame_buffer_size;
+		memcpy(psession->masks, m_databuffer.GetBuffer() + masksOffset, 4);
 	}
 	else
 	{
-		if (psession->datapending!=0)
+		if (psession->remaining_frame_buffer_size > 0)
 		{
-			for (int i = 0; i < 900000; i++)
+			if (psession->remaining_frame_buffer_size >= m_databuffer.GetDataSize())
 			{
-				psession->pending_socket_buffer_Rev[i] ='\0';
+				memcpy(psession->frame_buffer + psession->frame_buffer_size, m_databuffer.GetBuffer(), m_databuffer.GetDataSize());
+				psession->frame_buffer_size = psession->frame_buffer_size + m_databuffer.GetDataSize();
+				psession->remaining_frame_buffer_size = psession->remaining_frame_buffer_size - m_databuffer.GetDataSize();
 			}
-			psession->datapending = 0;
-			psession->pendingdataSize = 0;
+			else
+			{
+				memcpy(psession->frame_buffer + psession->frame_buffer_size, m_databuffer.GetBuffer(), psession->remaining_frame_buffer_size);
+				psession->frame_buffer_size = psession->frame_buffer_size + psession->remaining_frame_buffer_size;
+				memcpy(psession->unprocessBuffer, m_databuffer.GetBuffer() + psession->remaining_frame_buffer_size, m_databuffer.GetDataSize() - psession->remaining_frame_buffer_size);
+				psession->unprocessBuffer_size = m_databuffer.GetDataSize() - psession->remaining_frame_buffer_size;
+				psession->remaining_frame_buffer_size = 0;
+			}
 		}
-		
 	}
+	if (psession->remaining_frame_buffer_size == 0)
+	{
+		char* payload_t = new char[psession->frame_buffer_size + 1];
+		for (unsigned __int64 i = 0; i < psession->frame_buffer_size; i++)
+		{
+			payload_t[i] = (psession->frame_buffer[i] ^ psession->masks[i % 4]);
+		}
+		payload_t[psession->frame_buffer_size] = '\0';
 
-	BYTE masks[4];
-	memcpy(masks, incomingBuffer + masksOffset, 4);
 
-	char* payload = new char[payloadSize + 1];
-	memcpy(payload, incomingBuffer + masksOffset + 4, payloadSize);
-	for (unsigned __int64 i = 0; i < payloadSize; i++) {
-		payload[i] = (payload[i] ^ masks[i % 4]);
+		memcpy(psession->LastFrame + psession->LastFrame_size, payload_t, psession->frame_buffer_size);
+		psession->LastFrame_size = psession->LastFrame_size + psession->frame_buffer_size;
+		psession->frame_buffer_size = 0;
+
+		// S5: payload_t was allocated with new char[...] and never freed.
+		// Each WebSocket frame leaked frame_buffer_size + 1 bytes; under load
+		// this is unbounded steady-state growth.
+		delete[] payload_t;
+
+		if (psession->fin == false)
+		{
+			m_databuffer.Clear();
+			return ;
+		}		
+		/*WebsocketDataMessage* preMessage_t = new WebsocketDataMessage(psession->LastFrame);
+		preMessage_t_s = preMessage_t->raw;*/
+		buffer.Append(psession->LastFrame, psession->LastFrame_size);
+		for (int li = 0; li < psession->LastFrame_size; li++)
+		{
+			psession->LastFrame[li] = '\0';
+		}
+		psession->LastFrame_size = 0;
+
 	}
-	payload[payloadSize] = '\0';
-	//WebsocketDataMessage* pMessage = new WebsocketDataMessage(payload);
-	//
-	//string rMessage = pMessage->raw;
-	////returnval = rMessage.c_str();
-	//returnval = rMessage;	
-	buffer.Append(payload, payloadSize);
-	delete[] payload;
-	//return returnval;
+	else
+	{
+		m_databuffer.Clear();
+		return ;
+	}
+	m_databuffer.Clear();
+	/*string finalmsg = preMessage_t_s;
+	return finalmsg;*/
 }
 
 void FrameAndDeframeMessage::deframeLargeIncomingMessage(char* incomingBuffer, int bufferSize, SSL_session* psession, DataBuffer& buffer)
 {
-	string return_data = "";
-	// check at least 6 bytes are set (first 2 bytes and 4 bytes for the mask key)
-	if (bufferSize < 6)
-		return ;
-	// fetch first 2 bytes of header
-	unsigned char octet0 = getAt(incomingBuffer, 0);
-	unsigned char octet1 = getAt(incomingBuffer, 1);
-
-	unsigned char fin = octet0 & 0x80;
-	unsigned char opcode = octet0 & 0x0f;
-
-
-
-	int nMinExpectedSize = 6;
-	if (bufferSize < nMinExpectedSize)
-		return ;
-	//unsigned char mask = octet1 & WS_MASK;
-	//if (octet1 < 128)
-	//	return ""; // close socket, as no mask bit was sent from the client
-
-						  		
-	BYTE basicSize = getAt(incomingBuffer, 1) & 0x7F;
-	unsigned __int64 payloadSize;
-	int masksOffset;
-	payloadSize = 0;
-	int dataposition = 0;
-	int seek = 0;
-	if (basicSize <= 125)
-	{
-		//payloadSize = basicSize;
-		masksOffset = 0;
-		seek = 6;
-		dataposition = 0;
-		payloadSize = bufferSize;
-			
-		/*payloadSize = getAt(incomingBuffer+1, 1);
-		int test = 0;*/
-	}
-	else if (basicSize == 126)
-	{
-		nMinExpectedSize += 2;
-		if (bufferSize < nMinExpectedSize)
-			return ;
-		payloadSize = ntohs(*(u_short*)(incomingBuffer + 2));
-		masksOffset = 4;
-	}
-	else if (basicSize == 127)
-	{
-		nMinExpectedSize += 8;
-		if (bufferSize < nMinExpectedSize)
-			return ;
-		//payloadSize = ntohl(*(u_long*)(incomingBuffer + 2));
-		payloadSize = ntohl(*(reinterpret_cast<const uint64_t*>(incomingBuffer + 2)));
-		masksOffset = 10;
-		if (payloadSize == 0)
-		{
-			payloadSize = bufferSize - 14;
-		}
-		dataposition = 4;
-		memcpy(psession->masks, incomingBuffer + masksOffset, 4);
-
-	}
-	else
-		return ;
-	
-	// decode payload data
-	//masksOffset = 10;	
-
-	char* payload = new char[payloadSize + 1];
-
-	memcpy(payload, incomingBuffer + masksOffset + dataposition, payloadSize);
-	char* payload_test = new char[payloadSize + 1];
-	for (unsigned __int64 i = 0; i < payloadSize; i++) {
-		payload_test[i] = (payload[i] ^ psession->masks[i % 4]);
-	}
-
-	payload_test[payloadSize] = '\0';
-	
-
-	// check if the frame is marked as the final frame in the message
-	if (fin != 0) {
-		// check if this is the first frame in the message
-		if (opcode != 0x0) {
-			memcpy(psession->pending_frame_buffer_Rev + psession->pending_frame_buffer_size, payload, payloadSize);
-			psession->pending_frame_buffer_size = psession->pending_frame_buffer_size + payloadSize;
-		}
-		else {
-					
-			// push frame payload data onto message buffer			
-			memcpy(psession->pending_frame_buffer_Rev + psession->pending_frame_buffer_size, payload, payloadSize);
-			// increase message payload data length
-			psession->pending_frame_buffer_size = psession->pending_frame_buffer_size + payloadSize;
-			/*WebsocketDataMessage* pMessage = new WebsocketDataMessage(psession->pending_frame_buffer_Rev);
-
-			string rMessage = pMessage->raw;*/
-			// process the message
-			//bool result = wsProcessClientMessage(clientID, client->MessageOpcode, client->MessageBuffer, client->MessageBufferLength);
-
-			// check if the client wasn't removed, then reset message buffer and message opcode
-			psession->pending_frame_buffer_size = 0;
-			for (int i = 0; i < 900000; i++)
-			{
-				psession->pending_frame_buffer_Rev [i] = '\0';
-			}						
-		}
-	}
-	else
-	{
-		memcpy(psession->pending_frame_buffer_Rev + psession->pending_frame_buffer_size, payload_test, payloadSize);
-		psession->pending_frame_buffer_size = psession->pending_frame_buffer_size + payloadSize;
-		int i = 0;
-	}	
-	buffer.Append(payload, payloadSize);
-	delete[] payload;
+	string return_data = "";	
 }
 
 void FrameAndDeframeMessage::frameOutgoingMessage(char* inputdata, DataBuffer& buffer, int nWrittenBytes)
@@ -328,7 +244,7 @@ void FrameAndDeframeMessage::frameOutgoingMessage(char* inputdata, DataBuffer& b
 		}
 		//int dataSize = strData.size();		
 		//stlog.Format(L"Data Size for Update:%d ", dataSize);
-		//CStaticClass::m_logfile.LogEvent(stlog);
+		//(stlog);
 		buffer.Append(inputdata, nWrittenBytes);
 		nWrittenBytes = expectedSize;
 		return ;		

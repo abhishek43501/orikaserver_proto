@@ -331,6 +331,26 @@ END_COLUMN_MAP()
 };
 
 
+class CalertSettingTable
+{
+public:
+	TCHAR m_alertName[30];
+	TCHAR m_alertSetting[8000];
+	
+
+	DBSTATUS  s_alertName;
+	DBSTATUS  s_alertSetting;
+	
+
+	DBLENGTH  l_alertName;
+	DBLENGTH  l_alertSetting;
+	
+	// Column binding map
+	BEGIN_COLUMN_MAP(CalertSettingTable)
+		COLUMN_ENTRY_LENGTH_STATUS(1, m_alertName, s_alertName, l_alertName);
+		COLUMN_ENTRY_LENGTH_STATUS(2, m_alertSetting, s_alertSetting, l_alertSetting);
+	END_COLUMN_MAP()
+};
 
 class CGrossExposureDistributionTable
 {

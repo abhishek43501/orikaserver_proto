@@ -52,6 +52,9 @@
     <Filter Include="ProtoFile">
       <UniqueIdentifier>{076547ff-97df-45d0-80e6-a5b804f88b91}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Socket Server">
+      <UniqueIdentifier>{82c44038-7685-4ef8-afa2-e6c165637742}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -207,9 +210,6 @@
     <ClInclude Include="ProtoMessageConverter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LZ\lzstring.h">
-      <Filter>LZ</Filter>
-    </ClInclude>
     <ClInclude Include="..\ProtoFile\ActiveColumnChanged.pb.h">
       <Filter>ProtoFile</Filter>
     </ClInclude>
@@ -292,9 +292,6 @@
       <Filter>ProtoFile</Filter>
     </ClInclude>
     <ClInclude Include="..\ProtoFile\DeletePage.pb.h">
-      <Filter>ProtoFile</Filter>
-    </ClInclude>
-    <ClInclude Include="..\ProtoFile\DeleteTemplate.ptoto.pb.h">
       <Filter>ProtoFile</Filter>
     </ClInclude>
     <ClInclude Include="..\ProtoFile\FetchBrokerData.pb.h">
@@ -486,6 +483,36 @@
     <ClInclude Include="..\ProtoFile\AlertMessage.pb.h">
       <Filter>ProtoFile</Filter>
     </ClInclude>
+    <ClInclude Include="..\ProtoFile\FetchLoginDevice.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\LoginDeviceLog.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketServer.h">
+      <Filter>Socket Server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\AlertSetting.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\GetAllEventsSetting.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\AlertSettingList.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="AlertStaticClass.h">
+      <Filter>Socket Server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\TimewiseData.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\DeleteTemplate.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ProtoFile\AlertExecuteMessage.pb.h">
+      <Filter>ProtoFile</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OrikaServer.cpp">
@@ -565,9 +592,6 @@
     </ClCompile>
     <ClCompile Include="ProtoMessageConverter.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LZ\lzstring.cpp">
-      <Filter>LZ</Filter>
     </ClCompile>
     <ClCompile Include="..\ProtoFile\ActiveColumnChanged.pb.cc">
       <Filter>ProtoFile</Filter>
@@ -651,9 +675,6 @@
       <Filter>ProtoFile</Filter>
     </ClCompile>
     <ClCompile Include="..\ProtoFile\DeletePage.pb.cc">
-      <Filter>ProtoFile</Filter>
-    </ClCompile>
-    <ClCompile Include="..\ProtoFile\DeleteTemplate.ptoto.pb.cc">
       <Filter>ProtoFile</Filter>
     </ClCompile>
     <ClCompile Include="..\ProtoFile\FetchBrokerData.pb.cc">
@@ -843,6 +864,36 @@
       <Filter>ProtoFile</Filter>
     </ClCompile>
     <ClCompile Include="..\ProtoFile\AlertMessage.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\FetchLoginDevice.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\LoginDeviceLog.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketServer.cpp">
+      <Filter>Socket Server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\AlertSetting.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\GetAllEventsSetting.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\AlertSettingList.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="AlertStaticClass.cpp">
+      <Filter>Socket Server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\TimewiseData.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\DeleteTemplate.pb.cc">
+      <Filter>ProtoFile</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ProtoFile\AlertExecuteMessage.pb.cc">
       <Filter>ProtoFile</Filter>
     </ClCompile>
   </ItemGroup>

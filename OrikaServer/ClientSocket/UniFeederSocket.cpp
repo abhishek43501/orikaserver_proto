@@ -334,7 +334,7 @@ bool CUniFeederSocket::ReadTick(char* str,MTTick &tick)
 	tick.volume=m_st_tick->LTQ ;	   
     
     CStaticClass::m_mutex_order.Lock();
-    ////CStaticClass::m_logfile.LogEvent(L"L2");
+    ////(L"L2");
        
         
         CString m_symbol = L"";
@@ -366,9 +366,9 @@ bool CUniFeederSocket::ReadTick(char* str,MTTick &tick)
                 {
                     double m_heighFromExternalFeed = m_st_tick->High;
                     double realH = m_heighFromExternalFeed / 100;
-                    //CStaticClass::m_logfile.LogEvent(L"Going to update Status S3");
+                    //(L"Going to update Status S3");
                     m_StaticClass.UpdateOrderStatus(m_symbol,0, realH);
-                    //CStaticClass::m_logfile.LogEvent(L"Going to update Status S3 Updated");
+                    //(L"Going to update Status S3 Updated");
                 }
 
                 CMTStr::Copy(m_stHL.m_Symbol, m_symbol);
@@ -385,9 +385,9 @@ bool CUniFeederSocket::ReadTick(char* str,MTTick &tick)
                 {
                     double lowFromExternalFeed = m_st_tick->Low;
                     double realL = lowFromExternalFeed / 100;
-                    //CStaticClass::m_logfile.LogEvent(L"Going to update Status S4");
+                    //(L"Going to update Status S4");
                     m_StaticClass.UpdateOrderStatus(m_symbol, realL,0);
-                    //CStaticClass::m_logfile.LogEvent(L"Going to update Status S4 Updated");
+                    //(L"Going to update Status S4 Updated");
                 }
                 CMTStr::Copy(m_stHL.m_Symbol, m_symbol);
                 m_stHL.m_PreviousLow = m_stHL.m_Low;
@@ -399,7 +399,7 @@ bool CUniFeederSocket::ReadTick(char* str,MTTick &tick)
         }
     
     CStaticClass::m_mutex_order.Unlock();
-    ////CStaticClass::m_logfile.LogEvent(L"UL2");
+    ////(L"UL2");
 //--- checking obtained data
    if(tick.bid<=0 || tick.ask<=0 || tick.bid>tick.ask)
      {      

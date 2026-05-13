@@ -5,7 +5,6 @@
 #include "SQLDATA\SqlData.h"
 #include "LogWriter\LogFile.h"
 #include "server\openssl_iocp.h"
-
 #define SUBSCRIBE_POSITION_FOR_TRANSFER    101
 
 class CStaticClass 
@@ -25,7 +24,7 @@ public:
 	static LPCSTR  GatewayServer;
 	static int ExchangeCode;
 	static CString  APIFolderPath;
-
+	static int		APISERVER_PORT;
 	CStaticClass();
 	~CStaticClass();
 	static int loginvalidate;
@@ -36,6 +35,47 @@ public:
 	static CMutex m_mutex;
 
 
+	static CMutex m_SqlLock;
+	//Alert Setting Variables
+	struct st_Alert_Condisition
+	{
+		wchar_t  m_compareCondition[200];
+		wchar_t  m_conditionType[200];
+		wchar_t  m_conditionValue[30];
+		wchar_t  m_orcondisition[500];
+	};
+
+
+
+
+
+
+	struct st_actions
+	{
+		wchar_t   m_actionName[100];
+		wchar_t   m_action[200];
+		wchar_t   m_actionSendBy[200];
+		wchar_t   m_actionSendTo[200];
+		wchar_t   m_actionTrigger[200];
+	};
+	struct st_Alert_Setting
+	{
+		TMTArray < st_Alert_Condisition> m_condisition;
+		wchar_t  m_alertName[50];
+		wchar_t  m_triggerType[50];
+		wchar_t  m_startTime[30];
+		wchar_t  m_expiryTime[30];
+		TMTArray < int> m_daysOfMonth;
+		TMTArray < wchar_t[20]> m_daysOfWeek;
+		TMTArray < wchar_t[20]> m_selectedMonths;
+		int		m_repetitions;
+		int     m_days;
+		int     m_hours;
+		int     m_minutes;
+		TMTArray < st_actions> m_actions;
+	};
+	static CMap<CString, LPCTSTR, st_Alert_Setting, st_Alert_Setting> m_AlertSettingMap;
+	//End of Alert Setting Variables
 
 	static CMutex m_mutexcommoditygroup;
 
@@ -45,6 +85,9 @@ public:
 	static CMutex m_positiondevideRatio_lock;
 
 	
+	static CMap<CString, LPCTSTR, double, double> m_ClientSymbolPosition_MT;
+	static CMap<CString, LPCTSTR, double, double> m_ClientSymbolPosition_orika;
+
 	static int startOrderData;
 
 	static int startTickData;
@@ -56,6 +99,7 @@ public:
 
 
 	static CMutex m_mutex_ClientList;
+	
 	static CMutex m_mutex_dealingClientList;
 
 	static CMutex m_mutex_order;
@@ -100,6 +144,11 @@ public:
 		double m_TotalSellTO;
 	};
 	static  CMap<CString, LPCTSTR, st_TotalTradedLotAndTOT, st_TotalTradedLotAndTOT> m_TotalLotAndTOT;
+
+
+
+	
+
 
 
 
@@ -152,7 +201,7 @@ public:
 	static int clientbroktotalArrayMaxindex;
 	static int clientnettotalArrayMaxindex;
 
-	static  st_TickBidAskLast*           lastrateArray[20000];
+	static  st_TickBidAskLast*           lastrateArray[35000];
 	static  CMap<CString,LPCTSTR,int ,int> symbolLastTickArrayIndex;
 	static  CMap<CString,LPCTSTR,int ,int> UpdatedsymbolLastTickArrayIndex;
 	static  CMap<CString,LPCTSTR,int ,int> UpdatedsymbolLastTickArrayIndexForSymbolWisePosition;
@@ -238,6 +287,16 @@ public:
 		double m_brokerageTotal;
 	};
 
+
+	struct st_logindevice
+	{
+		int     m_time;
+		wchar_t m_ip[20];
+		wchar_t m_login[20];
+		wchar_t m_deviceID[300];		
+	};
+	typedef TMTArray <st_logindevice> logindeviceArray;
+	static  logindeviceArray m_logindeviceArray;
 
 
 	struct st_order_ForUpdate
@@ -413,6 +472,7 @@ public:
 
 	void loadClientwisenetpositionData();
 	void DataCalNetPositionclientwiseFromTickData();
+	void sendlogClient(const IMTOrder* m_order, int dealSate, CString clientkey);
 	static  CMap<CString,LPCTSTR,st_netpositionClientWise,st_netpositionClientWise&> mapNetPositionClientWise;
 
 
@@ -472,6 +532,11 @@ public:
 
 	static CMutex m_mutexlogintoken;
 
+
+	static CMutex m_mutexLog;
+
+
+
 	typedef vector<CString> LoginVector;
 
 	typedef vector<CString> TabVector;
@@ -500,11 +565,12 @@ public:
 
 
 
-	static CMutex               m_mutex_Thread;
+	static CMutex               m_mutex_
+		;
 	static CRITICAL_SECTION     m_cs_Thread;
 	static CONDITION_VARIABLE   m_cv_Thread;
 
-
+	int m_forlogprint;
 struct st_Orika_dealtableAccounting
 {	
 	TCHAR  m_login[20];
@@ -688,15 +754,19 @@ static CMap<int, int, double, double> m_ClientBalance;
 	};
 
 	static CMap<CString, LPCTSTR, st_token, st_token&> m_tokenlist;
-	 void calculateClientWiseAllPosition();
-	
 
+	static CMap < CString, LPCTSTR, double, double> m_mismatch_position;
+
+	static int startComparePosition;
+	void calculateClientWiseAllPosition();	  	
 	typedef CMap<CString ,LPCTSTR,st_Tick,st_Tick> TickData;
 	static TickData m_TickData;
 	static TickData m_updatedTickData;
 	static TickData  m_TickDataForContinousData;
 	void	sendUpdatedTick();
-
+	void    comparePosition();
+	void    Re_comparePosition();
+	UINT64  getPreviousDateTime_Unix();
 	HRESULT hr;
 	CCommand<CNoAccessor, CNoRowset> cmdExecute;
 	struct stclientmaster
@@ -769,6 +839,17 @@ static CMap<int, int, double, double> m_ClientBalance;
 		wchar_t  m_name[32];
 	};
 	static CMap<CString, LPCTSTR, stloginUserDetail, stloginUserDetail> m_loginuserlist;
+
+	typedef CMap<CString, LPCTSTR, CStaticClass::st_netpositionClientWise, CStaticClass::st_netpositionClientWise&>  NetPositionClientWise_All;
+
+	void sendClientPosition_Insert(SSL_session* client, int m_activeClient,CString strUserID, CString m_clientcontexKey, CString m_Requestmessage,CString m_messageType,  NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise);
+
+
+	void sendClientPosition_Update(SSL_session* client, int m_activeClient, CString strUserID, CString m_clientcontexKey, CString m_Requestmessage, CString m_messageType, NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise);
+
+
+	void sendClientPosition_NewInsert(SSL_session* client, int m_activeClient, CString strUserID, CString m_clientcontexKey, CString m_Requestmessage, CString m_messageType, NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise, TMTArray<st_netpositionClientWise>* tmpNewposition);
+	void sendClientPosition_NewUpdate(SSL_session* client, int m_activeClient, CString strUserID, CString m_clientcontexKey, CString m_Requestmessage, CString m_messageType, NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise, TMTArray<st_netpositionClientWise>* tmpNewposition);
 
 	struct st_scripWiseNetPosition
 	{
@@ -1222,6 +1303,8 @@ void addNewDealToDealData(st_Orika_dealtableAccounting st);
 void sendorderdealingToClient(const IMTOrder* m_order, int dealSate,CString clientkey);
 void sendDataToAllClient(string msg);
 CString sysDateToStringFormat(SYSTEMTIME st);
+
+
 
 };
 #endif

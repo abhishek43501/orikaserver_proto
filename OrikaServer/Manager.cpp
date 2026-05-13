@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 #include "Manager.h"
-#include "..\\StaticClass.h"
-#include "..\\MSMQ\MSMQApiWrapper.h"
+#include "StaticClass.h"
+#include "MSMQ\MSMQApiWrapper.h"
+#include "AlertStaticClass.h"
 #include "OrikaServerDlg.h"
 #include "dealerSink.h"
 #include "document.h"
@@ -10,11 +11,14 @@
 #include <iostream>
 #include "TableClosingFile.h"
 #include "afxdb.h"
+#include "DataTable\orika_clientmaster.h"
 
 
 
 using namespace rapidjson;
 int CManager::dealSendToMSMQStart=0;
+int CManager::previousRecordCount = 0;
+int CManager::previousRecordCount_login = 0;
 CManager::CManager() : m_manager(NULL),m_admin(NULL),m_login(0)
   {
    m_server[0]  =L'\0';
@@ -476,7 +480,7 @@ CString CManager::CreateFETCH_PAGE_DETAILS(CString loginUser,CString pageId)
 		return L"";
 	}
 	strCommand.Format(L"select pageId,widgetConfig from orika_pageIDandwidgetconfigs where pageId='%s';", pageId);
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	m_tempsession.Open(CStaticClass::connection);	
 	hrr = data_table_wid.Open(m_tempsession, (LPCTSTR)strCommand);
 	if (FAILED(hrr))
@@ -503,7 +507,7 @@ CString CManager::CreateFETCH_PAGE_DETAILS(CString loginUser,CString pageId)
 
 			CString strCommand_sheet = L"";
 			strCommand_sheet.Format(L"select pageandsheetID,pageID,sheet from  orika_pageIDandwidgetconfigs_and_sheet_mapping where pageandsheetID='%s'  order by isnull(sl_no,0)  asc;", pageandconfigID);
-			////CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+			////(L"Orderlock_70");
 			//m_tempsession_sheet.Open(CStaticClass::connection);
 			//CCommand<CAccessor<CTableorika_page_widgetConfig_and_Sheet>> data_table_wid_Sheet;
 			//hrr = data_table_wid_Sheet.Open(m_tempsession_sheet, (LPCTSTR)strCommand_sheet);
@@ -597,7 +601,7 @@ CString CManager::CreateFETCH_PAGE_DETAILS(CString loginUser,CString pageId)
 	
 	strCommand.Format(L"exec fetch_page_Details '%s';",  pageId);
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	
 	m_tempsession.Open(CStaticClass::connection);
 	hrr = data_table.Open(m_tempsession, (LPCTSTR)strCommand);
@@ -666,7 +670,7 @@ CString CManager::CreateFETCH_PAGE_DETAILS(CString loginUser,CString pageId)
 	
 	m_tempsession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 	writer.EndObject();
 	CString str_FinalJsonUpdate = L"";
 	strReturnVal = str_FinalJsonUpdate = s.GetString();
@@ -686,7 +690,7 @@ CString CManager::createFETCH_COLOR_TEMPLATE(CString loginUser)
 	CString   strCommand = L"";
 	strCommand.Format(L"select loginUser,colortemplate from orika_COLOR_TEMPLATE_ClientWise where loginUser='%s';", loginUser);
 	 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hrr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -719,7 +723,7 @@ CString CManager::createFETCH_COLOR_TEMPLATE(CString loginUser)
 	}
 	writer.EndArray();
 	m_tempSession.Close();	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 	writer.EndObject();
 
 
@@ -744,7 +748,7 @@ CString CManager::FETCH_COLOR_THEME(CString id)
 	strCommand.Format(L"select loginUser,COLOR_THEME_ID,COLOR_THEME_name,[color],[fontcolor],[default] from orika_COLOR_THEME where COLOR_THEME_ID='%s';", id);
 	CSession m_tempSession;
 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	m_tempSession.Open(CStaticClass::connection);
 	hrr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hrr))
@@ -810,7 +814,7 @@ CString CManager::FETCH_COLOR_THEME(CString id)
 	}	
 	m_tempSession.Close();
 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 	writer.EndObject();
 
 
@@ -835,7 +839,7 @@ CString CManager::FETCH_COLOR_THEMES(CString loginUser)
 	strCommand.Format(L"get_color_Themes '%s';", loginUser);
 	CSession m_tempSession;
 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	m_tempSession.Open(CStaticClass::connection);
 	hrr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hrr))
@@ -901,7 +905,7 @@ CString CManager::FETCH_COLOR_THEMES(CString loginUser)
 	writer.EndArray();
 	m_tempSession.Close();
 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 	writer.EndObject();
 
 
@@ -924,7 +928,7 @@ CString CManager::CreateFETCH_PAGE_LIST(CString loginUser)
 	strCommand.Format(L"get_page_details '%s';", loginUser);
 	CSession m_tempSession;
 	 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	m_tempSession.Open(CStaticClass::connection);
 	hrr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hrr))
@@ -977,7 +981,7 @@ CString CManager::CreateFETCH_PAGE_LIST(CString loginUser)
 	writer.EndArray();
 	m_tempSession.Close();
 	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 	writer.EndObject();
 
 
@@ -1000,7 +1004,7 @@ CString CManager::CreateFETCH_Theme(CString loginUser)
 	strCommand.Format(L"select loginuser,theme from   orika_theme where loginuser='%s';", loginUser);
 	 
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	m_tempSession.Open(CStaticClass::connection);
 	hrr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hrr))
@@ -1023,7 +1027,7 @@ CString CManager::CreateFETCH_Theme(CString loginUser)
 	
 	m_tempSession.Close();
 	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 
 	writer.Key("theme");
 	string strm_theme = CT2A(m_theme);
@@ -1052,7 +1056,7 @@ CString CManager::GetDashboardData(CString loginUser)
 	CString   strCommand = L"";
 	strCommand.Format(L"exec get_Dashboard_Data '%s';", loginUser);
 	 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_69");
+	//(L"Orderlock_69");
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -1105,7 +1109,7 @@ CString CManager::GetDashboardData(CString loginUser)
 	writer.EndObject();
 	m_tempSession.Close();
 	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_69");
+	//(L"U_Orderlock_69");
 	CString str_FinalJsonUpdate = L"";
 	strReturnVal = str_FinalJsonUpdate = s.GetString();
 	s.Clear();
@@ -1125,7 +1129,7 @@ CString CManager::GetCanvasData(CString loginUser,CString tabtype)
 	CString   strCommand = L"";
 	strCommand.Format(L"select * from orika_canvas where loginuser='%s' and tabtype='%s';", loginUser, tabtype);
 	 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_70");
+	//(L"Orderlock_70");
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -1175,7 +1179,7 @@ CString CManager::GetCanvasData(CString loginUser,CString tabtype)
 	
 	m_tempSession.Close();
 	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_70");
+	//(L"U_Orderlock_70");
 	writer.EndObject();
 
 
@@ -1214,7 +1218,7 @@ CString CManager::GetCanvasData(CString loginUser,CString tabtype)
 //	double m_lpratio=0;
 //
 //
-//	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+//	////(StrPrintLino);
 //	CStaticClass::session.Open(CStaticClass::connection);
 //	hr = data_table_LP.Open(CStaticClass::session, (LPCTSTR)strCommand);
 //	if (FAILED(hr))
@@ -1262,7 +1266,7 @@ CString CManager::GetCanvasData(CString loginUser,CString tabtype)
 //	
 //	CString StrPrintLino = L"";
 //	StrPrintLino.Format(L"m_mutex_order Locked(%d)", __LINE__);
-//	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+//	////(StrPrintLino);
 //	CStaticClass::session.Open(CStaticClass::connection);
 //	hr = data_table.Open(CStaticClass::session, (LPCTSTR)strCommand);
 //	if (FAILED(hr))
@@ -1860,7 +1864,7 @@ CString CManager::getUpdatedClosingRate()
 	CString   strCommand = L"";
 	strCommand.Format(L"select symbol,clrate,Hrate,Lrate from orika_closingprice;");
 	 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_71");
+	//(L"Orderlock_71");
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -1907,7 +1911,7 @@ CString CManager::getUpdatedClosingRate()
 	writer.EndObject();
 	m_tempSession.Close();
 	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_71");
+	//(L"U_Orderlock_71");
 	CString str_FinalJsonUpdate = L"";
 	strReturnVal=str_FinalJsonUpdate = s.GetString();
 	s.Clear();
@@ -1930,7 +1934,7 @@ string CManager::gethighLowMismatchDeals(CString dealDate)
 	strCommand.Format(L"select dealdate,deal,[order],[login],symbol,rate,comment from orika_HeighLowMismatchTrades where replace(convert(varchar(11),dateadd(s,[dealdate],'01-01-1970'),106 ),' ','-')='%s';", dealDate);
 	 
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_72");
+	//(L"Orderlock_72");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -1988,7 +1992,7 @@ string CManager::gethighLowMismatchDeals(CString dealDate)
 	writer.EndObject();
 	m_tempSession.Close();
 	 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_72");
+	//(L"U_Orderlock_72");
 	CString str_FinalJsonUpdate = L"";
 	str_FinalJsonUpdate = s.GetString();
 	s.Clear();
@@ -2207,6 +2211,10 @@ void CManager::LoadConfigFile(CString StrFilePath)
 			if (str_key == L"APIFolderPath")
 			{
 				CStaticClass::APIFolderPath = strval;
+			}
+			if (str_key == L"APISERVER_PORT")
+			{
+				CStaticClass::APISERVER_PORT = _wtoi(strval);
 			}
 						
 		}
@@ -2456,6 +2464,115 @@ void CManager::Shutdown()
 	m_factory.Shutdown();
   }
 
+
+
+void CManager::DeviceLogTransfer(INT64 fromTime, INT64 toTime, CString strDealSearch)
+{
+	MTLogRecord* logRecords;
+	UINT Total_Record = 0;
+	/*int search_count=CManager::m_SearchString.Total();
+	for(int s=0;s<search_count;s++)
+	{*/
+	//CString SearchStr=CManager::m_SearchString[s];
+	m_manager->LoggerServerRequest(2, 0, fromTime, toTime, strDealSearch, logRecords, Total_Record);
+	for (int i = previousRecordCount; i < Total_Record; i++)
+	{
+		CString strLogFile = L"";
+		CString strMessage = L"";
+		CString Ipaddress = L"";
+		strMessage = logRecords[i].message;
+		UINT64 strLogTime = logRecords[i].datetime_msc;
+		Ipaddress = logRecords[i].source;
+		
+
+
+		if (strLogTime != 0)
+		{
+			CMTStr256 strtmp;
+			CString strTime = L"";
+			strTime = SMTFormat::FormatTimeMsc(strtmp, strLogTime, true);
+			// '1017': deal performed ['200011' #4035895 buy 22 GOLDAUG at 48046.00]
+			//
+
+			if (strMessage.Find(L"login (Client") >= 0 || strMessage.Find(L"login as investor (Client") >= 0)
+			{
+				strLogFile.Format(L"%s %s", strTime, strMessage);
+				CString str_login = strMessage.Mid(1, strMessage.Find(L"':") - 1);
+				CString strRem = strMessage.Mid(strMessage.Find(L"cid: ") + 5, strMessage.GetLength() - strMessage.Find(L"cid: ") - 5);
+				CString str_CID = strRem.Mid(0, strRem.Find(L", point"));
+
+
+				//(Ipaddress+L","+ str_login+L","+ str_CID);
+
+				CStaticClass::st_logindevice m_st_logindevice = {};
+
+				
+				
+				m_st_logindevice.m_time = logRecords[i].datetime;
+				CMTStr::Copy(m_st_logindevice.m_ip, Ipaddress);
+				CMTStr::Copy(m_st_logindevice.m_login, str_login);
+				CMTStr::Copy(m_st_logindevice.m_deviceID, str_CID);
+				CStaticClass::m_mutexLog.Lock();
+				CStaticClass::m_logindeviceArray.Add(&m_st_logindevice);
+				CStaticClass::m_mutexLog.Unlock();
+
+				CString ExHD = L"";
+				//CManager::HdDataLoginWise.Lookup(str_login, ExHD);
+
+				if (ExHD.Find(str_CID) >= 0)
+				{
+				}
+				else
+				{
+					if (ExHD.Trim() != "")
+					{
+						ExHD = ExHD + " ," + str_CID;
+					}
+					else
+					{
+						ExHD = str_CID;
+					}
+					//CManager::HdDataLoginWise.SetAt(str_login, ExHD);
+				}
+
+				//Adding Hd wise Data
+				CString strEXlogin = L"";
+				//CManager::LoginHdDataWise.Lookup(str_CID, strEXlogin);
+
+				if (strEXlogin.Find(str_login) >= 0)
+				{
+				}
+				else
+				{
+					if (strEXlogin.Trim() != "")
+					{
+						strEXlogin = strEXlogin + " ," + str_login;
+					}
+					else
+					{
+						strEXlogin = str_login;
+					}
+					//CManager::LoginHdDataWise.SetAt(str_CID, strEXlogin);
+				}
+			}
+		}
+	}
+	previousRecordCount = Total_Record;
+
+	//}
+	m_manager->Free(logRecords);
+}
+
+
+
+
+
+
+
+
+
+
+
 void CManager::SymbolSubscribeForTick(CString symbol)
 {
 	m_manager->SelectedAdd(symbol);
@@ -2501,13 +2618,7 @@ int CManager::login(CString server,CString login,CString password)
 }
  
 
- extern struct st_header
-{		
-	UINT Action;
-	UINT Data_Size;
-	UINT Data_Type;
-	UINT reserved;
-};
+ 
  void CManager::loadLastTickFromMT()
  {
 	 int totalSymbolCount=CStaticClass::m_symbolmasterarray.Total();
@@ -2649,7 +2760,7 @@ int CManager::login(CString server,CString login,CString password)
 						 //Getting Order History
 						 if (res = m_manager->HistoryRequest(logins[j], from, to, orders) == MT_RET_OK)
 						 {
-							 ////CStaticClass::m_logfile.LogEvent(L"Going to add History Order in msmq");
+							 ////(L"Going to add History Order in msmq");
 							 r_count = orders->Total();
 							 for (UINT p = 0; p < orders->Total(); p++)
 							 {
@@ -2722,17 +2833,7 @@ int CManager::login(CString server,CString login,CString password)
 								 deal = deals->Next(p);	
 								 int dealno = deal->Deal();
 								 int dealnocheck = 0;
-								 /*if (dealno == 7717324)
-								 {
-									 int test = 1;
-									 test = 8;
-									 dealnocheck = 0;
-									 CStaticClass::m_Orika_dealNO.Lookup(dealno, dealnocheck);
-									 CString m_strmessage = L"";
-									 m_strmessage.Format(L"d1 %d  d2 %d", dealno, dealnocheck);
-									 CStaticClass::m_logfile.LogEvent(m_strmessage);
-
-								 }*/
+								 
 								 CStaticClass::m_Orika_dealNO.Lookup(dealno, dealnocheck);
 								 if (dealnocheck == 0)
 								 {
@@ -2833,9 +2934,9 @@ int CManager::login(CString server,CString login,CString password)
 	 
 
 		 int m_totalOrder = CStaticClass::m_Orika_orderHastable.GetCount();
-		 CString m_strmessage = L"";
-		 m_strmessage.Format(L"Total Order Loaded %d", m_totalOrder);
-		 CStaticClass::m_logfile.LogEvent(m_strmessage);
+		 //CString m_strmessage = L"";
+		 //m_strmessage.Format(L"Total Order Loaded %d", m_totalOrder);
+		 //(m_strmessage);
 
 	 	 
 	 int totalData = m_PendingDealStringArray.Total();
@@ -2907,7 +3008,7 @@ int CManager::login(CString server,CString login,CString password)
 					 //Getting Order History
 					 if (res = m_manager->HistoryRequest(logins[j], from, to, orders) == MT_RET_OK)
 					 {
-						 ////CStaticClass::m_logfile.LogEvent(L"Going to add History Order in msmq");
+						 ////(L"Going to add History Order in msmq");
 						 r_count = orders->Total();
 						 for (UINT p = 0; p < orders->Total(); p++)
 						 {
@@ -2936,6 +3037,85 @@ int CManager::login(CString server,CString login,CString password)
 	 group->Release();	 
  }
 
+
+
+ CString  CManager::FetchLogFromMemory(UINT64 datefrom, UINT64 dateto, CString clientkey)
+ {
+	 CString m_returnval = L"";
+	 StringBuffer s;
+	 Writer<StringBuffer> writer(s);
+	 writer.StartObject();
+	 writer.Key("type");
+	 writer.String("LOGIN_DEVICE_LOG");	 
+	 writer.Key("logdata");
+	 writer.StartArray();
+	 CStaticClass::m_mutexLog.Lock();
+	 int total_Data = CStaticClass::m_logindeviceArray.Total();
+	 CStaticClass::m_mutexLog.Unlock();
+	 CString str_log = L"";
+
+
+	 CStaticClass m_obj;
+	 SYSTEMTIME m_dateUnix_From;
+	 m_dateUnix_From = SMTTime::TimeToST(datefrom, m_dateUnix_From);
+	 CString str_Datefrom = m_obj.sysDateToStringFormat(m_dateUnix_From);
+
+	 SYSTEMTIME m_dateUnix_to;
+	 m_dateUnix_to = SMTTime::TimeToST(dateto, m_dateUnix_to);
+	 CString str_DateTo = m_obj.sysDateToStringFormat(m_dateUnix_to);
+
+
+	// str_log.Format(L"DateFrom:%s DateTo:%s ", str_Datefrom, str_DateTo);
+	 //(str_log);
+	 for (int i = 0; i < total_Data; i++)
+	 {
+		 CStaticClass::st_logindevice m_st_logindevice = {};
+		 CStaticClass::m_mutexLog.Lock();
+		 m_st_logindevice = CStaticClass::m_logindeviceArray[i];
+		 CStaticClass::m_mutexLog.Unlock();
+		 int m_time = m_st_logindevice.m_time;
+		 
+		 if (m_time >= datefrom && m_time <= dateto)
+		 {
+			 writer.StartObject();
+
+			 CString m_ip = m_st_logindevice.m_ip;
+			 CString m_login = m_st_logindevice.m_login;
+			 CString m_deviceID = m_st_logindevice.m_deviceID;
+			 writer.Key("time");
+			 writer.Int(m_time);
+			 writer.Key("ip");
+			 string m_sip = string(CT2CA(m_ip));
+			 const char* m_ssip = m_sip.c_str();
+			 writer.String(m_ssip);
+
+			 writer.Key("login");
+			 string m_slogin = string(CT2CA(m_login));
+			 const char* m_sslogin = m_slogin.c_str();
+			 writer.String(m_sslogin);
+
+
+			 writer.Key("deviceid");
+			 string m_sdeviceID = string(CT2CA(m_deviceID));
+			 const char* m_ssdeviceID = m_sdeviceID.c_str();
+			 writer.String(m_ssdeviceID);
+
+			 writer.EndObject();
+		 }
+	 }	
+	 writer.EndArray();
+	 writer.EndObject();
+	 CString strData = L"";
+	 strData = s.GetString();
+	 m_returnval = strData;
+	 s.Flush();
+	 s.Clear();
+	 writer.Flush();
+	 //(m_returnval);
+	 return m_returnval;
+ }
+
+
  CString  CManager::FetchHistoricalDealingFromMemory(UINT64 datefrom, UINT64 dateto,CString clientkey, CString subscriptionId)
  {
 	 CString m_returnval = L"";
@@ -2958,6 +3138,8 @@ int CManager::login(CString server,CString login,CString password)
 
 	 CStaticClass::m_mutex_order.Lock();
 	 POSITION pos = CStaticClass::m_Orika_orderHastable.GetStartPosition();
+	 int p_time = 0;
+	 int p_CheckTime = 0;
 	 while (pos != NULL)
 	 {
 		 int m_orderno = 0;
@@ -2967,9 +3149,20 @@ int CManager::login(CString server,CString login,CString password)
 		 CString strFinalJson = L"";
 		 m_strlogin = st.m_login;
 
-		 int m_time = st.m_time;;
+		 int m_time = st.m_time-19800;;
 		 if (m_time >= datefrom && m_time <= dateto)
 		 {
+			/* if (m_time < p_CheckTime)
+			 {
+				 m_time = p_time;
+			 }
+			 else
+			 {
+				 p_time = m_time;
+				 p_CheckTime = m_time+(5*60);
+			 }*/
+
+
 			 CString m_strTime = L"";
 			 CString m_tmp_date = L"";
 			 CMTStr256 str_time;
@@ -3041,7 +3234,7 @@ int CManager::login(CString server,CString login,CString password)
 			 //m_strTypeFordealing = L"Order Placed";
 			 m_reason.Format(L"'%s' #%d %s %.2lf %s at %.4lf", m_strlogin, m_orderno, OrderDesc, m_volume, m_symbol, m_price);
 
-			 ////CStaticClass::m_logfile.LogEvent(L"L20");
+			 ////(L"L20");
 			 
 			 if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), m_strlogin) != m_st.m_logins.end())
 			 {
@@ -3245,7 +3438,7 @@ int CManager::login(CString server,CString login,CString password)
  }
  void  CManager::OnDealAdd(const IMTDeal* deal)
  {
-	 ////CStaticClass::m_logfile.LogEvent(L"Going to add deal in msmq");
+	 ////(L"Going to add deal in msmq");
 		 if (deal->Action() == 0 || deal->Action() == 1)
 		 {
 			 CStaticClass m_staticclass;
@@ -3264,13 +3457,31 @@ int CManager::login(CString server,CString login,CString password)
 
 			 UINT m_Reason= deal->Reason();
 
+
+
+			 AlertStaticClass::m_alert_dealing_Lock.Lock();
+				 AlertStaticClass::dealingData m_stdeal = {};
+				 CString m_str_login = L"";
+				 m_str_login.Format(L"%I64u", m_login);
+				 CMTStr::Copy(m_stdeal.m_login, m_str_login);
+				 CMTStr::Copy(m_stdeal.m_symbol, m_Symbol);
+				 double m_dclVolume = m_volume / 10000;
+				 m_stdeal.m_volume = m_dclVolume;
+				 m_stdeal.m_rate = m_price;
+				 m_stdeal.m_action = m_type;
+				 AlertStaticClass::m_Alertdealing_Array.Add(&m_stdeal);
+			 AlertStaticClass::m_alert_dealing_Lock.Unlock();
+
+
+
+
 			 CString str_msmq = L"";
 			 //str_msmq.Format(L"{\"MessageType\":1004,\"Data\":{\"login\":%I64u,\"deal\":%I64u,\"order\":%I64u,\"type\":%u,\"dealtime\":%I64u,\"Symbol\":\"%s\",\"price\":%.4lf,\"External_ID\":\"%s\",\"contract_Size\":%u,\"comment\":\"%s\",\"volume\":%I64u}}", m_login, m_deal, m_order, m_type, m_dealTime, m_Symbol, m_price, m_External_ID, m_contract_Size, m_comment, m_volume);
 			 CStaticClass::m_mutex_order.Lock();
-			 ////CStaticClass::m_logfile.LogEvent(L"L113");
+			 ////(L"L113");
 				CStaticClass::m_OrikaOrderdealNO.SetAt(m_order, m_deal);
 			 
-			 ////CStaticClass::m_logfile.LogEvent(L"UL113");
+			 ////(L"UL113");
 			 CStaticClass::st_order m_stOrder_Check = {};
 			 CStaticClass::m_Orika_orderHastable.Lookup(m_order, m_stOrder_Check);
 			 CStaticClass::m_mutex_order.Unlock();
@@ -3373,11 +3584,11 @@ int CManager::login(CString server,CString login,CString password)
 			 CStaticClass m_staticclass;
 			 m_staticclass.sendNewTradeToClientFromDeal(deal,1,L"");
 		 }
-		 ////CStaticClass::m_logfile.LogEvent(L"Deal added in msmq");
+		 ////(L"Deal added in msmq");
  }
  void  CManager::OnOrderAdd(const IMTOrder* order)
  {
-	 ////CStaticClass::m_logfile.LogEvent(L"Going to add Order in msmq");
+	 ////(L"Going to add Order in msmq");
 	 if (order->Type() != 0 && order->Type() != 1)
 	 {
 		 CStaticClass m_staticclass;
@@ -3420,11 +3631,11 @@ int CManager::login(CString server,CString login,CString password)
 		 strforwrite = temp_bst;
 		 m_CMSMQApiWrapper.SendStringMessage(CStaticClass::MSMQQueuName, szLabel, strforwrite);
 	 }
-	 ////CStaticClass::m_logfile.LogEvent(L"Order Added in msmq");
+	 ////(L"Order Added in msmq");
  }
  void  CManager::OnOrderUpdate(const IMTOrder* order)
  {
-	 ////CStaticClass::m_logfile.LogEvent(L"Going to Update Order in msmq");
+	 ////(L"Going to Update Order in msmq");
 	 if (order->Type() != 0 && order->Type() != 1)
 	 {
 		 CStaticClass m_staticclass;
@@ -3453,11 +3664,11 @@ int CManager::login(CString server,CString login,CString password)
 		 strforwrite = temp_bst;
 		 m_CMSMQApiWrapper.SendStringMessage(CStaticClass::MSMQQueuName, szLabel, strforwrite);
 	 }
-	 ////CStaticClass::m_logfile.LogEvent(L"Order Updated in msmq");
+	 ////(L"Order Updated in msmq");
  }
  void  CManager::OnOrderDelete(const IMTOrder* order)
  {
-	 ////CStaticClass::m_logfile.LogEvent(L"Going to Delete Order in msmq");
+	 ////(L"Going to Delete Order in msmq");
 	 if (order->Type() != 0 && order->Type() != 1)
 	 {
 		 CStaticClass m_staticclass;
@@ -3511,7 +3722,7 @@ int CManager::login(CString server,CString login,CString password)
 		 strforwrite = temp_bst;
 		 m_CMSMQApiWrapper.SendStringMessage(CStaticClass::MSMQQueuName, szLabel, strforwrite);
 	 }
-	 ////CStaticClass::m_logfile.LogEvent(L"Order Deleted from msmq");
+	 ////(L"Order Deleted from msmq");
  }
  
 
@@ -3543,12 +3754,105 @@ int CManager::login(CString server,CString login,CString password)
 		 strforwrite = temp_bst;
 		 m_CMSMQApiWrapper.SendStringMessage(CStaticClass::MSMQQueuName, szLabel, strforwrite);
 	 }
-	 ////CStaticClass::m_logfile.LogEvent(L"Deal Updated in msmq");
+	 ////(L"Deal Updated in msmq");
  }
+ void CManager::getPositionFromMT()
+ {	 
+	 CStaticClass::m_ClientSymbolPosition_MT.RemoveAll();
+	 INT64		INT_LOGIN = 0;
+	 UINT totalNoOfPosition = 0;
+	 int r_count = 0;
+	 IMTConGroup* group;
+	 MTAPIRES res;
+	 IMTPositionArray* positions = m_manager->PositionCreateArray();
+	 m_manager->PositionGetByGroup(L"*", positions);
+	 r_count = positions->Total();
+	 for (UINT p = 0; p < positions->Total(); p++)
+	 {
+		 IMTPosition* position = m_manager->PositionCreate();
+		 position = positions->Next(p);
+		 CString strPosition = L"";
+		 INT64 clientLogin = position->Login();
+		 CString m_symbol = position->Symbol();
+		 INT64 volume = position->Volume();
+		 int action = position->Action();
+		 CString strAction = L"";
+		 if (action == 1)
+		 {
+			 volume = -volume;
+		 }
+
+		 CString m_loginSymbol = L"";
+		 m_loginSymbol.Format(L"%I64u:%s", clientLogin, m_symbol);
+		 CStaticClass::m_ClientSymbolPosition_MT.SetAt(m_loginSymbol, volume);
+		 position->Release();
+	 }
+	 positions->Release();
+
+
+
+	 /*group = m_manager->GroupCreate();
+	 
+		 for (UINT i = 0; m_manager->GroupNext(i, group) == MT_RET_OK; i++)
+		 {
+			 UINT64* logins = NULL;
+			 UINT    logins_total = 0;
+			 if (res = m_manager->UserLogins(group->Group(), logins, logins_total) == MT_RET_OK)
+			 {
+				 IMTPositionArray* positions = m_manager->PositionCreateArray();
+				 IMTPosition* position = m_manager->PositionCreate();				 				 
+				 if (logins && logins_total)
+					 for (UINT j = 0; j < logins_total; j++)
+					 {						 
+						 INT_LOGIN = logins[j];						 
+						 if (res = m_manager->PositionGet(logins[j], positions) == MT_RET_OK)
+						 {
+							 r_count = positions->Total();
+							 for (UINT p = 0; p < positions->Total(); p++)
+							 {
+								 position = positions->Next(p);
+								 CString strPosition = L"";
+								 INT64 clientLogin = position->Login();
+								 CString m_symbol = position->Symbol();
+								 INT64 volume = position->Volume();
+								 int action = position->Action();
+								 CString strAction = L"";
+								 if (action == 1)
+								 {
+									 volume = -volume;
+								 }	
+
+								 CString m_loginSymbol = L"";
+								 m_loginSymbol.Format(L"%I64u:%s", clientLogin, m_symbol);
+								 CStaticClass::m_ClientSymbolPosition_MT.SetAt(m_loginSymbol, volume);
+							 }
+						 }
+					 }
+				 positions->Release();				 
+			 }		 
+	 }
+	 group->Release();*/
+ }
+
+
+ double CManager::getPositionFromMTClientWise(UINT64 m_login, CString m_symbol)
+ {	 	 
+	 UINT totalNoOfPosition = 0;
+	 int r_count = 0;
+	 IMTConGroup* group;
+	 MTAPIRES res;
+	 IMTPosition* position = m_manager->PositionCreate();
+	 m_manager->PositionGet(m_login, m_symbol, position);
+	 double m_volume = 0; 
+	 m_volume = position->Volume();
+	 position->Release();
+	 return m_volume;
+ }
+
 
  void  CManager::OnHistoryAdd(const IMTOrder* order)
  {
-	 ////CStaticClass::m_logfile.LogEvent(L"Going to update History Order in msmq");
+	 ////(L"Going to update History Order in msmq");
 	 if (order->Type() != 0 && order->Type() != 1)
 	 {
 		 UINT64    m_login = order->Login();
@@ -3574,7 +3878,7 @@ int CManager::login(CString server,CString login,CString password)
 		 strforwrite = temp_bst;
 		 m_CMSMQApiWrapper.SendStringMessage(CStaticClass::MSMQQueuName, szLabel, strforwrite);
 	 }
-	 ////CStaticClass::m_logfile.LogEvent(L"updated History Order in msmq");
+	 ////(L"updated History Order in msmq");
  }
 
  inline void  CManager::OnGroupAdd(const IMTConGroup* config)
@@ -3605,15 +3909,14 @@ int CManager::login(CString server,CString login,CString password)
  }
 
 inline void CManager::OnTick(LPCWSTR symbol, const MTTickShort& tick)
-{
+{	
 	int m_TickFlag = tick.flags;
 	CString strSymbol = L"";
 	CStaticClass::m_symbolForTickData.Lookup(symbol, strSymbol);
 	if (strSymbol == L"")
 	{		
 		return;
-	}	
-	
+	}		
 	CString  m_symbol=symbol;		
 	CStaticClass::st_Tick m_st_Tick={};
 	CMTStr::Copy(m_st_Tick.m_symbol,symbol);
@@ -3634,7 +3937,7 @@ inline void CManager::OnTick(LPCWSTR symbol, const MTTickShort& tick)
 void CManager::UpdateClientMasterFromMuser(const IMTUser* m_user)
 {	
 	UINT64 INT_LOGIN = m_user->Login();	
-	CStaticClass::st_Orika_MTclientmaster m_st_Orika_MTclientmaster = {};
+	CStaticClass:: st_Orika_MTclientmaster m_st_Orika_MTclientmaster = {};
 	CStaticClass::m_Orika_MTclientmasterHasTable.Lookup(INT_LOGIN, m_st_Orika_MTclientmaster);
 	CString m_nameTmp=m_st_Orika_MTclientmaster.m_name;
 	CString m_commentTmp =m_st_Orika_MTclientmaster.m_comment;
@@ -3645,671 +3948,74 @@ void CManager::UpdateClientMasterFromMuser(const IMTUser* m_user)
 	CString strGroup = m_st_Orika_MTclientmaster.m_group;
 	if (m_nameTmp != m_user->Name() || m_commentTmp != m_user->Comment() || m_addressTmp != m_user->Address() || m_leadsourceTmp != m_user->LeadSource() || m_leadcampaignTmp != m_user->LeadCampaign() || m_languageTmp != m_user->Language()|| strGroup!= m_user->Group())
 	{
-		CStaticClass::m_mutex_Tick.Lock();
-		 strGroup = m_user->Group();
-
-
-		CString login = L"";
-		login.Format(L"%I64u", INT_LOGIN);
-
-
-		CString broker = L"";
-		CString subbroker = L"";
-		CString extragroup = L"";
-		CString Exchange = L"";
-
-		CString company = L"";
-		if (strGroup.Find(L"\\") >= 0)
+		if (m_user->Group() != L"")
 		{
-			company = strGroup.Mid(0, strGroup.Find(L"\\"));
+			UpdateClientMasterFromMuser_Manual(m_user);
+			updateLoginToClientList();
 		}
-
-		strGroup = strGroup.Mid(strGroup.Find(L"\\") + 1, strGroup.GetLength() - strGroup.Find(L"\\") - 1);
-
-		if (strGroup.Find(L"\\") >= 0)
-		{
-			broker = strGroup.Mid(0, strGroup.Find(L"\\"));
-			strGroup = strGroup.Mid(strGroup.Find(L"\\") + 1, strGroup.GetLength() - strGroup.Find(L"\\") - 1);
-		}
-		else
-		{
-			broker = strGroup;
-			strGroup = L"";
-		}
-
-		if (strGroup.Find(L"\\") >= 0)
-		{
-			subbroker = strGroup.Mid(0, strGroup.Find(L"\\"));
-			strGroup = strGroup.Mid(strGroup.Find(L"\\") + 1, strGroup.GetLength() - strGroup.Find(L"\\") - 1);
-		}
-		else
-		{
-			subbroker = strGroup;
-			strGroup = L"";
-		}
-
-		if (strGroup.Find(L"\\") >= 0)
-		{
-			extragroup = strGroup.Mid(0, strGroup.Find(L"\\"));
-			strGroup = strGroup.Mid(strGroup.Find(L"\\") + 1, strGroup.GetLength() - strGroup.Find(L"\\") - 1);
-		}
-		else
-		{
-			extragroup = strGroup;
-			strGroup = L"";
-		}
-
-
-		CString name = m_user->Name();
-		//CString broker=broker;
-		CString subBroker = subbroker;
-		CString extraGroup = extragroup;
-		double lossLimit = 0;
-		CString StrCreditLimit = m_user->Comment();
-		double creditLimit = _wtof(StrCreditLimit);
-
-
-		int comment = 0;
-		int m_language = m_user->Language();
-		if (m_language == 25)
-		{
-			comment = 1;
-		}
-		double qtyLimitMultiplayer = 0;
-		int ignoreTrader = 0;
-		CString colour = L"";
-		CString strBrokerage = m_user->Address();
-		CString strbrokerageRatio = m_user->LeadSource();
-		CString strPlRatio = m_user->LeadCampaign();
-		CString strGroup_User = m_user->Group();
-
-
-		CMTStr::Copy(m_st_Orika_MTclientmaster.m_name, name);
-		CMTStr::Copy(m_st_Orika_MTclientmaster.m_comment, StrCreditLimit);
-		CMTStr::Copy(m_st_Orika_MTclientmaster.m_address, strBrokerage);
-		CMTStr::Copy(m_st_Orika_MTclientmaster.m_leadsource, strbrokerageRatio);
-		CMTStr::Copy(m_st_Orika_MTclientmaster.m_leadcampaign, strPlRatio);
-		m_st_Orika_MTclientmaster.m_language = m_language;
-		CMTStr::Copy(m_st_Orika_MTclientmaster.m_group, strGroup_User);
-
-		CStaticClass::m_Orika_MTclientmasterHasTable.SetAt(INT_LOGIN, m_st_Orika_MTclientmaster);
-
-		CString strCommand = L"";
-		strCommand.Format(L"exec updateClient '%s','%s','%s','%s','%s','%.0f','%.0f','%d','%.2f','%d','%s','%s','%s'", login, name, broker, subBroker, extraGroup, lossLimit, creditLimit, comment, qtyLimitMultiplayer, ignoreTrader, colour, Exchange, company);
-		CStaticClass::m_sqldata.executeCommand(strCommand);
-
-		double subBrokerBrokerageRatio = 0;
-		double BrokerBrokerageRatio = 0;
-		double CompanyBrokerageRatio = 0;
-
-		CString  str_subBrokerBrokerageRatio = L"";
-		CString  str_BrokerBrokerageRatio = L"";
-		CString  str_CompanyBrokerageRatio = L"";
-		if (strbrokerageRatio.Find(L",") >= 0)
-		{
-			str_subBrokerBrokerageRatio = strbrokerageRatio.Mid(0, strbrokerageRatio.Find(L","));
-			strbrokerageRatio = strbrokerageRatio.Mid(strbrokerageRatio.Find(L",") + 1, strbrokerageRatio.GetLength() - strbrokerageRatio.Find(L",") - 1);
-		}
-		else
-		{
-			str_subBrokerBrokerageRatio = strbrokerageRatio;
-			strbrokerageRatio = L"";
-		}
-		subBrokerBrokerageRatio = _wtof(str_subBrokerBrokerageRatio);
-
-		if (strbrokerageRatio.Find(L",") >= 0)
-		{
-			str_BrokerBrokerageRatio = strbrokerageRatio.Mid(0, strbrokerageRatio.Find(L","));
-			strbrokerageRatio = strbrokerageRatio.Mid(strbrokerageRatio.Find(L",") + 1, strbrokerageRatio.GetLength() - strbrokerageRatio.Find(L",") - 1);
-		}
-		else
-		{
-			str_BrokerBrokerageRatio = strbrokerageRatio;
-			strbrokerageRatio = L"";
-		}
-		BrokerBrokerageRatio = _wtof(str_BrokerBrokerageRatio);
-
-		if (strbrokerageRatio.Find(L",") >= 0)
-		{
-			str_CompanyBrokerageRatio = strbrokerageRatio.Mid(0, strbrokerageRatio.Find(L","));
-			strbrokerageRatio = strbrokerageRatio.Mid(strbrokerageRatio.Find(L",") + 1, strbrokerageRatio.GetLength() - strbrokerageRatio.Find(L",") - 1);
-		}
-		else
-		{
-			str_CompanyBrokerageRatio = strbrokerageRatio;
-			strbrokerageRatio = L"";
-		}
-		CompanyBrokerageRatio = _wtof(str_CompanyBrokerageRatio);
-
-
-
-
-
-		double subBrokerPlratio = 0;
-		double BrokerPlratio = 0;
-		double CompanyPlratio = 0;
-
-		CString str_subBrokerPlratio = L"";
-		CString str_BrokerPlratio = L"";
-		CString str_CompanyPlratio = L"";
-
-		if ( strPlRatio.Find(L",") >= 0 )
-		{
-			str_subBrokerPlratio = strPlRatio.Mid(0, strPlRatio.Find(L","));
-			strPlRatio = strPlRatio.Mid(strPlRatio.Find(L",") + 1, strPlRatio.GetLength() - strPlRatio.Find(L",") - 1);
-		}
-		else
-		{
-			str_subBrokerPlratio = strPlRatio;
-			strPlRatio = L"";
-		}
-		subBrokerPlratio = _wtof(str_subBrokerPlratio);
-
-		if (strPlRatio.Find(L",") >= 0)
-		{
-			str_BrokerPlratio = strPlRatio.Mid(0, strPlRatio.Find(L","));
-			strPlRatio = strPlRatio.Mid(strPlRatio.Find(L",") + 1, strPlRatio.GetLength() - strPlRatio.Find(L",") - 1);
-		}
-		else
-		{
-			str_BrokerPlratio = strPlRatio;
-			strPlRatio = L"";
-		}
-		BrokerPlratio = _wtof(str_BrokerPlratio);
-
-		if (strPlRatio.Find(L",") >= 0)
-		{
-			str_CompanyPlratio = strPlRatio.Mid(0, strPlRatio.Find(L","));
-			strPlRatio = strPlRatio.Mid(strPlRatio.Find(L",") + 1, strPlRatio.GetLength() - strPlRatio.Find(L",") - 1);
-		}
-		else
-		{
-			str_CompanyPlratio = strPlRatio;
-			strPlRatio = L"";
-		}
-		CompanyPlratio = _wtof(str_CompanyPlratio);
-
-
-
-		//Start Updating Orika_clientbrokerage
-		CString strBrok = L"";
-		CString strSymbolGroup = L"";
-		CString strbrokerage = L"";
-		CString strbrokerageType = L"";
-
-		int brokageType = 1;
-		double clientBrokage = 0;
-		double subBrokerBrokage = 0;
-		double bokerBrokage = 0;
-		double companyBrokage = 0;
-
-
-		while (strBrokerage.Find(L",") >= 0)
-		{
-			strBrok = strBrokerage.Mid(0, strBrokerage.Find(L","));
-			strSymbolGroup = strBrok.Mid(0, strBrok.Find(L":"));
-			if (strSymbolGroup.Trim() == L"0")
-			{
-				strSymbolGroup = L"";
-			}
-			if (strSymbolGroup.Trim() == L"1")
-			{
-				strSymbolGroup = L"option";
-			}
-			strBrok = strBrok.Mid(strBrok.Find(L":") + 1, strBrok.GetLength() - strBrok.Find(L":") - 1);
-			strbrokerageType = strBrok.Mid(0, strBrok.Find(L":"));
-			brokageType = _wtoi(strbrokerageType);
-
-			strbrokerage = strBrok.Mid(strBrok.Find(L":") + 1, strBrok.GetLength() - 1);
-			clientBrokage = _wtof(strbrokerage);
-			subBrokerBrokage = clientBrokage * subBrokerBrokerageRatio / 100;
-			bokerBrokage = clientBrokage * BrokerBrokerageRatio / 100;
-			companyBrokage = clientBrokage * CompanyBrokerageRatio / 100;
-			if (companyBrokage == 0)
-			{
-				companyBrokage = clientBrokage - (subBrokerBrokage + bokerBrokage);
-			}
-
-			
-
-			strCommand.Format(L"exec updateClientbrokerage '%s','%s','%d','%.6f','%.6f','%.6f','%.6f'", login, strSymbolGroup, brokageType, clientBrokage, subBrokerBrokage, bokerBrokage, companyBrokage);
-			CStaticClass::m_sqldata.executeCommand(strCommand);
-
-			//Updating Brokerage in Memory
-			CStaticClass::st_Orika_clientbrokerage m_st_Orika_clientbrokerage = {};
-			CString strKey = L"";
-			CString strlogin = login;
-			CString strsymbol = strSymbolGroup;
-			strKey.Format(L"%s:%s", strlogin, strsymbol);
-			CMTStr::Copy(m_st_Orika_clientbrokerage.m_login, login);
-			CMTStr::Copy(m_st_Orika_clientbrokerage.m_symbolGroup, strSymbolGroup);
-			m_st_Orika_clientbrokerage.m_brokageType = brokageType;
-			m_st_Orika_clientbrokerage.m_clientBrokage = clientBrokage;
-			m_st_Orika_clientbrokerage.m_subBrokerBrokage = subBrokerBrokage;
-			m_st_Orika_clientbrokerage.m_bokerBrokage = bokerBrokage;
-			m_st_Orika_clientbrokerage.m_companyBrokage = companyBrokage;
-			CStaticClass::m_Orika_clientbrokerageHastable.SetAt(strKey, m_st_Orika_clientbrokerage);
-			//End of Updating brokerage in Memory
-
-
-
-
-
-			strBrokerage = strBrokerage.Mid(strBrokerage.Find(L",") + 1, strBrokerage.GetLength() - strBrokerage.Find(L",") - 1);
-
-
-			//Updating Realtime client
-			CStaticClass::stclientmaster m_stclientmaster = {};
-			CMTStr::Copy(m_stclientmaster.m_login, login);
-			CMTStr::Copy(m_stclientmaster.m_symbolGroup, strSymbolGroup);
-			CMTStr::Copy(m_stclientmaster.m_name, name);
-			CMTStr::Copy(m_stclientmaster.m_broker, broker);
-			CMTStr::Copy(m_stclientmaster.m_subBroker, subBroker);
-			CMTStr::Copy(m_stclientmaster.m_extraGroup, extraGroup);
-			m_stclientmaster.m_subBrokerPLRatio = subBrokerPlratio;
-			m_stclientmaster.m_brokerPLRatio = BrokerPlratio;
-			m_stclientmaster.m_companyPLRatio = CompanyPlratio;
-			CString strBrokerageType = L"";
-			if (brokageType == 0)
-			{
-				strBrokerageType = L"turnover";
-			}
-			if (brokageType == 1)
-			{
-				strBrokerageType = L"lotwise";
-			}
-			CMTStr::Copy(m_stclientmaster.m_brokageType, strBrokerageType);
-			m_stclientmaster.m_clientBrokage = clientBrokage;
-			m_stclientmaster.m_subBrokerBrokage = subBrokerBrokage;
-			m_stclientmaster.m_bokerBrokage = bokerBrokage;
-			m_stclientmaster.m_companyBrokage = companyBrokage;
-			//m_stclientmaster.m_symbolWiseBuyLimit = data_table.m_symbolWiseBuyLimit;
-			//m_stclientmaster.m_symbolWiseSellLimit = data_table.m_symbolWiseSellLimit;
-			//m_stclientmaster.m_symbolWisePendingOrderEnableDisable = data_table.m_symbolWisePendingOrderEnableDisable;
-			//m_stclientmaster.m_symbolPositionLimit = data_table.m_symbolPositionLimit;
-			//m_stclientmaster.m_symbolPendingOrderDiffFromBidAsk = data_table.m_symbolPendingOrderDiffFromBidAsk;	
-			m_stclientmaster.m_lossLimit = lossLimit;
-			m_stclientmaster.m_creditLimit = creditLimit;
-			m_stclientmaster.m_comment = comment;
-			m_stclientmaster.m_qtyLimitMultiplayer = qtyLimitMultiplayer;
-			m_stclientmaster.m_ignoreTrader = ignoreTrader;
-			CMTStr::Copy(m_stclientmaster.m_colour, colour);
-			int ClientDataIndex = -1;
-			int m_totalData = CStaticClass::m_clientmasterarray.Total();
-			for (int i = 0; i < m_totalData; i++)
-			{
-				CStaticClass::stclientmaster m_tmpData = {};
-				m_tmpData = CStaticClass::m_clientmasterarray[i];
-				CString strTmpLogin = m_tmpData.m_login;
-				CString strTmpSymbolGroup = m_tmpData.m_symbolGroup;
-				if (strTmpLogin == login && strTmpSymbolGroup == strSymbolGroup)
-				{
-					ClientDataIndex = i;
-				}
-			}
-			if (ClientDataIndex == -1)
-			{
-				CStaticClass::m_clientmasterarray.Add(&m_stclientmaster);
-			}
-			else
-			{
-				CStaticClass::m_clientmasterarray.Update(ClientDataIndex, &m_stclientmaster);
-			}
-			//End Of Updating RealTime Client
-
-
-		}
-		strBrok = strBrokerage;
-		strSymbolGroup = strBrok.Mid(0, strBrok.Find(L":"));
-		if (strSymbolGroup.Trim() == L"0")
-		{
-			strSymbolGroup = L"";
-		}
-		if (strSymbolGroup.Trim() == L"1")
-		{
-			strSymbolGroup = L"option";
-		}
-		strBrok = strBrok.Mid(strBrok.Find(L":") + 1, strBrok.GetLength() - strBrok.Find(L":") - 1);
-		strbrokerageType = strBrok.Mid(0, strBrok.Find(L":"));
-		brokageType = _wtoi(strbrokerageType);
-
-		strbrokerage = strBrok.Mid(strBrok.Find(L":") + 1, strBrok.GetLength() - 1);
-		clientBrokage = _wtof(strbrokerage);
-		subBrokerBrokage = clientBrokage * subBrokerBrokerageRatio / 100;
-		bokerBrokage = clientBrokage * BrokerBrokerageRatio / 100;
-		companyBrokage = clientBrokage * CompanyBrokerageRatio / 100;
-
-
-
-		strCommand.Format(L"exec updateClientbrokerage '%s','%s','%d','%.6f','%.6f','%.6f','%.6f'", login, strSymbolGroup, brokageType, clientBrokage, subBrokerBrokage, bokerBrokage, companyBrokage);
-		CStaticClass::m_sqldata.executeCommand(strCommand);
-
-		//Updating Brokerage in Memory
-		CStaticClass::st_Orika_clientbrokerage m_st_Orika_clientbrokerage = {};
-		CString strKey = L"";
-		CString strlogin = login;
-		CString strsymbol = strSymbolGroup;
-		strKey.Format(L"%s:%s", strlogin, strsymbol);
-		CMTStr::Copy(m_st_Orika_clientbrokerage.m_login, login);
-		CMTStr::Copy(m_st_Orika_clientbrokerage.m_symbolGroup, strSymbolGroup);
-		m_st_Orika_clientbrokerage.m_brokageType = brokageType;
-		m_st_Orika_clientbrokerage.m_clientBrokage = clientBrokage;
-		m_st_Orika_clientbrokerage.m_subBrokerBrokage = subBrokerBrokage;
-		m_st_Orika_clientbrokerage.m_bokerBrokage = bokerBrokage;
-		m_st_Orika_clientbrokerage.m_companyBrokage = companyBrokage;
-		CStaticClass::m_Orika_clientbrokerageHastable.SetAt(strKey, m_st_Orika_clientbrokerage);
-		CompanyPlratio = CompanyPlratio == 0 ? 100: CompanyPlratio;
-		//End of Updating brokerage in Memory
-
-		//End Updating Orika_clientbrokerage
-		//Updating Client PlRatio
-		//strPlRatio				
-		strCommand.Format(L"exec UpdatePLDevideRatio '%s','','%.6f','%.6f','%.6f'", login, BrokerPlratio, subBrokerPlratio, CompanyPlratio);
-		CStaticClass::m_sqldata.executeCommand(strCommand);
-		//Updating PL Ratio in Memory
-		CStaticClass::st_Orika_PLDevideRatio m_st_Orika_PLDevideRatio = {};
-
-		strlogin = login;
-		strsymbol = L"";
-		strKey.Format(L"%s:%s", strlogin, strsymbol);
-		CMTStr::Copy(m_st_Orika_PLDevideRatio.m_login, strlogin);
-		CMTStr::Copy(m_st_Orika_PLDevideRatio.m_symbolGroup, strsymbol);
-
-		m_st_Orika_PLDevideRatio.m_brokerPLRatio = BrokerPlratio;
-		m_st_Orika_PLDevideRatio.m_subBrokerPLRatio = subBrokerPlratio;
-		m_st_Orika_PLDevideRatio.m_companyPLRatio = CompanyPlratio;
-
-		CStaticClass::m_Orika_PLDevideRatioHastable.SetAt(strKey, m_st_Orika_PLDevideRatio);
-		//End of Updating PL Ratio in Memory
-
-
-		//End Of Updating Plratio
-
-
-		CStaticClass::st_Orika_clientmaster m_st_Orika_clientmaster = {};
-
-
-		CMTStr::Copy(m_st_Orika_clientmaster.m_login, login);
-		CMTStr::Copy(m_st_Orika_clientmaster.m_name, name);
-		CMTStr::Copy(m_st_Orika_clientmaster.m_broker, broker);
-		CMTStr::Copy(m_st_Orika_clientmaster.m_subBroker, subBroker);
-		CMTStr::Copy(m_st_Orika_clientmaster.m_extraGroup, extraGroup);
-		m_st_Orika_clientmaster.m_lossLimit = lossLimit;
-		m_st_Orika_clientmaster.m_creditLimit = creditLimit;
-		m_st_Orika_clientmaster.m_comment = comment;
-		m_st_Orika_clientmaster.m_qtyLimitMultiplayer = qtyLimitMultiplayer;
-		m_st_Orika_clientmaster.m_ignoreTrader = ignoreTrader;
-		CMTStr::Copy(m_st_Orika_clientmaster.m_colour, colour);
-		CMTStr::Copy(m_st_Orika_clientmaster.m_company,company);
-		CStaticClass::m_Orika_clientmasterHastable.SetAt(login, m_st_Orika_clientmaster);
-
-
-		//Updating Netposition Hash Table		
-		StringBuffer s;
-		Writer<StringBuffer> writer(s);
-		writer.StartObject();
-		writer.Key("type");
-		writer.String("CLIENT_POSITION");
-		writer.Key("updatekey");
-		writer.StartArray();
-		writer.String("login");
-		writer.String("symbol");
-		writer.EndArray();
-		writer.Key("update");
-		writer.StartArray();
-		POSITION pos = CStaticClass::m_Orika_symbolmasterHastable.GetStartPosition();
-		while (pos != NULL)
-		{
-			CString strKey = L"";
-			CStaticClass::st_Orika_symbolmaster m_st_Orika_symbolmaster = {};
-			CStaticClass::m_Orika_symbolmasterHastable.GetNextAssoc(pos, strKey, m_st_Orika_symbolmaster);
-			CString m_SymbolGroup = m_st_Orika_symbolmaster.m_symbolGroup;
-			CString ClientSymbolKey = L"";
-			ClientSymbolKey.Format(L"%I64u:%s", INT_LOGIN, strKey);
-			CStaticClass::st_netpositionClientWise stnetpos = {};
-			CStaticClass::mapNetPositionClientWise.Lookup(ClientSymbolKey, stnetpos);			
-			CString m_GetLoginValue = stnetpos.m_login;
-			if (m_GetLoginValue.Trim()!=L"")
-			{
-			//ClientSymbolGroupKey
-			CString ClientSymbolGroupKey = L"";
-			ClientSymbolGroupKey.Format(L"%I64u:%s", INT_LOGIN, m_SymbolGroup);
-			CStaticClass::st_Orika_clientbrokerage m_st_Orika_clientbrokerage = {};
-			CStaticClass::m_Orika_clientbrokerageHastable.Lookup(ClientSymbolGroupKey, m_st_Orika_clientbrokerage);
-			//ClientKey
-			CString strBrokerageLogin = m_st_Orika_clientbrokerage.m_login;
-
-
-			CString ClientKey = L"";
-			ClientKey.Format(L"%I64u:", INT_LOGIN);
-
-			if (strBrokerageLogin.Trim() == L"")
-			{
-				CStaticClass::m_Orika_clientbrokerageHastable.Lookup(ClientKey, m_st_Orika_clientbrokerage);
-			}
-
-			CStaticClass::st_Orika_PLDevideRatio m_st_Orika_PLDevideRatio = {};
-			CStaticClass::m_Orika_PLDevideRatioHastable.Lookup(ClientSymbolGroupKey, m_st_Orika_PLDevideRatio);
-			strBrokerageLogin = m_st_Orika_PLDevideRatio.m_login;
-
-			if (strBrokerageLogin == L"")
-			{
-				CStaticClass::m_Orika_PLDevideRatioHastable.Lookup(ClientKey, m_st_Orika_PLDevideRatio);
-			}
-
-			CMTStr::Copy(stnetpos.m_name, name);
-			CMTStr::Copy(stnetpos.m_broker, broker);
-			CMTStr::Copy(stnetpos.m_subbroker, subbroker);
-
-			CMTStr::Copy(stnetpos.m_company, company);
-
-			*stnetpos.m_subbrokerRatio = m_st_Orika_PLDevideRatio.m_subBrokerPLRatio;
-			*stnetpos.m_brokerRatio = m_st_Orika_PLDevideRatio.m_brokerPLRatio;
-			*stnetpos.m_companyRatio = m_st_Orika_PLDevideRatio.m_companyPLRatio;
-
-
-
-
-
-			*stnetpos.m_subbrokervolume = ((*stnetpos.m_volume) * (*stnetpos.m_subbrokerRatio)) / 100;
-			*stnetpos.m_brokervolume = ((*stnetpos.m_volume) * (*stnetpos.m_brokerRatio)) / 100;
-			*stnetpos.m_companyvolume = ((*stnetpos.m_volume) * (*stnetpos.m_companyRatio)) / 100;
-
-
-			*stnetpos.m_brokerageType = m_st_Orika_clientbrokerage.m_brokageType;
-			*stnetpos.m_clientBrokRate = m_st_Orika_clientbrokerage.m_clientBrokage;
-			*stnetpos.m_subBrokerBrokRate = m_st_Orika_clientbrokerage.m_subBrokerBrokage;
-			*stnetpos.m_brokerBrokRate = m_st_Orika_clientbrokerage.m_bokerBrokage;
-			*stnetpos.m_companyBrokRate = m_st_Orika_clientbrokerage.m_companyBrokage;
-
-
-
-			//Recalculating Brokerage
-			CStaticClass::m_mutex_TotalBrokerage.Lock();
-			CStaticClass::st_TotalTradedLotAndTOT m_stTO = {};
-			CStaticClass::m_TotalLotAndTOT.Lookup(ClientSymbolKey, m_stTO);
-			double m_TotalTradedLot =m_stTO.m_TotalTradedLot;
-			double m_TotalTradedTO = m_stTO.m_TotalTradedTO;
-			//Calculating Client Brokerage
-
-			double m_brokerageType = *stnetpos.m_brokerageType;	
-			double m_brokeragerate = *stnetpos.m_clientBrokRate;
-			double m_subBrokerBrokRate = *stnetpos.m_subBrokerBrokRate;
-			double m_brokerBrokRate = *stnetpos.m_brokerBrokRate;
-			double m_companyBrokRate = *stnetpos.m_companyBrokRate;
-			double m_newbrolerage = 0;			
-			double m_subBrokerBrokTotal = 0;
-			double m_brokerBrokTotal = 0;
-			double m_extraGroupBrokTotal = 0;
-			double m_comBalancebrokTotal = 0;
-			if (m_brokerageType == 1)
-			{
-				m_newbrolerage = (m_TotalTradedLot * m_brokeragerate);
-				m_subBrokerBrokTotal = (m_TotalTradedLot * m_subBrokerBrokRate) ;
-				m_brokerBrokTotal = (m_TotalTradedLot * m_brokerBrokRate) ;
-				//m_extraGroupBrokTotal = (m_TotalTradedLot * m_m_extraGroupBrokageRate) / 100;
-				m_comBalancebrokTotal = (m_TotalTradedLot * m_companyBrokRate) ;
-			}
-			else
-			{
-				m_newbrolerage = (m_TotalTradedTO * m_brokeragerate) / 100;
-				m_subBrokerBrokTotal = (m_TotalTradedTO * m_subBrokerBrokRate) / 100;
-				m_brokerBrokTotal = (m_TotalTradedTO * m_brokerBrokRate) / 100;
-				//m_extraGroupBrokTotal = (m_TotalTradedTO * m_m_extraGroupBrokageRate) / 100;
-				m_comBalancebrokTotal = (m_TotalTradedTO * m_companyBrokRate) / 100;
-			}
-			m_newbrolerage = abs(m_newbrolerage);						
-			
-			
-			*stnetpos.m_clientBrokarage = m_newbrolerage;
-			*stnetpos.m_subbrokerBrokarage = m_subBrokerBrokTotal;
-			*stnetpos.m_brokerBrokarage = m_brokerBrokTotal;
-			*stnetpos.m_companyBrokarage = m_comBalancebrokTotal;
-
-
-
-			CStaticClass::st_orika_brokerageLoginSymbolWise  st_pac = {};
-						
-			st_pac.m_clientBrokTotal = m_newbrolerage;
-			st_pac.m_subBrokerBrokTotal = m_subBrokerBrokTotal;
-			st_pac.m_brokerBrokTotal = m_brokerBrokTotal;
-			st_pac.m_comBrokTotal = m_comBalancebrokTotal;
-			CStaticClass::m_brokerageLoginSymbolWiseHastable.SetAt(ClientSymbolGroupKey, st_pac);
-			
-
-			CStaticClass::m_mutex_TotalBrokerage.Unlock();
-			//End Of Recalculating Brokerage
-
-
-
-			*stnetpos.m_clientexposure = (*stnetpos.m_average * (*stnetpos.m_volume) * (*stnetpos.m_multi));
-			*stnetpos.m_subbrokerexposure = ((*stnetpos.m_clientexposure) * (*stnetpos.m_subbrokerRatio)) / 100;
-			*stnetpos.m_brokerexposure = ((*stnetpos.m_clientexposure) * (*stnetpos.m_brokerRatio)) / 100;
-			*stnetpos.m_companyexposure = ((*stnetpos.m_clientexposure) * (*stnetpos.m_companyRatio)) / 100;
-
-			//*stnetpos.m_clientfloatingpl		
-			*stnetpos.m_subbrokerfloatingpl = ((*stnetpos.m_clientfloatingpl) * (*stnetpos.m_subbrokerRatio)) / 100;
-			*stnetpos.m_brokerfloatingpl = ((*stnetpos.m_clientfloatingpl) * (*stnetpos.m_brokerRatio)) / 100;
-			*stnetpos.m_companyfloatingpl = ((*stnetpos.m_clientfloatingpl) * (*stnetpos.m_companyRatio)) / 100;
-
-
-			//*stnetpos.m_clientbalance;
-			*stnetpos.m_subbrokerbalance = ((*stnetpos.m_clientbalance) * (*stnetpos.m_subbrokerRatio)) / 100;
-			*stnetpos.m_brokerbalance = ((*stnetpos.m_clientbalance) * (*stnetpos.m_brokerRatio)) / 100;
-			*stnetpos.m_companybalance = ((*stnetpos.m_clientbalance) * (*stnetpos.m_companyRatio)) / 100;
-
-
-			*stnetpos.m_ClientGrossAmount = *stnetpos.m_clientbalance + *stnetpos.m_clientfloatingpl;
-			*stnetpos.m_SubBrokerGrossAmount = ((*stnetpos.m_ClientGrossAmount) * (*stnetpos.m_subbrokerRatio)) / 100;
-			*stnetpos.m_BrokerGrossAmount = ((*stnetpos.m_ClientGrossAmount) * (*stnetpos.m_brokerRatio)) / 100;
-			*stnetpos.m_CompanyGrossAmount = ((*stnetpos.m_ClientGrossAmount) * (*stnetpos.m_companyRatio)) / 100;
-
-
-			*stnetpos.m_clientnetamount = *stnetpos.m_ClientGrossAmount - *stnetpos.m_clientBrokarage;
-			*stnetpos.m_subbrokerNetAmount = *stnetpos.m_SubBrokerGrossAmount - *stnetpos.m_subbrokerBrokarage;
-			*stnetpos.m_brokerNetAmount = *stnetpos.m_BrokerGrossAmount - *stnetpos.m_brokerBrokarage;
-			*stnetpos.m_companyNetAmount = *stnetpos.m_CompanyGrossAmount - *stnetpos.m_companyBrokarage;
-
-
-			double m_clientplnet =*stnetpos.m_clientnetamount;
-			double m_subbrokerplnet =*stnetpos.m_subbrokerNetAmount;
-			double m_brokerplnet =*stnetpos.m_brokerNetAmount;
-			double m_companyplnet =*stnetpos.m_companyNetAmount;
-
-
-			
-			CStaticClass::mapNetPositionClientWise.SetAt(ClientSymbolKey, stnetpos);
-			CString strUpdateData = L"";
-			int firstCheck = 0;
-			CString str_columnJson = L"";
-			
-
-
-
-			
-			writer.StartObject();
-			
-
-			CString strLogin = stnetpos.m_login;
-			CString strSymbol = stnetpos.m_symbol;
-			writer.Key("login");
-			string sslogin = string(CT2CA(strLogin));
-			const char* stlogin = sslogin.c_str();
-			writer.String(stlogin);
-			writer.Key("symbol");
-			string sssymbol = string(CT2CA(strSymbol));
-			const char* stsymbol = sssymbol.c_str();
-			writer.String(stsymbol);
-
-
-
-
-			writer.Key("name");
-			string ssname = string(CT2CA(name));
-			const char* stName = ssname.c_str();
-			writer.String(stName);
-			
-			
-
-			writer.Key("company");
-			string sscompany = string(CT2CA(company));
-			const char* stcompany = sscompany.c_str();
-			writer.String(stcompany);
-
-			
-			writer.Key("subbroker");
-			string sssubbroker = string(CT2CA(subbroker));
-			const char* stsubbroker = sssubbroker.c_str();
-			writer.String(stsubbroker);
-			writer.Key("broker");
-			string ssbroker = string(CT2CA(broker));
-			const char* stbroker = ssbroker.c_str();
-			writer.String(stbroker);
-			writer.Key("creditLimit");
-			double creditLimit = _wtof(StrCreditLimit);
-			writer.Double(creditLimit);
-
-
-
-			writer.Key("clientplnet");
-			writer.Double(m_clientplnet);
-			writer.Key("companyplnet");
-			writer.Double(m_companyplnet);
-			writer.Key("brokerplnet");
-			writer.Double(m_brokerplnet);
-			writer.Key("subbrokerplnet");
-			writer.Double(m_subbrokerplnet);
-			
-
-			writer.Key("clientbrokerage");
-			writer.Double(m_newbrolerage);
-			writer.Key("brokerbrokerage");
-			writer.Double(m_brokerBrokTotal);
-			writer.Key("subbrokerbrokerage");
-			writer.Double(m_subBrokerBrokTotal);
-			writer.Key("companybrokerage");
-			writer.Double(m_comBalancebrokTotal);
-
-
-			writer.EndObject();
-			
-		}
-		}
-		writer.EndArray();
-		writer.EndObject();
-
-
-		CString str_FinalJsonUpdate = L"";
-		string strforsend = "";
-		str_FinalJsonUpdate = s.GetString();
-		strforsend = CT2A(str_FinalJsonUpdate.GetString());
-		CStaticClass objCStaticClass;
-		objCStaticClass.sendDataToAllClient(strforsend);
-		//End of Updating Hash table of netposition
-		CStaticClass::m_mutex_Tick.Unlock();
 	}
 }
 
+void CManager::updateLoginToClientList()
+{
+	CStaticClass::m_logfile.LogEvent(L"updateLoginToClientList");
+	
+	CStaticClass::m_mutex_ClientList.Lock();
+	//(L"12");
+	POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
+
+	int m_totalData = CStaticClass::m_ClientContext.GetCount();
+
+	
+	while (pos != NULL)
+	{
+		CString strclientkey = L"";
+		CStaticClass::st_ClientContext m_st = {};
+		CStaticClass::m_ClientContext.GetNextAssoc(pos, strclientkey, m_st);
+	
+
+
+		CString m_login = m_st.m_userlogin;
+		CString   strCommand = L"";
+		strCommand.Format(L"exec GetUserLoginList '%s';", m_login);
+
+		//CStaticClass::m_mutex_order.Lock();
+		
+		
+		HRESULT hr = NULL;
+		CCommand<CAccessor<CloginListTable>> data_table;
+		if (!SUCCEEDED(hr))
+		{
+			return;
+		}				
+		CSession m_sqlsession;
+		hr=m_sqlsession.Open(CStaticClass::connection);
+		hr = data_table.Open(m_sqlsession, (LPCTSTR)strCommand);
+		if (FAILED(hr))
+		{
+			CStaticClass::m_mutex_ClientList.Unlock();
+			//CStaticClass::m_mutex_order.Unlock();
+			////(L"UL10");
+			return;
+		}
+		int i = 0;
+		while (hr = data_table.MoveNext() == S_OK)
+		{
+			CString strlogin = data_table.m_login;
+			m_st.m_logins.push_back(strlogin);
+		}
+		m_sqlsession.Close();
+		CStaticClass::m_ClientContext.SetAt(strclientkey, m_st);
+	}
+	CStaticClass::m_mutex_ClientList.Unlock();
+
+
+
+
+	CStaticClass::m_logfile.LogEvent(L"End  updateLoginToClientList");
+
+	
+}
 
 
 
@@ -4346,7 +4052,6 @@ void CManager::UpdateClientMasterFromMuser_Manual(const IMTUser* m_user)
 		}
 
 		strGroup = strGroup.Mid(strGroup.Find(L"\\") + 1, strGroup.GetLength() - strGroup.Find(L"\\") - 1);
-
 		if (strGroup.Find(L"\\") >= 0)
 		{
 			broker = strGroup.Mid(0, strGroup.Find(L"\\"));
@@ -4357,7 +4062,6 @@ void CManager::UpdateClientMasterFromMuser_Manual(const IMTUser* m_user)
 			broker = strGroup;
 			strGroup = L"";
 		}
-
 		if (strGroup.Find(L"\\") >= 0)
 		{
 			subbroker = strGroup.Mid(0, strGroup.Find(L"\\"));
@@ -4379,6 +4083,7 @@ void CManager::UpdateClientMasterFromMuser_Manual(const IMTUser* m_user)
 			extragroup = strGroup;
 			strGroup = L"";
 		}
+
 
 
 		CString name = m_user->Name();
@@ -5224,7 +4929,7 @@ void  CManager::OnSymbolUpdate(const IMTConSymbol* config)
 	UpdateSymbolMasterFromSymbol(config);
 
 	CStaticClass::m_mutex_order.Lock();	
-	//CStaticClass::m_logfile.LogEvent(L"L114");
+	//(L"L114");
 	CString m_OSymbol = config->Symbol();
 	CString m_OSource = config->Source();	
 	CString m_preSymbol = L"";
@@ -5239,7 +4944,7 @@ void  CManager::OnSymbolUpdate(const IMTConSymbol* config)
 	}	
 	CStaticClass::m_SymbolSourceArray.SetAt(m_OSource, m_preSymbol);
 	CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"UL114");
+	//(L"UL114");
 }
 
 
@@ -5322,7 +5027,7 @@ void CManager::UpdateSymbolMasterFromSymbol(const IMTConSymbol* symbol)
 
 	CStaticClass::m_mutex_Tick.Lock();
 	CStaticClass::m_mutex_ClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"_117");
+	//(L"_117");
 	//Updating Netposition Hash Table		
 
 
@@ -5475,7 +5180,7 @@ void CManager::UpdateSymbolMasterFromSymbol(const IMTConSymbol* symbol)
 	//End of Updating Hash table of netposition
 	CStaticClass::m_mutex_Tick.Unlock();
 	CStaticClass::m_mutex_ClientList.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U117");
+	//(L"U117");
 	objCStaticClass.sendDataToAllClient(strforsend);
 	
 
@@ -6007,7 +5712,7 @@ void CManager::UpdateSymbolSource()
 	for (UINT i = 0; m_manager->SymbolNext(i, symbol) == MT_RET_OK; i++)
 	{
 		CStaticClass::m_mutex_order.Lock();
-		//CStaticClass::m_logfile.LogEvent(L"Orderlock_68");
+		//(L"Orderlock_68");
 			CString m_symbol = symbol->Symbol();
 			CString m_source = symbol->Source();			
 			CString m_preSymbol = L"";
@@ -6022,7 +5727,7 @@ void CManager::UpdateSymbolSource()
 			}
 			CStaticClass::m_SymbolSourceArray.SetAt(m_source, m_preSymbol);
 		CStaticClass::m_mutex_order.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_68");
+		//(L"U_Orderlock_68");
 	}
 	symbol->Release();
 }
@@ -6060,7 +5765,7 @@ int CManager::trade_transfer(UINT64 login, LPCWSTR symbol, UINT  action, UINT or
 	IMTRequest* result = m_manager->RequestCreate();
 	IMTConfirm* confirm = m_manager->DealerConfirmCreate();
 	CDealerSink sink;
-	UINT64 volume = m_volume;
+	UINT64 volume = m_volume*10000;
 
 
 	UINT        id = 0;
@@ -6206,7 +5911,7 @@ CString  CManager::TDHTradeExecution(TDHLoginArray& m_BuyLoginAndLot, TDHLoginAr
 			int tmplogin = m_stLogin.m_login;
 			double tmplot = m_stLogin.m_lot;
 			tmplot = tmplot ;
-			trdeRequestStatus = trade_transfer(tmplogin, m_buySymbol, 0, 0, tmplot*10000, buySymbolBidRate, TDHBuyComment, 0);
+			trdeRequestStatus = trade_transfer(tmplogin, m_buySymbol, 0, 0, tmplot, buySymbolBidRate, TDHBuyComment, 0);
 			CString tmpMessage = L"";
 
 
@@ -6232,7 +5937,7 @@ CString  CManager::TDHTradeExecution(TDHLoginArray& m_BuyLoginAndLot, TDHLoginAr
 		int tmplogin = m_stLogin.m_login;
 		double tmplot = m_stLogin.m_lot;
 		tmplot = tmplot ;
-		trdeRequestStatus = trade_transfer(tmplogin, m_sellSymbol, 0, 1, tmplot*10000, sellSymbolBidRate, TDHSellComment, 0);
+		trdeRequestStatus = trade_transfer(tmplogin, m_sellSymbol, 0, 1, tmplot, sellSymbolBidRate, TDHSellComment, 0);
 		CString tmpMessage = L"";
 		CString m_desc = L"";
 		CStaticClass::MessageCodeList.Lookup(trdeRequestStatus, m_desc);
@@ -6493,7 +6198,7 @@ void CManager::UpdateOrderINMT(int orderno, CString field, CString txtData)
 		res = m_manager->OrderUpdate(or );
 	}
 	strLogPrint.Format(L"Order HasBeen Updated With Return Code %d", res);
-	//CStaticClass::m_logfile.LogEvent(strLogPrint);
+	//(strLogPrint);
 	or ->Release();
 }
 void CManager::UpdateOrderHistoryINMT(int orderno, CString field, CString txtData)

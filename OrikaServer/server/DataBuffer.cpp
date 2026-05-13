@@ -60,6 +60,15 @@ void DataBuffer::Clear()
 	   
    }
 
+void DataBuffer::Delete()
+{
+	if (pBuffer)
+	{
+		delete[] pBuffer;
+		pBuffer = NULL;
+	}	
+}
+
 
 bool DataBuffer::Append( unsigned char* _pBuffer, unsigned int _uSize )
 {

@@ -10,7 +10,7 @@ message Clientposition {
 		optional string symbolExtra=4;
 		optional float previousvolume=5;
 		optional float difference=6;
-		optional float volume=7;
+		float volume=7;
 		optional float average=8;
 		optional float lastrate=9;
 		optional float clientbalance=10;
@@ -73,7 +73,27 @@ message Clientposition {
 		optional float lpratio=67;
 		optional float lpvolume=68;
 		optional string commoditygroup=69;
-		optional string currencybase=70;
+		optional string currencybase=70;			
+		optional uint32 TotalNo_Of_StopBuy=71;
+		optional uint32 TotalNo_Of_Cancelled_StopBuy=72;
+		optional uint32 TotalNo_Of_Passed_StopBuy=73;
+		optional uint32 TotalNo_Of_Pending_StopBuy=74;
+		optional uint32 TotalNo_Of_StopSell=75;
+		optional uint32 TotalNo_Of_Cancelled_StopSell=76;
+		optional uint32 TotalNo_Of_Passed_StopSell=77;
+		optional uint32 TotalNo_Of_Pending_StopSell=78;
+		optional uint32 TotalNo_Of_BuyLimit=79;
+		optional uint32 TotalNo_Of_Cancelled_BuyLimit=80;
+		optional uint32 TotalNo_Of_Passed_BuyLimit=81;
+		optional uint32 TotalNo_Of_Pending_BuyLimit=82;
+		optional uint32 TotalNo_Of_SellLimit=83;
+		optional uint32 TotalNo_Of_Cancelled_SellLimit=84;
+		optional uint32 TotalNo_Of_Passed_SellLimit=85;
+		optional uint32 TotalNo_Of_Pending_SellLimit=86;
+		optional uint32 TotalNo_Of_MarketDeal=87;
+		optional uint32 TotalNo_Of_LimitDeal=88;
+		optional uint32 TotalNo_Of_StopLimitDeal=89;
+
     }
 
 message Update {
@@ -83,7 +103,7 @@ message Update {
 		optional string symbolExtra=4;
 		optional float previousvolume=5;
 		optional float difference=6;
-		optional float volume=7;
+		float volume=7;
 		optional float average=8;
 		optional float lastrate=9;
 		optional float clientbalance=10;
@@ -147,6 +167,25 @@ message Update {
 		optional float lpvolume=68;
 		optional string commoditygroup=69;
 		optional string currencybase=70;
+		optional uint32 TotalNo_Of_StopBuy=71;
+		optional uint32 TotalNo_Of_Cancelled_StopBuy=72;
+		optional uint32 TotalNo_Of_Passed_StopBuy=73;
+		optional uint32 TotalNo_Of_Pending_StopBuy=74;
+		optional uint32 TotalNo_Of_StopSell=75;
+		optional uint32 TotalNo_Of_Cancelled_StopSell=76;
+		optional uint32 TotalNo_Of_Passed_StopSell=77;
+		optional uint32 TotalNo_Of_Pending_StopSell=78;
+		optional uint32 TotalNo_Of_BuyLimit=79;
+		optional uint32 TotalNo_Of_Cancelled_BuyLimit=80;
+		optional uint32 TotalNo_Of_Passed_BuyLimit=81;
+		optional uint32 TotalNo_Of_Pending_BuyLimit=82;
+		optional uint32 TotalNo_Of_SellLimit=83;
+		optional uint32 TotalNo_Of_Cancelled_SellLimit=84;
+		optional uint32 TotalNo_Of_Passed_SellLimit=85;
+		optional uint32 TotalNo_Of_Pending_SellLimit=86;
+		optional uint32 TotalNo_Of_MarketDeal=87;
+		optional uint32 TotalNo_Of_LimitDeal=88;
+		optional uint32 TotalNo_Of_StopLimitDeal=89;
     }
 
     string type = 1;

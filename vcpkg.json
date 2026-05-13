@@ -1,0 +1,7 @@
+{
+  "name": "orikaserver",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "protobuf"
+  ]
+}

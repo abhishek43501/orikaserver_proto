@@ -113,25 +113,18 @@ void CLogFile::Write(CString pszFormat)
 {
 	CString strFinalStr = L"";
 	strFinalStr = pszFormat;
-	if (pszFormat.GetLength() >= 19999)
+	if (pszFormat.GetLength() >=500)
 	{
-		strFinalStr = pszFormat.Mid(0,2000);
+		strFinalStr = pszFormat.Mid(0,500);
 	}
 		if (!m_pLogFile)
 			return;
-EnterCriticalSection(&m_cs);
-		
-		//write the formated log string to szLog
-		TCHAR	szLog[20000];
-		va_list argList;
-		//va_start( argList, pszFormat );
-		//_swprintf( szLog,pszFormat, argList );
-
-		//va_end( argList );
+		EnterCriticalSection(&m_cs);
+				
 
 		SYSTEMTIME	time;
 		::GetLocalTime(&time);
-		TCHAR	szLine[20000];
+		TCHAR	szLine[700];
 		
 
 		_swprintf(szLine, L"%04d/%02d/%02d %02d:%02d:%02d:%03d \t%s\n", 
@@ -142,15 +135,12 @@ EnterCriticalSection(&m_cs);
 		fputws(szLine, m_pLogFile);
 
 		fflush(m_pLogFile);
-
 		LeaveCriticalSection(&m_cs);
 	}
-
-
 void CLogFile::LogEvent(CString event)
 {
 	CString name;
-	SYSTEMTIME systime;
+	SYSTEMTIME systime; 
 
 	GetLocalTime(&systime);
 

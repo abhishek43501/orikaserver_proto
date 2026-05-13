@@ -46,6 +46,9 @@ public:
 					 TMTArray<st_IpPriotity> m_IpPriotityArray;
 					
 
+					 static int previousRecordCount;
+					 static int previousRecordCount_login;
+
 	static int dealSendToMSMQStart;
 	CString ClosingFileTransfer(CString StrFilePath, CString closingDate);
 	CString ExcelClosingfileTransfer(CString StrFilePath);
@@ -97,6 +100,7 @@ public:
 
    void				 FetchHistoricalDealingData(UINT64 datefrom, UINT64 dateto,CString clientkey);
    CString			 FetchHistoricalDealingFromMemory(UINT64 datefrom, UINT64 dateto,CString clientkey,CString subscriptionId);
+   CString			 FetchLogFromMemory(UINT64 datefrom, UINT64 dateto, CString clientkey);
 
    CString			FETCH_COLOR_THEMES(CString loginUser);
 
@@ -134,9 +138,14 @@ public:
    void				UpdateSymbolSource();
 
 
-   void  SaveClosingRate();
-   CString getUpdatedClosingRate();
-   string gethighLowMismatchDeals(CString dealDate);
+   void      SaveClosingRate();
+   CString   getUpdatedClosingRate();
+   string    gethighLowMismatchDeals(CString dealDate);
+   double      getPositionFromMTClientWise(UINT64 m_login,CString m_symbol);
+
+   void DeviceLogTransfer(INT64 fromTime, INT64 toTime, CString strDealSearch);
+
+   void		 getPositionFromMT();
 
 
 
@@ -159,7 +168,7 @@ public:
    };
    typedef TMTArray<TDHLogin> TDHLoginArray;
    CString  TDHTradeExecution(TDHLoginArray& m_BuyLoginAndLot, TDHLoginArray& m_SellLoginAndLot, CString m_buySymbol, double buySymbolBidRate, CString TDHBuyComment, CString m_sellSymbol, double sellSymbolBidRate, CString TDHSellComment);
-
+   void		updateLoginToClientList();
    CString			TDHExecution(CString m_buySymbol, TDHLoginArray& m_BuyLoginAndLot, double m_buyRate, CString m_sellSymbol, TDHLoginArray& m_SellLoginAndLot, double m_sellRate, CString m_executionType);
    int				trade_transfer(UINT64 login, LPCWSTR symbol, UINT  action, UINT ordertype, double m_volume, double price, LPCWSTR comment, UINT64 expiration);
    int               updateMTUserData(CString m_ColumnKey, CString m_value, CString m_DataSeprator, int m_DataIndexForUpdate,  CString m_login, CString m_symbol);

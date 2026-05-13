@@ -50,42 +50,42 @@ struct TableStruct_Heartbeat_2eproto {
 };
 extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_Heartbeat_2eproto;
-namespace Oreka {
-class HeartBeat;
-struct HeartBeatDefaultTypeInternal;
-extern HeartBeatDefaultTypeInternal _HeartBeat_default_instance_;
-}  // namespace Oreka
+namespace Orika {
+class heartbeat;
+struct heartbeatDefaultTypeInternal;
+extern heartbeatDefaultTypeInternal _heartbeat_default_instance_;
+}  // namespace Orika
 PROTOBUF_NAMESPACE_OPEN
 template <>
-::Oreka::HeartBeat* Arena::CreateMaybeMessage<::Oreka::HeartBeat>(Arena*);
+::Orika::heartbeat* Arena::CreateMaybeMessage<::Orika::heartbeat>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
-namespace Oreka {
+namespace Orika {
 
 // ===================================================================
 
 
 // -------------------------------------------------------------------
 
-class HeartBeat final :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Oreka.HeartBeat) */ {
+class heartbeat final :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:Orika.heartbeat) */ {
  public:
-  inline HeartBeat() : HeartBeat(nullptr) {}
-  ~HeartBeat() override;
+  inline heartbeat() : heartbeat(nullptr) {}
+  ~heartbeat() override;
   template<typename = void>
-  explicit PROTOBUF_CONSTEXPR HeartBeat(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
+  explicit PROTOBUF_CONSTEXPR heartbeat(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized);
 
-  HeartBeat(const HeartBeat& from);
-  HeartBeat(HeartBeat&& from) noexcept
-    : HeartBeat() {
+  heartbeat(const heartbeat& from);
+  heartbeat(heartbeat&& from) noexcept
+    : heartbeat() {
     *this = ::std::move(from);
   }
 
-  inline HeartBeat& operator=(const HeartBeat& from) {
+  inline heartbeat& operator=(const heartbeat& from) {
     CopyFrom(from);
     return *this;
   }
-  inline HeartBeat& operator=(HeartBeat&& from) noexcept {
+  inline heartbeat& operator=(heartbeat&& from) noexcept {
     if (this == &from) return *this;
     if (GetOwningArena() == from.GetOwningArena()
   #ifdef PROTOBUF_FORCE_COPY_IN_MOVE
@@ -115,20 +115,20 @@ class HeartBeat final :
   static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
     return default_instance().GetMetadata().reflection;
   }
-  static const HeartBeat& default_instance() {
+  static const heartbeat& default_instance() {
     return *internal_default_instance();
   }
-  static inline const HeartBeat* internal_default_instance() {
-    return reinterpret_cast<const HeartBeat*>(
-               &_HeartBeat_default_instance_);
+  static inline const heartbeat* internal_default_instance() {
+    return reinterpret_cast<const heartbeat*>(
+               &_heartbeat_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
     0;
 
-  friend void swap(HeartBeat& a, HeartBeat& b) {
+  friend void swap(heartbeat& a, heartbeat& b) {
     a.Swap(&b);
   }
-  inline void Swap(HeartBeat* other) {
+  inline void Swap(heartbeat* other) {
     if (other == this) return;
   #ifdef PROTOBUF_FORCE_COPY_IN_SWAP
     if (GetOwningArena() != nullptr &&
@@ -141,7 +141,7 @@ class HeartBeat final :
       ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
     }
   }
-  void UnsafeArenaSwap(HeartBeat* other) {
+  void UnsafeArenaSwap(heartbeat* other) {
     if (other == this) return;
     ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
@@ -149,14 +149,14 @@ class HeartBeat final :
 
   // implements Message ----------------------------------------------
 
-  HeartBeat* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
-    return CreateMaybeMessage<HeartBeat>(arena);
+  heartbeat* New(::PROTOBUF_NAMESPACE_ID::Arena* arena = nullptr) const final {
+    return CreateMaybeMessage<heartbeat>(arena);
   }
   using ::PROTOBUF_NAMESPACE_ID::Message::CopyFrom;
-  void CopyFrom(const HeartBeat& from);
+  void CopyFrom(const heartbeat& from);
   using ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom;
-  void MergeFrom( const HeartBeat& from) {
-    HeartBeat::MergeImpl(*this, from);
+  void MergeFrom( const heartbeat& from) {
+    heartbeat::MergeImpl(*this, from);
   }
   private:
   static void MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg);
@@ -174,15 +174,15 @@ class HeartBeat final :
   void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
-  void InternalSwap(HeartBeat* other);
+  void InternalSwap(heartbeat* other);
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
   static ::absl::string_view FullMessageName() {
-    return "Oreka.HeartBeat";
+    return "Orika.heartbeat";
   }
   protected:
-  explicit HeartBeat(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  explicit heartbeat(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -217,7 +217,7 @@ class HeartBeat final :
   std::string* _internal_mutable_type();
 
   public:
-  // @@protoc_insertion_point(class_scope:Oreka.HeartBeat)
+  // @@protoc_insertion_point(class_scope:Orika.heartbeat)
  private:
   class _Internal;
 
@@ -246,53 +246,53 @@ class HeartBeat final :
 #endif  // __GNUC__
 // -------------------------------------------------------------------
 
-// HeartBeat
+// heartbeat
 
 // string type = 1;
-inline void HeartBeat::clear_type() {
+inline void heartbeat::clear_type() {
   _impl_.type_.ClearToEmpty();
 }
-inline const std::string& HeartBeat::type() const {
-  // @@protoc_insertion_point(field_get:Oreka.HeartBeat.type)
+inline const std::string& heartbeat::type() const {
+  // @@protoc_insertion_point(field_get:Orika.heartbeat.type)
   return _internal_type();
 }
 template <typename Arg_, typename... Args_>
-inline PROTOBUF_ALWAYS_INLINE void HeartBeat::set_type(Arg_&& arg,
+inline PROTOBUF_ALWAYS_INLINE void heartbeat::set_type(Arg_&& arg,
                                                      Args_... args) {
   ;
   _impl_.type_.Set(static_cast<Arg_&&>(arg), args..., GetArenaForAllocation());
-  // @@protoc_insertion_point(field_set:Oreka.HeartBeat.type)
+  // @@protoc_insertion_point(field_set:Orika.heartbeat.type)
 }
-inline std::string* HeartBeat::mutable_type() {
+inline std::string* heartbeat::mutable_type() {
   std::string* _s = _internal_mutable_type();
-  // @@protoc_insertion_point(field_mutable:Oreka.HeartBeat.type)
+  // @@protoc_insertion_point(field_mutable:Orika.heartbeat.type)
   return _s;
 }
-inline const std::string& HeartBeat::_internal_type() const {
+inline const std::string& heartbeat::_internal_type() const {
   return _impl_.type_.Get();
 }
-inline void HeartBeat::_internal_set_type(const std::string& value) {
+inline void heartbeat::_internal_set_type(const std::string& value) {
   ;
 
 
   _impl_.type_.Set(value, GetArenaForAllocation());
 }
-inline std::string* HeartBeat::_internal_mutable_type() {
+inline std::string* heartbeat::_internal_mutable_type() {
   ;
   return _impl_.type_.Mutable( GetArenaForAllocation());
 }
-inline std::string* HeartBeat::release_type() {
-  // @@protoc_insertion_point(field_release:Oreka.HeartBeat.type)
+inline std::string* heartbeat::release_type() {
+  // @@protoc_insertion_point(field_release:Orika.heartbeat.type)
   return _impl_.type_.Release();
 }
-inline void HeartBeat::set_allocated_type(std::string* value) {
+inline void heartbeat::set_allocated_type(std::string* value) {
   _impl_.type_.SetAllocated(value, GetArenaForAllocation());
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
         if (_impl_.type_.IsDefault()) {
           _impl_.type_.Set("", GetArenaForAllocation());
         }
   #endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
-  // @@protoc_insertion_point(field_set_allocated:Oreka.HeartBeat.type)
+  // @@protoc_insertion_point(field_set_allocated:Orika.heartbeat.type)
 }
 
 #ifdef __GNUC__
@@ -300,7 +300,7 @@ inline void HeartBeat::set_allocated_type(std::string* value) {
 #endif  // __GNUC__
 
 // @@protoc_insertion_point(namespace_scope)
-}  // namespace Oreka
+}  // namespace Orika
 
 
 // @@protoc_insertion_point(global_scope)

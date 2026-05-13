@@ -25,8 +25,10 @@ public:
 	  CString generateSymbolMasterJson();
 	
 
-	  
+	  CString CSqlData::getAlertSetting(CString alertName);
 	  void GetLoginsClient(CString strLoginuser, vector<CString>&	LA);
+
+	  void loadEventSetting();
 
 	  void  LoadLpRatioCommodityGroupwise();
 

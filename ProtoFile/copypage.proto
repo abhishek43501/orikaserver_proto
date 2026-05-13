@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message copypage 
+{
+    string type = 1;
+    string page_id = 2;
+}

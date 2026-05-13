@@ -123,7 +123,8 @@ string WebsocketHandshakeMessage::Serialize( )
 
 	raw << "Sec-WebSocket-Accept" << ": " << server_key << "\r\n";
 	raw << "Upgrade: websocket\r\n";
-	raw << "Sec - WebSocket - Extensions: deflate - frame"<<"\r\n";	
+	//raw << "Sec - WebSocket - Extensions: deflate - frame" << "\r\n";
+	//raw << "Sec-WebSocket-Extensions: deflate-frame"<<"\r\n";
 	raw << "\r\n";
     return raw.str(); 	
 }

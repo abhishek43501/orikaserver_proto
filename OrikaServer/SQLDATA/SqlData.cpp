@@ -48,12 +48,21 @@ CString CSqlData::getOrderData(CString loginuser)
 	int row_count=0;
 	
 	CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"Mutex_order Locked _3");
+	//(L"Mutex_order Locked _3");
 
 	CString StrPrintLino=L"";
 	StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 
+
+	CStaticClass::st_ClientContext m_st = {};
+	CStaticClass::m_ClientContext.Lookup(loginuser, m_st);
+
+	/*for (size_t i = 0; i < m_st.m_logins.size(); ++i) 
+	{
+		CString m_mappedLogin = m_st.m_logins[i];
+		CStaticClass::m_logfile.LogEvent(m_mappedLogin);		
+	}*/
 
 
 	POSITION pos = CStaticClass::m_Orika_orderHastable.GetStartPosition ();
@@ -65,161 +74,162 @@ CString CSqlData::getOrderData(CString loginuser)
 	writer.String("ORDER_DATA");
 	writer.Key("insert");
 	writer.StartArray();
-	while (pos != NULL) 
+	while (pos != NULL)
 	{
-		int orderkey=0;
-		CStaticClass::st_order st={};
-		CStaticClass::m_Orika_orderHastable.GetNextAssoc(pos, orderkey,st);	
+		int orderkey = 0;
+		CStaticClass::st_order st = {};
+		CStaticClass::m_Orika_orderHastable.GetNextAssoc(pos, orderkey, st);
 
-		CString m_login=st.m_login;
-		int m_time =st.m_time;
+		CString m_login = st.m_login;
+		int m_time = st.m_time- 19800;
 
-		CString m_strTime=L"";		
-		CString m_tmp_date=L"";
+		CString m_strTime = L"";
+		CString m_tmp_date = L"";
 		CMTStr256 str_time;
-		SMTFormat::FormatDateTime(str_time,m_time,true,true);
-		m_strTime=str_time.Str();
+		SMTFormat::FormatDateTime(str_time, m_time, true, true);
+		m_strTime = str_time.Str();
 
 
-		int m_deal=st.m_deal ;
-		int m_order=st.m_order;
-		CString m_symbol=st.m_symbol;
-		int m_type=st.m_type ;
-		CString strtype=L"";
-		if(m_type==2)
+		int m_deal = st.m_deal;
+		int m_order = st.m_order;
+		CString m_symbol = st.m_symbol;
+		int m_type = st.m_type;
+		CString strtype = L"";
+		if (m_type == 2)
 		{
-			strtype=L"Buy Limit";
+			strtype = L"Buy Limit";
 		}
-		else if(m_type==3)
+		else if (m_type == 3)
 		{
-			strtype=L"Sell Limit";
+			strtype = L"Sell Limit";
 		}
-		else if(m_type==4)
+		else if (m_type == 4)
 		{
-			strtype=L"Buy Stop";
+			strtype = L"Buy Stop";
 		}
-		else if(m_type==5)
+		else if (m_type == 5)
 		{
-			strtype=L"Sell Stop";
+			strtype = L"Sell Stop";
 		}
-		else if(m_type==6)
+		else if (m_type == 6)
 		{
-			strtype=L"Buy Stop";
+			strtype = L"Buy Stop";
 		}
-		else if(m_type==7)
+		else if (m_type == 7)
 		{
-			strtype=L"Sell Stop Limit";
+			strtype = L"Sell Stop Limit";
 		}
-		double m_volume =st.m_volume ;
-		double m_price=st.m_price ;
-		CString m_comment=st.m_comment;
-		CString m_status=st.m_status;
-		int m_select=st.m_select ;
-		CString strselect=L"";
-		if (m_select==0) 
+		double m_volume = st.m_volume;
+		double m_price = st.m_price;
+		CString m_comment = st.m_comment;
+		CString m_status = st.m_status;
+		int m_select = st.m_select;
+		CString strselect = L"";
+		if (m_select == 0)
 		{
-			strselect="false";
+			strselect = "false";
 		}
 		else
 		{
-			strselect="true";
+			strselect = "true";
 		}
 
-		CString m_selecttype=st.m_selecttype;
-		CString m_subtype=st.m_subtype;
-		int m_contraorder=st.m_contraorder ;
-		int m_tradeexecutetime=st.m_tradeexecutetime ;
-		CString m_ourcomment=st.m_ourcomment;
-		int m_orderstate=st.m_orderstate ;
+		CString m_selecttype = st.m_selecttype;
+		CString m_subtype = st.m_subtype;
+		int m_contraorder = st.m_contraorder;
+		int m_tradeexecutetime = st.m_tradeexecutetime;
+		CString m_ourcomment = st.m_ourcomment;
+		int m_orderstate = st.m_orderstate;
 
-		CString strtmpdata=L"";
-		
+		CString strtmpdata = L"";
 
-		CString str_orderstate=L"";
-		if (m_orderstate==1001)
+
+		CString str_orderstate = L"";
+		if (m_orderstate == 1001)
 		{
-			str_orderstate=L"NEW";
+			str_orderstate = L"NEW";
 		}
-		if (m_orderstate==1002)
+		if (m_orderstate == 1002)
 		{
-			str_orderstate=L"UPDATE";
+			str_orderstate = L"UPDATE";
 		}
-		if (m_orderstate==1003 ||m_orderstate==1005)
+		if (m_orderstate == 1003 || m_orderstate == 1005)
 		{
-			str_orderstate=L"DELETE";
+			str_orderstate = L"DELETE";
 		}
-		
-		CStaticClass::st_ClientContext m_st={};
-		CStaticClass::m_ClientContext.Lookup(loginuser,m_st );				
-		/*if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), m_login) != m_st.m_logins.end())
-		{*/														
-			writer.StartObject();			
-			writer.Key("login");
-			string sslogin = string(CT2CA(m_login));
-			const char* stlogin = sslogin.c_str();
-			writer.String(stlogin);
-			writer.Key("time");
-			/*string ssTime = string(CT2CA(m_strTime));
-			const char* stTime = ssTime.c_str();*/
-			writer.Int(m_time);
-			writer.Key("deal");
-			writer.Int64(m_deal);
-			writer.Key("order");
-			writer.Int64(m_order);
-			writer.Key("symbol");
-			string ssSymbol = string(CT2CA(m_symbol));
-			const char* stSymbol = ssSymbol.c_str();
-			writer.String(stSymbol);			
-			writer.Key("type");
-			string sstype = string(CT2CA(strtype));
-			const char* sttype = sstype.c_str();
-			writer.String(sttype);
-			writer.Key("volume");
-			writer.Double (m_volume);			
-			writer.Key("price");
-			writer.Double(m_price);			
-			writer.Key("comment");
-			string sscomment = string(CT2CA(m_comment));
-			const char* stcomment = sscomment.c_str();
-			writer.String(stcomment);
-			writer.Key("status");
-			string ssstatus = string(CT2CA(m_status));
-			const char* ststatus = ssstatus.c_str();
-			writer.String(ststatus);
-			writer.Key("select");
-			string ssselect = string(CT2CA(strselect));
-			const char* stselect = ssselect.c_str();
-			writer.String(stselect);
-			writer.Key("statustype");
-			string ssselecttype = string(CT2CA(m_selecttype));
-			const char* stselecttype = ssselecttype.c_str();
-			writer.String(stselecttype);
-			//strtmpdata.Format(L"{\"login\":\"%s\",\"time\":\"%s\",\"deal\":%d,\"order\":%d,\"symbol\":\"%s\",\"type\":\"%s\",\"volume\":%.2lf,\"price\":%.4lf,
-			//\"comment\":\"%s\",\"status\":\"%s\",\"select\":\"%s\",\
-			// "statustype\":\"%s\",\"subtype\":\"%s\",
-			// //\"contraorder\":%d,\"tradeexecutetime\":%d,\"ourcomment\":\"%s\",\"orderstate\":\"%s\"}",
-			//,m_contraorder,m_tradeexecutetime,m_ourcomment,str_orderstate);				
-			writer.Key("subtype");
-			string sssubtype = string(CT2CA(m_subtype));
-			const char* stsubtype = sssubtype.c_str();
-			writer.String(stsubtype);
-			writer.Key("contraorder");
-			writer.Int(m_contraorder);
-			writer.Key("tradeexecutetime");
-			writer.Int(m_tradeexecutetime);
-			writer.Key("ourcomment");
-			string ssourcomment = string(CT2CA(m_ourcomment));
-			const char* stourcomment = ssourcomment.c_str();
-			writer.String(stourcomment);
-			writer.Key("orderstate");
-			string ssorderstate = string(CT2CA(str_orderstate));
-			const char* storderstate = ssorderstate.c_str();
-			writer.String(storderstate);
-			writer.EndObject();			
-		//}
+		if (m_orderstate == 1001 || m_orderstate == 1002)
+		{
+			
+			if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), m_login) != m_st.m_logins.end())
+			{
+				writer.StartObject();
+				writer.Key("login");
+				string sslogin = string(CT2CA(m_login));
+				const char* stlogin = sslogin.c_str();
+				writer.String(stlogin);
+				writer.Key("time");
+				/*string ssTime = string(CT2CA(m_strTime));
+				const char* stTime = ssTime.c_str();*/
+				writer.Int(m_time);
+				writer.Key("deal");
+				writer.Int64(m_deal);
+				writer.Key("order");
+				writer.Int64(m_order);
+				writer.Key("symbol");
+				string ssSymbol = string(CT2CA(m_symbol));
+				const char* stSymbol = ssSymbol.c_str();
+				writer.String(stSymbol);
+				writer.Key("type");
+				string sstype = string(CT2CA(strtype));
+				const char* sttype = sstype.c_str();
+				writer.String(sttype);
+				writer.Key("volume");
+				writer.Double(m_volume);
+				writer.Key("price");
+				writer.Double(m_price);
+				writer.Key("comment");
+				string sscomment = string(CT2CA(m_comment));
+				const char* stcomment = sscomment.c_str();
+				writer.String(stcomment);
+				writer.Key("status");
+				string ssstatus = string(CT2CA(m_status));
+				const char* ststatus = ssstatus.c_str();
+				writer.String(ststatus);
+				writer.Key("select");
+				string ssselect = string(CT2CA(strselect));
+				const char* stselect = ssselect.c_str();
+				writer.String(stselect);
+				writer.Key("statustype");
+				string ssselecttype = string(CT2CA(m_selecttype));
+				const char* stselecttype = ssselecttype.c_str();
+				writer.String(stselecttype);
+				//strtmpdata.Format(L"{\"login\":\"%s\",\"time\":\"%s\",\"deal\":%d,\"order\":%d,\"symbol\":\"%s\",\"type\":\"%s\",\"volume\":%.2lf,\"price\":%.4lf,
+				//\"comment\":\"%s\",\"status\":\"%s\",\"select\":\"%s\",\
+					// "statustype\":\"%s\",\"subtype\":\"%s\",
+					// //\"contraorder\":%d,\"tradeexecutetime\":%d,\"ourcomment\":\"%s\",\"orderstate\":\"%s\"}",
+					//,m_contraorder,m_tradeexecutetime,m_ourcomment,str_orderstate);				
+				writer.Key("subtype");
+				string sssubtype = string(CT2CA(m_subtype));
+				const char* stsubtype = sssubtype.c_str();
+				writer.String(stsubtype);
+				writer.Key("contraorder");
+				writer.Int(m_contraorder);
+				writer.Key("tradeexecutetime");
+				writer.Int(m_tradeexecutetime);
+				writer.Key("ourcomment");
+				string ssourcomment = string(CT2CA(m_ourcomment));
+				const char* stourcomment = ssourcomment.c_str();
+				writer.String(stourcomment);
+				writer.Key("orderstate");
+				string ssorderstate = string(CT2CA(str_orderstate));
+				const char* storderstate = ssorderstate.c_str();
+				writer.String(storderstate);
+				writer.EndObject();
+			}
+		}
 	}
 	CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"UNm_mutex_order Locked _3");	
+	//(L"UNm_mutex_order Locked _3");	
 	//returnval.Format(L"{\"type\":\"ORDER_DATA\",\"insert\":[%s]}",tmpstr);	
 	writer.EndArray();
 	writer.EndObject();
@@ -238,10 +248,10 @@ void CSqlData::loadClientBrokerageFromDealTableAccounting()
 	CString   strCommand=L"";	
 	strCommand.Format(L"select [login],symbol,sum(clientBrokTotal) as 'clientBrokTotal',sum(subBrokerBrokTotal) as 'subBrokerBrokTotal',sum(brokerBrokTotal) as 'brokerBrokTotal',sum(comBalancebrokTotal) as 'CompanyBrokTotal' from orika_dealtableaccounting  group by [login],symbol");
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_22");
+	//(L"Orderlock_22");
 	CString StrPrintLino=L"";
 	StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
@@ -319,7 +329,7 @@ void CSqlData::loadTradeLotAndTOT()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_23");
+	//(L"U_Orderlock_23");
 }
 
 
@@ -369,7 +379,7 @@ void CSqlData::loadOrderCount()
 	CStaticClass::m_OrderCountMap.Lookup(L"200231:GOLDOCT:5", st_pac_Test);*/
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_24");
+	//(L"U_Orderlock_24");
 }
 
 
@@ -384,7 +394,7 @@ void CSqlData::loadColumnSubscription()
 	CString   strCommand = L"";
 	strCommand.Format(L"select userlogin,ColumnKey,subscribe,RequestKey from loginColumnMapping;");
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_25");
+	//(L"Orderlock_25");
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -405,7 +415,7 @@ void CSqlData::loadColumnSubscription()
 	}	
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_25");
+	//(L"Orderlock_25");
 }
 
 
@@ -441,11 +451,11 @@ void CSqlData::loadPositionAverageAccounting()
 	strCommand.Format(L"select [login],symbol,[Action],Volume,subBrokerVolume,brokerVolume,extraGroupVolume,companyVolume,WAvgPrice,currentPrice,multiplyer,floatingProfit,subBrokerfloatingProfit,brokerfloatingProfit,extraGroupfloatingProfit,companyfloatingProfit from orika_PositionAverageAccounting");		
 
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_26");
+	//(L"Orderlock_26");
 
 	CString StrPrintLino=L"";
 	StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 
 
 	CSession m_tempSession;
@@ -488,7 +498,7 @@ void CSqlData::loadPositionAverageAccounting()
 		CStaticClass::m_orika_PositionAverageAccountingHastable.SetAt(strloginSymbolKey,st_pac);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_26");
+	//(L"U_Orderlock_26");
 }
 
 
@@ -504,11 +514,11 @@ void CSqlData::loadBalanceTableAccounting()
 	CString   strCommand=L"";	
 	strCommand.Format(L"select [login],symbol,entryDeal,entryTime,entryOrder,entryAction,entryVolume,entryPrice,exitDeal,exitTime,exitOrder,exitAction,exitVolume,exitPrice,plPointLoss,plPointProfit,multiplyer,clientBalance,subBrokerBalance,brokerBalance,extraGroupBalance,companyBalance from Orika_BalanceTableAccounting");		
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_27");
+	//(L"Orderlock_27");
 
 	CString StrPrintLino=L"";
 	StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 
 
 
@@ -580,7 +590,7 @@ void CSqlData::loadBalanceTableAccounting()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_27");
+	//(L"U_Orderlock_27");
 }
 
 void CSqlData::loadDealTableAccounting()
@@ -667,7 +677,7 @@ void CSqlData::loadDealNo()
 		CStaticClass::m_OrikaOrderdealNO.SetAt(m_orderno, m_deal);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_28");
+	//(L"U_Orderlock_28");
 }
 
 
@@ -727,7 +737,7 @@ void CSqlData::loadOrderHashTable()
 		CStaticClass::m_Orika_orderHastable.SetAt(m_order,m_st_st_order);
 	}
 	m_tempSession.Close();
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_29");
+	//(L"U_Orderlock_29");
 }
 
 
@@ -780,7 +790,7 @@ CString CSqlData::getBrokerposition(CString loginuser)
 	CString   strCommand=L"";
 	strCommand.Format(L"orika_GetBrokerPositionData'1605632400';");	
 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_30");
+	//(L"Orderlock_30");
 
 
 	
@@ -848,7 +858,7 @@ CString CSqlData::getBrokerposition(CString loginuser)
 	data_table.Close();
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_30");
+	//(L"U_Orderlock_30");
 
 	returnval.Format(L"{\"type\": \"BROKER_POSITION_DATA\",\"data\": [%s]}",tmpstr);	
 	return returnval;
@@ -1096,7 +1106,7 @@ CString CSqlData::getExposureDistribution(CString loginuser)
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_33");
+	//(L"U_Orderlock_33");
 	returnval.Format(L"{\"type\": \"EXPOSURE_DISTRIBUTION_DATA\",\"data\": [%s]}",tmpstr);	
 	return returnval;
 }
@@ -1182,7 +1192,7 @@ CString CSqlData::getBrokerageDistribution(CString loginuser)
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_34");
+	//(L"U_Orderlock_34");
 	returnval.Format(L"{\"type\": \"BROKARAGE_DISTRIBUTION_DATA\",\"data\": [%s]}",tmpstr);	
 	return returnval;
 }
@@ -1259,7 +1269,7 @@ CString CSqlData::getVolumeDistribution(CString loginuser)
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_35");
+	//(L"U_Orderlock_35");
 
 	returnval.Format(L"{\"type\": \"VOLUME_DISTRIBUTION_DATA\",\"data\": [%s]}",tmpstr);	
 	return returnval;
@@ -1339,7 +1349,7 @@ CString CSqlData::getLotDistribution(CString loginuser)
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_36");
+	//(L"U_Orderlock_36");
 
 	returnval.Format(L"{\"type\": \"LOTS_DISTRIBUTION_DATA\",\"data\": [%s]}",tmpstr);	
 	return returnval;
@@ -1378,7 +1388,7 @@ CString CSqlData::columnTemplateSave(CString name, CString userLogin, CString co
 
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_37");
+	//(L"U_Orderlock_37");
 	CString tmpstr = L"";
 	CString m_status = L"SUCCESS";
 	if (m_returnID == 0)
@@ -1400,7 +1410,7 @@ CString CSqlData::columnTemplateUpdate(int id,CString name, CString userLogin, C
 	}
 	CString   strCommand = L"";
 	strCommand.Format(L"exec Update_orika_columnTemplate '%d','%s','%s','%s';", id, name, userLogin, colorData);	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_38");
+	//(L"Orderlock_38");
 
 	CString StrPrintLino = L"";
 	CSession m_tempSession;
@@ -1408,7 +1418,7 @@ CString CSqlData::columnTemplateUpdate(int id,CString name, CString userLogin, C
 	hr = UpdateCommand.Open(m_tempSession, (LPCTSTR)strCommand);
 	UpdateCommand.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_38");
+	//(L"U_Orderlock_38");
 	CString tmpstr = L"";
 	CString m_status = L"SUCCESS";
 	returnval.Format(L"{\"type\":\"COLUMN_TEMPLATE_UPDATE_STATUS\",\"id\":%d,\"status\":\"%s\"}", id, m_status);
@@ -1434,7 +1444,7 @@ CString CSqlData::columnTemplateDelete(int id)
 	hr = UpdateCommand.Open(m_tempSession, (LPCTSTR)strCommand);
 	UpdateCommand.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_39");
+	//(L"U_Orderlock_39");
 	CString tmpstr = L"";
 	CString m_status = L"SUCCESS";
 	returnval.Format(L"{\"type\":\"COLUMN_TEMPLATE_DELETE_STATUS\",\"id\":%d,\"status\":\"%s\"}", id, m_status);
@@ -1564,7 +1574,7 @@ CString CSqlData::getColumnTempletUserLoginWise(CString userLogin)
 
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_40");
+	//(L"U_Orderlock_40");
 	writer.EndArray();
 	writer.EndObject();
 	
@@ -1600,7 +1610,7 @@ CString CSqlData::deleteDataCommentChange(CString deals)
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_41");
+	//(L"U_Orderlock_41");
 	CString tmpstr=L"";	
 	returnval.Format(L"{\"type\":\"DELETE_COMMENT_CHANGE_STATUS\",\"deals\":[%s],\"status\":\"Data Has Been Deleted\"}",deals);	
 	return returnval;
@@ -1618,13 +1628,13 @@ void CSqlData::deleteColumnSubscriptionData(CString m_loginUser,  CString m_requ
 	CString   strCommand = L"";
 	strCommand.Format(L"delete from loginColumnMapping where  userlogin='%s' and RequestKey='%s';", m_loginUser, m_requestType);
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_42");
+	//(L"Orderlock_42");
 	
 	m_tempSession.Open(CStaticClass::connection);
 	hr = UpdateCommand.Open(m_tempSession, (LPCTSTR)strCommand);
 	UpdateCommand.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_42");
+	//(L"U_Orderlock_42");
 	CStaticClass::m_mutexcolumnSubs.Lock();
 	POSITION pos = CStaticClass::m_columnsubscription.GetStartPosition();
 
@@ -1636,8 +1646,10 @@ void CSqlData::deleteColumnSubscriptionData(CString m_loginUser,  CString m_requ
 		CString loginUserColumnKey = L"";
 		int subs = 0;
 		CStaticClass::m_columnsubscription.GetNextAssoc(pos, loginUserColumnKey,subs);
-		CString m_getUserlogin = loginUserColumnKey.Mid(0, loginUserColumnKey.Find(L"|"));		
 
+		CStaticClass::m_logfile.LogEvent(L"loginUserColumnKey");
+		CString m_getUserlogin = loginUserColumnKey.Mid(0, loginUserColumnKey.Find(L"|"));		
+		CStaticClass::m_logfile.LogEvent(L"End loginUserColumnKey");
 		if (m_getUserlogin == KeyForDelete)
 		{
 			CStaticClass::m_columnsubscription.RemoveKey(loginUserColumnKey);
@@ -1667,7 +1679,7 @@ CString CSqlData::SaveColumnSubscriptionData(CString m_loginUser,CString m_colum
 	UpdateCommand.Close();
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_43");
+	//(L"Orderlock_43");
 	CString userLoginColumnKey = L"";
 	userLoginColumnKey.Format(L"%s:%s|%s", m_loginUser, m_requestKey, m_columnKey);
 	CStaticClass::m_mutexcolumnSubs.Lock();
@@ -1718,7 +1730,7 @@ int CSqlData::checkDealExist(INT64 deals)
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_43");
+	//(L"U_Orderlock_43");
 	return returnVal;
 }
 
@@ -1782,10 +1794,11 @@ CString CSqlData::getCommentDealWise(CString deals)
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_44");
+	//(L"U_Orderlock_44");
 	//dealfound
 	while(deals!=L"")
 	{
+		CStaticClass::m_logfile.LogEvent(L"Test_11");
 		CString tmpdeals=L"";
 		if (deals.Find(L",")>=0)
 		{
@@ -1825,6 +1838,7 @@ CString CSqlData::getCommentDealWise(CString deals)
 			}
 			deals=L"";
 		}
+		CStaticClass::m_logfile.LogEvent(L"End Test_11");
 	}
 	returnval.Format(L"{\"type\":\"COMMENT_DEALWISE\",\"deals\":[%s]}",tmpstr);	
 	return returnval;
@@ -1835,7 +1849,7 @@ CString CSqlData::getClientwisenetpositionData(CString loginuser)
 	
 	CString returnval=L"";
 	CStaticClass::m_mutex_ClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"115");
+	//(L"115");
 	CStaticClass::m_mutex_Tick.Lock();
 	
 	POSITION pos = CStaticClass::mapNetPositionClientWise.GetStartPosition ();					
@@ -1845,7 +1859,7 @@ CString CSqlData::getClientwisenetpositionData(CString loginuser)
 	CString str_FinalJsonUpdate=L"";
 	while (pos != NULL) 
 	{
-		//////CStaticClass::m_logfile.LogEvent(L"Data 5");
+		//////(L"Data 5");
 		CString strKey=L"";
 		CStaticClass::st_netpositionClientWise st_tmpData={};
 		CStaticClass::mapNetPositionClientWise.GetNextAssoc(pos,strKey,st_tmpData);
@@ -1901,7 +1915,7 @@ CString CSqlData::getClientwisenetpositionData(CString loginuser)
 	
 	returnval=str_FinalJsonUpdate;
 	CStaticClass::m_mutex_ClientList.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U115");
+	//(L"U115");
 	CStaticClass::m_mutex_Tick.Unlock();
 	return returnval;
 }
@@ -2149,7 +2163,7 @@ CString CSqlData::getClientwisePreQty(CString loginuser,int time)
 	data_table.Close();
 	m_tempSession.Close();	
 
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_45");
+	//(L"U_Orderlock_45");
 	returnval.Format(L"{\"type\": \"CLIENT_WISE_PREVIOUS_NET_VOLUME\",\"data\": [%s]}",tmpstr);	
 	return returnval;
 }
@@ -2241,7 +2255,7 @@ void CSqlData::getClientmasterData()
 		CStaticClass::m_clientmasterarray.Add(&m_stclientmaster);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_46");
+	//(L"U_Orderlock_46");
 }
 CString CSqlData::gettingFilterStateJson(CString metadataRequest,CString strLoginUser,int viewSlNo)
 {
@@ -2264,6 +2278,7 @@ CString CSqlData::gettingFilterStateJson(CString metadataRequest,CString strLogi
 	m_CFilterState_Table.Close();
 	m_tempSession.Close();
 	CString strFilterStateFinal = L"";
+	
 	if (strFilterState.GetLength() > 0)
 	{
 		strFilterStateFinal = strFilterState.Mid(0, strFilterState.GetLength() - 1);
@@ -2294,10 +2309,12 @@ CString CSqlData::gettingShortingColJson(CString metadataRequest, CString strLog
 	}
 	m_CToggleViewshortingState.Close();
 	m_tempSession.Close();
+	
 	if (strShortingState.GetLength() > 0)
 	{
 		strFinalShortingState = strShortingState.Mid(0, strShortingState.GetLength() - 1);
 	}
+	
 	return strFinalShortingState;
 }
 CString CSqlData::generateMasterMetadata(CString metadataRequest,CString strLoginUser)
@@ -2312,7 +2329,7 @@ CString CSqlData::generateMasterMetadata(CString metadataRequest,CString strLogi
 	CString   strCommand=L"";	
 	strCommand.Format(L"exec GetMetaData '%s','%s'",strLoginUser,metadataRequest);		
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_47");
+	//(L"Orderlock_47");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -2752,7 +2769,7 @@ CString CSqlData::generateMasterMetadata(CString metadataRequest,CString strLogi
 	//End of Getting toggle View
 
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_47");
+	//(L"U_Orderlock_47");
 	rval.Format(L"{\"type\": \"%s\",\"data\": [%s],\"uniqueKey\":[%s],\"toggleView\":[%s]}",responseKey,tmpstr,strUnique, m_toggleArray);
 	return rval;
 }
@@ -2784,6 +2801,7 @@ CString CSqlData::PositionFileReadAndCheck(CString filePath)
 		CString m_Reason = L"";  
 		CString m_Swap = L"";
 		int checkStatus = 0;
+		CStaticClass::m_logfile.LogEvent(L"Test_16");
 		while (myFile.ReadString(strval))
 		{
 			m_Login = strval.Mid(0, strval.Find(';'));						
@@ -2833,6 +2851,7 @@ CString CSqlData::PositionFileReadAndCheck(CString filePath)
 				writer.String(stmismatchData);
 			}
 		}
+		CStaticClass::m_logfile.LogEvent(L" End Test_16");
 		writer.EndArray();
 		writer.Key("status");
 		if (checkStatus == 1)
@@ -2893,7 +2912,9 @@ int CSqlData::positionCount(string strgroupjason,CString filePath)
 		while (myFile.ReadString(strval))
 		{
 			//strval = strval.Mid(strval.Find(';')+1,strval.GetLength()- strval.Find(';'));
+			CStaticClass::m_logfile.LogEvent(L"Test_17");
 			m_Login = strval.Mid(0, strval.Find(';'));
+			CStaticClass::m_logfile.LogEvent(L"Test_18");
 			CStaticClass::st_Orika_MTclientmaster m_st_Orika_MTclientmaster = {};
 			INT64 INT_LOGIN = _wtoi64(m_Login);
 			CStaticClass::m_Orika_MTclientmasterHasTable.Lookup(INT_LOGIN, m_st_Orika_MTclientmaster);
@@ -2926,7 +2947,7 @@ CString CSqlData::generateDashBoardMetadata(CString loginUser)
 	CString   strCommand = L"";
 	strCommand.Format(L"exec getDashboardMetadata '%s';", loginUser);
 	CSession m_tempsession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_48");
+	//(L"Orderlock_48");
 	m_tempsession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempsession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3015,7 +3036,7 @@ CString CSqlData::generateDashBoardMetadata(CString loginUser)
 	writer.EndObject();
 	m_tempsession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_48");
+	//(L"U_Orderlock_48");
 	CString str_FinalJsonUpdate = L"";
 	rval = str_FinalJsonUpdate = s.GetString();
 	s.Clear();
@@ -3030,7 +3051,7 @@ CString CSqlData::generateTabAndColumnMetadata()
 	CCommand<CAccessor<CTableTabAndColumn>> data_table;
 	CString   strCommand = L"select TabName,[Key],displayValue from metadata where tab='1' order by tabName asc;";
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_49");
+	//(L"Orderlock_49");
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -3100,7 +3121,7 @@ CString CSqlData::generateTabAndColumnMetadata()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_49");
+	//(L"U_Orderlock_49");
 	if (data_count != 0)
 	{
 		CString tmpstr = m_allColumn;
@@ -3340,7 +3361,7 @@ void CSqlData::getSymbolMasterData()
 	CString   strCommand=L"";	
 	strCommand.Format(L"GetSymbolMaster;");		
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_50");
+	//(L"Orderlock_50");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -3378,7 +3399,7 @@ void CSqlData::getSymbolMasterData()
 		CStaticClass::m_symbolmasterarray.Add(&m_stsymbolmaster);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_50");
+	//(L"U_Orderlock_50");
 }
 
 
@@ -3395,7 +3416,7 @@ void CSqlData::getSymbolMasterDataForTickSubscribe()
 	CString   strCommand = L"";
 	strCommand.Format(L"select distinct(isnull(symbol,''))as 'Symbol' from Orika_dealtableAccounting;");
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_51");
+	//(L"Orderlock_51");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3414,7 +3435,7 @@ void CSqlData::getSymbolMasterDataForTickSubscribe()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_51");
+	//(L"U_Orderlock_51");
 }
 void CSqlData::validateauthKey(CString	authKey, CSqlData::st_logintokendetail& m_temp)
 {
@@ -3426,7 +3447,7 @@ void CSqlData::validateauthKey(CString	authKey, CSqlData::st_logintokendetail& m
 		return;
 	}
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_8");
+	//(L"Orderlock_8");
 	m_tempSession.Open(CStaticClass::connection);
 	CString command = L"";
 	command.Format(L"select loginUser,spreadSheetId,authKey from authKey where authKey='%s'", authKey);
@@ -3542,7 +3563,7 @@ void CSqlData::loadDataOrika_clientmaster()
 	CString   strCommand=L"";	
 	strCommand.Format(L"select [login],name,[broker],subBroker,extraGroup,lossLimit,creditLimit,comment,qtyLimitMultiplayer,ignoreTrader,colour,company,isnull(lpRatio,0)as 'lpRatio',isnull(maxbrokerage,0)as 'maxbrokerage' from Orika_clientmaster;");		
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_52");
+	//(L"Orderlock_52");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -3574,7 +3595,7 @@ void CSqlData::loadDataOrika_clientmaster()
 		CStaticClass::m_Orika_clientmasterHastable.SetAt(strlogin,m_st_Orika_clientmaster);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_52");
+	//(L"U_Orderlock_52");
 }
 
 CString CSqlData::GetOrika_subbrokerdata(CString m_subbroker)
@@ -3605,7 +3626,7 @@ CString CSqlData::GetOrika_subbrokerdata(CString m_subbroker)
 
 	strCommand.Format(L"select [subbroker],maxbrokerage from orika_subbroker " + strsubBroker + ";");
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_52");
+	//(L"Orderlock_52");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3628,7 +3649,7 @@ CString CSqlData::GetOrika_subbrokerdata(CString m_subbroker)
 		writer.EndObject();
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_52");
+	//(L"U_Orderlock_52");
 	CString strReturnJason = L"";
 	writer.EndArray();
 	writer.EndObject();
@@ -3664,7 +3685,7 @@ CString CSqlData::GetOrika_brokerdata(CString m_broker)
 
 	strCommand.Format(L"select [broker],maxbrokerage from orika_broker " + strBroker + ";");
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_52");
+	//(L"Orderlock_52");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3688,7 +3709,7 @@ CString CSqlData::GetOrika_brokerdata(CString m_broker)
 		writer.EndObject();
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_52");
+	//(L"U_Orderlock_52");
 	CString strReturnJason = L"";
 	writer.EndArray();
 	writer.EndObject();
@@ -3726,7 +3747,7 @@ CString CSqlData::GetOrika_clientmaster(CString m_login)
 
 	strCommand.Format(L"select [login],name,[broker],subBroker,extraGroup,lossLimit,creditLimit,comment,qtyLimitMultiplayer,ignoreTrader,colour,company,isnull(lpRatio,0)as 'lpRatio',isnull(maxbrokerage,0)as 'maxbrokerage' from Orika_clientmaster " + strLogin + ";");
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_52");
+	//(L"Orderlock_52");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3807,7 +3828,7 @@ CString CSqlData::GetOrika_clientmaster(CString m_login)
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_52");
+	//(L"U_Orderlock_52");
 	CString strReturnJason = L"";
 	writer.EndArray();
 	writer.EndObject();
@@ -3832,14 +3853,14 @@ void CSqlData::Update_PerfectAndRoundedInDataBase(CString SymbolGroup, double lo
 	strCommand.Format(L"update Orika_GATEWAY_POSITIONDEVIDERATIO set perfect='%.2lf',rounded='%.2lf' where symbolgroup='%s' and lots='%.2lf'", perfect, rounded, SymbolGroup, lots);
 	CSession m_tempSession;
 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_53");
+	//(L"Orderlock_53");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = UpdateCommand.Open(m_tempSession, (LPCTSTR)strCommand);
 
 	UpdateCommand.Close();
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_53");
+	//(L"U_Orderlock_53");
 }
 
 
@@ -3854,7 +3875,7 @@ void CSqlData::Load_PerfectAndRoundedInDataBase()
 	CString   strCommand = L"";
 	strCommand.Format(L"select symbolgroup,isnull(lots,0)as 'lots',isnull(ratio,0)as 'ratio',isnull(stepup,'0') as 'stepup',isnull(perfect,0)as 'perfect',isnull(rounded,0)as 'rounded' from Orika_GATEWAY_POSITIONDEVIDERATIO WHERE symbolgroup='GOLD' order by lots;");
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_54");
+	//(L"Orderlock_54");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3926,7 +3947,7 @@ void CSqlData::Load_PerfectAndRoundedInDataBase()
 	m_tempSession.Close();
 
 	strCommand.Format(L"select symbolgroup,isnull(lots,0)as 'lots',isnull(ratio,0)as 'ratio',isnull(stepup,'0') as 'stepup',isnull(perfect,0)as 'perfect',isnull(rounded,0)as 'rounded' from Orika_GATEWAY_POSITIONDEVIDERATIO WHERE symbolgroup='SILVER' order by lots;");	
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -3993,7 +4014,7 @@ void CSqlData::Load_PerfectAndRoundedInDataBase()
 	//COrika_LpPriotity
 	CCommand<CAccessor<COrika_LpPriotity>> data_table_LP;
 	strCommand.Format(L"select symbolgroup,lpname,lpsymbol,lppriority,lpmaxlots,lpsendingtype,lpratio from Orika_LpPriotity where symbolgroup='GOLD';");
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table_LP.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -4022,7 +4043,7 @@ void CSqlData::Load_PerfectAndRoundedInDataBase()
 
 
 	strCommand.Format(L"select symbolgroup,lpname,lpsymbol,lppriority,lpmaxlots,lpsendingtype,lpratio from Orika_LpPriotity where symbolgroup='SILVER';");
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table_LP.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -4053,7 +4074,7 @@ void CSqlData::Load_PerfectAndRoundedInDataBase()
 
 
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_54");
+	//(L"U_Orderlock_54");
 }
 
 
@@ -4071,7 +4092,7 @@ void CSqlData::loadDataOrika_clientbrokerage()
 	CString   strCommand=L"";	
 	strCommand.Format(L"select [login],symbolGroup,brokageType,clientBrokage,subBrokerBrokage,bokerBrokage,companyBrokage from Orika_clientbrokerage;");	
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_55");
+	//(L"Orderlock_55");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -4099,7 +4120,7 @@ void CSqlData::loadDataOrika_clientbrokerage()
 		CStaticClass::m_Orika_clientbrokerageHastable.SetAt(strKey,m_st_Orika_clientbrokerage);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_55");
+	//(L"U_Orderlock_55");
 }
 
 
@@ -4115,7 +4136,7 @@ void CSqlData::loadDataOrika_dealsHighLow()
 	CString   strCommand=L"";	
 	strCommand.Format(L"select symbol+':'+convert(varchar(10),dateadd(s,[time],'01-01-1970'),105) as 'Symbol',min(price)as'LowPrice',max(price)as'HighPrice' from Orika_dealtableAccounting group by symbol+':'+convert(varchar(10),dateadd(s,[time],'01-01-1970'),105);");	
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_56");
+	//(L"Orderlock_56");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -4141,7 +4162,7 @@ void CSqlData::loadDataOrika_dealsHighLow()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_56");
+	//(L"U_Orderlock_56");
 }
 
 
@@ -4182,7 +4203,7 @@ void CSqlData::loadOrika_PLDevideRatio()
 	CString   strCommand=L"";	
 	strCommand.Format(L"select [login],symbolGroup,brokerPLRatio,subBrokerPLRatio,companyPLRatio from Orika_PLDevideRatio;");	
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_57");
+	//(L"Orderlock_57");
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
 	if(FAILED(hr))
@@ -4211,7 +4232,7 @@ void CSqlData::loadOrika_PLDevideRatio()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_57");
+	//(L"Orderlock_57");
 }
 
 
@@ -4231,7 +4252,7 @@ void CSqlData::loadOrika_symbolgroup()
 	strCommand.Format(L"select symbolGroup,symbolWiseBuyLimit,symbolWiseSellLimit,symbolWisePendingOrderEnableDisable,symbolPositionLimit,symbolPendingOrderDiffFromBidAsk,symbolMargin,expectedChange,binsize,pocketnumber,maxlimitOnsameprice  from Orika_symbolgroup;");		
 
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_58");
+	//(L"Orderlock_58");
 
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
@@ -4261,7 +4282,7 @@ void CSqlData::loadOrika_symbolgroup()
 		CStaticClass::m_Orika_symbolgroupHastable.SetAt(strsymbolGroup,m_st_Orika_symbolgroup);
 	}
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_58");
+	//(L"U_Orderlock_58");
 }
 
 
@@ -4279,7 +4300,7 @@ void CSqlData::loadOrika_LoadGoodTradeBadTrade()
 	strCommand.Format(L"select t1.[login],t1.symbol,isnull(t1.TotalTrade,0)as 'TotalTrade',isnull(t2.BadTrade,0)as 'BadTrade',(isnull(t1.TotalTrade,0)-isnull(t2.BadTrade,0))as 'GoodTrade',isnull(t3.BadTradeIPC,0)as 'BadTradeIPC',isnull(t4.TradeIPC,0)as'TradeIPC' from  (select [login],symbol,count(*) as 'TotalTrade' from orika_dealtableaccounting where (DATEPART(WEEKDAY, dateadd(S, [Time], '19700101 00:00:00:000'))>1 and DATEPART(WEEKDAY, dateadd(S, [Time], '19700101 00:00:00:000'))<7) group by [login],symbol)t1 left outer join  (select [login],symbol,count(*) as 'BadTrade' from orika_dealtableaccounting where Badtrade=1 group by [login],symbol)t2 on t1.[login]+t1.symbol=t2.[login]+t2.symbol  left outer join (select [login],symbol,count(*) as 'BadTradeIPC' from orika_dealtableaccounting where badtradeignorePosition=1 group by [login],symbol)t3 on t1.[login]+t1.symbol=t3.[login]+t3.symbol left outer join (select [login],symbol,count(*) as 'TradeIPC' from orika_dealtableaccounting where IgnoreTradePosition=1 group by [login],symbol)t4  on t1.[login]+t1.symbol=t4.[login]+t4.symbol;");
 
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_59")
+	//(L"Orderlock_59")
 
 
 	m_tempSession.Open(CStaticClass::connection);
@@ -4310,7 +4331,7 @@ void CSqlData::loadOrika_LoadGoodTradeBadTrade()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_59");
+	//(L"U_Orderlock_59");
 }
 
 
@@ -4356,7 +4377,7 @@ void CSqlData::loadOrika_LoginSymbolWiseLastTrade()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_60");
+	//(L"U_Orderlock_60");
 }
 
 
@@ -4374,7 +4395,7 @@ void CSqlData::loadOrika_Clientgatewayconfig()
 	strCommand.Format(L"select [login],symbolGroup,symbolWiseBuyLimit,symbolWiseSellLimit,symbolWisePendingOrderEnableDisable,symbolPositionLimit,qtyLimitMultiplayer from  Orika_Clientgatewayconfig;");		
 	
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_61");
+	//(L"Orderlock_61");
 
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
@@ -4407,7 +4428,7 @@ void CSqlData::loadOrika_Clientgatewayconfig()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_61");
+	//(L"U_Orderlock_61");
 }
 
 
@@ -4429,7 +4450,7 @@ void CSqlData::LoadLpRatioCommodityGroupwise()
 	CStaticClass::m_mutexcommoditygroup.Lock();
 	CString StrPrintLino = L"";
 	StrPrintLino.Format(L"m_mutex_order Locked(%d)", __LINE__);
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+	////(StrPrintLino);
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
@@ -4474,7 +4495,7 @@ void CSqlData::loadOrika_symbolmaster()
 	CSession m_tempSession;
 
 
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_62");
+	//(L"Orderlock_62");
 
 
 
@@ -4533,7 +4554,7 @@ void CSqlData::loadOrika_symbolmaster()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_62");
+	//(L"U_Orderlock_62");
 }
 
 
@@ -4547,12 +4568,12 @@ void CSqlData::getMappingSymbol(TMTArray<wchar_t[250]> &m_columns,CString m_logi
 		return;
 	}
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Enter In Symbol Mapping");
+	//(L"Enter In Symbol Mapping");
 	m_tempSession.Open(CStaticClass::connection);
 	CString strcommand = L"select [ColumnKey]  from loginColumnMapping where isnull(requestkey,'')='" + m_requestType + "' and [userlogin]='" + m_loginuser + "'  and subscribe=1";
-	//CStaticClass::m_logfile.LogEvent(L"Enter In Symbol Mapping_2");
+	//(L"Enter In Symbol Mapping_2");
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strcommand);
-	//CStaticClass::m_logfile.LogEvent(L"Enter In Symbol Mapping_3");
+	//(L"Enter In Symbol Mapping_3");
 	if (FAILED(hr))
 	{
 		m_tempSession.Close();
@@ -4575,7 +4596,7 @@ void CSqlData::getMappingSymbol(TMTArray<wchar_t[250]> &m_columns,CString m_logi
 	}
 	data_table.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"Exit From Symbol Mapping");
+	//(L"Exit From Symbol Mapping");
 	return;
 }
 
@@ -4675,7 +4696,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 				CStaticClass::m_mtmanager.SymbolSubscribeForTick(m_symbol);
 				CString strlog = L"";
 				strlog.Format(L"Symbol %s Subscribed For TickData", m_symbol);
-				//CStaticClass::m_logfile.LogEvent(strlog);
+				//(strlog);
 				strSymbol = m_symbol;
 				CStaticClass::m_symbolForTickData.SetAt(m_symbol, strSymbol);
 			}
@@ -4732,7 +4753,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 			////Going to Check and Update NPBPS
 			//CString strLog = L"";
 			//strLog.Format(L"Going to Check and Update NPBPS Status for Deal No %d", m_deal);
-			////CStaticClass::m_logfile.LogEvent(strLog);
+			////(strLog);
 			//CStaticClass::m_mutex_order.Lock();
 
 			//CStaticClass::st_symbolHighLowTimeWise m_stHL = {};
@@ -4742,7 +4763,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 			//double m_low = m_stHL.m_Low/100;
 
 			//strLog.Format(L"%s for Heigh:%.4lf and Low:%.4lf OrderPrice:%.4lf and OrderNo:%d", m_symbol, m_heigh, m_low, m_price, m_order);
-			////CStaticClass::m_logfile.LogEvent(strLog);
+			////(strLog);
 			//if (m_price >= m_low && m_price <= m_heigh)
 			//{
 			//}
@@ -4756,10 +4777,10 @@ void CSqlData::convertToDealFormat(CString str_data)
 			//		st_order.m_orderstate = 1009;
 			//		CStaticClass::m_Orika_orderHastable.SetAt(m_order, st_order);
 			//		strLog.Format(L"Going to  Update NPBPS Status in History DataBase");
-			//		//CStaticClass::m_logfile.LogEvent(strLog);
+			//		//(strLog);
 			//		CStaticClass::m_mtmanager.UpdateOrderHistoryINMT(m_order, L"ExternalID", L"NPBPS");
 			//		strLog.Format(L"Updated NPBPS Status in History DataBase");
-			//		//CStaticClass::m_logfile.LogEvent(strLog);
+			//		//(strLog);
 			//		CStaticClass::m_mutex_ClientList.Lock();
 
 			//		POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
@@ -4782,7 +4803,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 			////End of Checking NPBPS
 
 			//strLog.Format(L"Updated NPBPS _2");
-			////CStaticClass::m_logfile.LogEvent(strLog);
+			////(strLog);
 
 
 
@@ -5001,7 +5022,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 			
 
 			CStaticClass::m_mutex_ClientList.Lock();
-			//CStaticClass::m_logfile.LogEvent(L"116");
+			//(L"116");
 				POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();		
 				while (pos != NULL) 
 				{
@@ -5020,7 +5041,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 					CStaticClass::m_ClientContext.SetAt(strclientkey,m_st);
 				}
 			CStaticClass::m_mutex_ClientList.Unlock();
-			//CStaticClass::m_logfile.LogEvent(L"U116");
+			//(L"U116");
 
 
 
@@ -5168,7 +5189,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 
 			CString StrPrintLino=L"";
 			StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-			////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+			////(StrPrintLino);
 
 
 
@@ -5178,14 +5199,14 @@ void CSqlData::convertToDealFormat(CString str_data)
 			if (m_messageType==1001 || m_messageType==1002)
 			{			
 				CStaticClass::m_mutex_order.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"L116");
+				//(L"L116");
 				
 				CStaticClass::m_Orika_orderHastable.SetAt(m_order,st);
 				CStaticClass::m_mutex_order.Unlock();
 
-				//CStaticClass::m_logfile.LogEvent(L"UL116");
+				//(L"UL116");
 				CStaticClass::m_mutex_ClientList.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"109");
+				//(L"109");
 				POSITION pos = CStaticClass::m_ClientContext.GetStartPosition ();		
 				while (pos != NULL) 
 				{
@@ -5213,34 +5234,36 @@ void CSqlData::convertToDealFormat(CString str_data)
 					CStaticClass::m_ClientContext.SetAt(strclientkey,m_st);
 				}
 				CStaticClass::m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"U109");
+				//(L"U109");
 				
 			}
 			if (m_messageType==1003 )
 			{
 				CString strLog = L"";
 				/*strLog.Format(L"Going to Check PBDU Status For Order No:%d its status is %s", m_order, m_ExternalID);
-				//CStaticClass::m_logfile.LogEvent(strLog);
-				//CStaticClass::m_logfile.LogEvent(L"lock_1");*/
+				//(strLog);
+				//(L"lock_1");*/
 				CStaticClass::m_mutex_order.Lock();	
-				//CStaticClass::m_logfile.LogEvent(L"Orderlock_1");
+				//(L"Orderlock_1");
 				int CheckOrderNo = 0;
 				int CheckDealNo = 0;
 				CStaticClass::m_OrikaOrderdealNO.Lookup(CheckOrderNo, CheckDealNo);
 
 				/*strLog.Format(L"Deal for Order %d is %d", m_order, CheckDealNo);
-				//CStaticClass::m_logfile.LogEvent(strLog);*/
+				//(strLog);*/
 				CString m_ExtarnalIDForCheck = L"";
 				CString m_UpdateRateAndTime = L"";
+				CStaticClass::m_logfile.LogEvent(L"Test_18");
 				if (m_ExternalID.GetLength() >= 5)
 				{
 					m_ExtarnalIDForCheck = m_ExternalID.Mid(0, 5);
 					m_UpdateRateAndTime = m_ExternalID.Mid(5, m_ExternalID.GetLength() - 5);
 				}
+				CStaticClass::m_logfile.LogEvent(L"End Test_18");
 				if (m_ExtarnalIDForCheck == L"PBNPS" && CheckDealNo == 0 && m_state==2)
 				{
 					strLog.Format(L"Going to Update PBDU Status For Order No:%d", m_order);
-					//CStaticClass::m_logfile.LogEvent(strLog);
+					//(strLog);
 					CStaticClass::st_order  st_order = {};
 					CStaticClass::m_Orika_orderHastable.Lookup(m_order, st_order);
 
@@ -5254,7 +5277,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 					CStaticClass::m_mtmanager.UpdateOrderHistoryINMT(m_order, L"ExternalID", m_updateString);
 
 					strLog.Format(L"PBDU Status Has Been Updated For Order No:%d", m_order);
-					//CStaticClass::m_logfile.LogEvent(strLog);
+					//(strLog);
 
 					CStaticClass::m_mutex_ClientList.Lock();
 
@@ -5292,7 +5315,7 @@ void CSqlData::convertToDealFormat(CString str_data)
 					CStaticClass::m_mutex_ClientList.Unlock();
 				}
 				CStaticClass::m_mutex_order.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_1");
+				//(L"U_Orderlock_1");
 				
 
 				
@@ -5369,7 +5392,7 @@ CString CSqlData::generateJsonCommentChangeData()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_3");
+	//(L"U_Orderlock_3");
 	writer.EndArray();
 	writer.EndObject();
 	rval=s.GetString();
@@ -5420,7 +5443,7 @@ void CSqlData::Loadloginuser()
 	}
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_4");	
+	//(L"U_Orderlock_4");	
 }
 
 CString CSqlData::generateJsonLoginData()
@@ -5497,7 +5520,7 @@ CString CSqlData::generateJsonLoginData()
 
 	str_logfile.Format(L"Size of m_ClientContex: %u bytes", size);
 
-	CStaticClass::m_logfile.LogEvent(str_logfile);*/
+	*/
 	CStaticClass::m_mutex_ClientList.Unlock();
 		
 	m_rval.Format(L"{\"type\": \"USERS_DATA\",\"users\": [%s]}", m_allData);
@@ -5724,8 +5747,7 @@ CString CSqlData::generateJsonLoginData_Details(CString loginuser)
 		m_serialNo=data_table.m_serialNo;
 		m_loginStatus=data_table.m_loginStatus;		
 	}
-	m_tempSession.Close();
-	
+	m_tempSession.Close();	
 	writer.StartObject();
 	writer.Key("type");
 	writer.String("USER_DETAILS");
@@ -5835,8 +5857,10 @@ CString CSqlData::generateJsonLoginData_Details(CString loginuser)
 	writer.StartArray();
 	while (m_serialNo.Find(L";") >= 0)
 	{
-		CString m_serial = m_serialNo.Mid(0, m_serialNo.Find(L";"));
-		m_serialNo = m_serialNo.Mid(m_serialNo.Find(L";") + 1, (m_serialNo.GetLength() - m_serialNo.Find(L";") - 1));
+		CStaticClass::m_logfile.LogEvent(L"Fingure Print Validate");
+			CString m_serial = m_serialNo.Mid(0, m_serialNo.Find(L";"));
+			m_serialNo = m_serialNo.Mid(m_serialNo.Find(L";") + 1, (m_serialNo.GetLength() - m_serialNo.Find(L";") - 1));
+		CStaticClass::m_logfile.LogEvent(L"End Fingure Print Validate");
 		string ssserial = string(CT2CA(m_serial));
 		const char* stserial = ssserial.c_str();
 		writer.String(stserial);
@@ -5866,12 +5890,12 @@ CString CSqlData::generateJsonGroupData()
 	CString   strCommand=L"select distinct[broker] as 'Group',subbroker as 'SubGroup',[login] as 'Login' from Orika_clientmaster  where isnull([broker],'')<>'' order by [broker],subbroker,[login] asc;";	
 	
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_5");
+	//(L"Orderlock_5");
 
 
 	/*CString StrPrintLino=L"";
 	StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-	////CStaticClass::m_logfile.LogEvent(StrPrintLino);*/
+	////(StrPrintLino);*/
 
 
 
@@ -5921,11 +5945,12 @@ CString CSqlData::generateJsonGroupData()
 					
 				}
 
-
+				CStaticClass::m_logfile.LogEvent(L"m_SubgroupAllData.Mid");
 				if (m_SubgroupAllData.Mid(0,1)==",")
 				{
 					m_SubgroupAllData=m_SubgroupAllData.Mid(1,m_SubgroupAllData.GetLength()-1);
 				}
+				CStaticClass::m_logfile.LogEvent(L"End m_SubgroupAllData.Mid");
 				m_groupsilgleData.Format(L"{\"group\":\"%s\", \"subgroups\":[%s]}",m_oldGroup,m_SubgroupAllData);
 				if (firstgroupCheck==1)
 				{
@@ -6002,11 +6027,12 @@ CString CSqlData::generateJsonGroupData()
 			m_SubgroupAllData=m_SubgroupAllData+","+subGroupJson;
 					
 		}
-
+		CStaticClass::m_logfile.LogEvent(L"m_SubgroupAllData.Mid_1");
 		if (m_SubgroupAllData.Mid(0,1)==",")
 		{
 			m_SubgroupAllData=m_SubgroupAllData.Mid(1,m_SubgroupAllData.GetLength()-1);
 		}
+		CStaticClass::m_logfile.LogEvent(L"End m_SubgroupAllData.Mid_1");
 		m_groupsilgleData.Format(L"{\"group\":\"%s\", \"subgroups\":[%s]}",m_oldGroup,m_SubgroupAllData);
 		if (firstgroupCheck==1)
 		{
@@ -6024,7 +6050,7 @@ CString CSqlData::generateJsonGroupData()
 
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_5");
+	//(L"U_Orderlock_5");
 	rval.Format(L"{\"type\": \"ALL_GROUP_DATA\",\"data\": [%s]}",m_groupAllData);
 	return rval;
 }
@@ -6044,7 +6070,7 @@ CString CSqlData::generateJsonForFetchUserData(CString  userlogin)
 	strCommand.Format(L"select [broker],[subbroker],[login] from orika_userLoginAndbrokerClientMapping where userlogin='%s' order by [broker],subbroker,[login] asc;",userlogin);	
 	
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_6");
+	//(L"Orderlock_6");
 
 
 
@@ -6457,7 +6483,7 @@ CString CSqlData::generateJsonForFetchUserData(CString  userlogin)
 
 
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_6");
+	//(L"U_Orderlock_6");
 	
 	
 		rval.Format(L"{ \"type\" : \"USER_DATA\", \"data\" : { \"groups\" : [%s], \"tabs\" : [%s],\"password\" : \"%s\",\"name\":\"%s\",\"id\":\"%s\",\"serialNumbers\":[%s]  }}",m_groupAllData,m_tabWiseColumn,m_password,m_name,userlogin,AllHDNo);
@@ -6491,7 +6517,7 @@ CString CSqlData::generateJsonForUserTabs(CString  userlogin)
 		return L"" ;
 	}
 	
-	//CStaticClass::m_logfile.LogEvent(L"generateJsonForUserTabs_1");
+	//(L"generateJsonForUserTabs_1");
 
 	strCommand=L"";	
 	strCommand.Format(L"select tabName,[key],[name] from orika_userLoginAndTabMapping where userlogin='%s' order by tabName asc;",userlogin);		
@@ -6507,7 +6533,7 @@ CString CSqlData::generateJsonForUserTabs(CString  userlogin)
 		m_sqlsession.Close();		
 		return L"";
 	}
-	//CStaticClass::m_logfile.LogEvent(L"generateJsonForUserTabs_2");
+	//(L"generateJsonForUserTabs_2");
 	CString   m_TabName;
 	CString   m_Key;
 	CString   m_displayValue;
@@ -6573,7 +6599,7 @@ CString CSqlData::generateJsonForUserTabs(CString  userlogin)
 		newtab=0;
 	}
 	
-	//CStaticClass::m_logfile.LogEvent(L"generateJsonForUserTabs_3");
+	//(L"generateJsonForUserTabs_3");
 
 	if (data_count!=0)
 	{
@@ -6628,7 +6654,7 @@ CString CSqlData::generateJsonForUserTabs(CString  userlogin)
 	data_tablePassword.Close();
 	m_sqlsession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"generateJsonForUserTabs_4");
+	//(L"generateJsonForUserTabs_4");
 	rval.Format(L"\"data\" : { \"tabs\" : [%s],\"name\":\"%s\",\"id\":\"%s\"}",m_tabWiseColumn,m_name,userlogin);	
 	return rval;
 }
@@ -6644,7 +6670,7 @@ void CSqlData::loadMessageCodeDesc()
 	}
 
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_8");
+	//(L"Orderlock_8");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)L"select  MessageCode,MessageDesc from orika_MessageCode");
 	if (FAILED(hr))
@@ -6665,7 +6691,7 @@ void CSqlData::loadMessageCodeDesc()
 	data_table.Close();
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_8");
+	//(L"U_Orderlock_8");
 	return;
 }
 
@@ -6682,7 +6708,7 @@ void CSqlData::getStringColumnList(CString m_commandtext, CSqlData::columnArray*
 
 
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_9");
+	//(L"Orderlock_9");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)m_commandtext);
 	if (FAILED(hr))
@@ -6704,7 +6730,7 @@ void CSqlData::getStringColumnList(CString m_commandtext, CSqlData::columnArray*
 	data_table.Close();
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_9");
+	//(L"U_Orderlock_9");
 	return ;
 }
 
@@ -6722,7 +6748,7 @@ CSqlData::st_cTableUpdateColumnMetaData CSqlData::GetSqlTable(CString m_selectCo
 	CString   strCommand = L"";
 	strCommand.Format(L"select ColumnKey,TabName,SqlTable,SqlTableColumn,MTModuleName,MtColumnName,DataIndexForUpdate,DataSeprator from   Orika_UpdateColumnMetaData %s;", m_selectCondisiton);
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_10");
+	//(L"Orderlock_10");
 	m_tempSession.Open(CStaticClass::connection);
 	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
 	if (FAILED(hr))
@@ -6763,7 +6789,7 @@ CSqlData::st_cTableUpdateColumnMetaData CSqlData::GetSqlTable(CString m_selectCo
 	data_table.Close();
 	m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_10");
+	//(L"U_Orderlock_10");
 	return m_st;
 }
 void CSqlData::processUpdateRequest(CString m_columnkey,CString m_tabname,CString m_value, CString m_login, CString m_symbol)
@@ -6842,7 +6868,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							strCommand=strCommand+strTmp;
 
 							CStaticClass::m_mutex_order.Lock();	
-							//CStaticClass::m_logfile.LogEvent(L"Orderlock_11");
+							//(L"Orderlock_11");
 
 							int orderkey=intOrder;
 							CStaticClass::st_order st={};
@@ -6850,7 +6876,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							st.m_select=datavalue;
 							CStaticClass::m_Orika_orderHastable.SetAt( orderkey,st);
 							CStaticClass::m_mutex_order.Unlock();
-							//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_11");
+							//(L"U_Orderlock_11");
 							
 						}
 					}
@@ -6893,12 +6919,12 @@ void CSqlData::orderUpdate(const char* strforjson)
 
 
 							CStaticClass::m_mutex_order.Lock();		
-							//CStaticClass::m_logfile.LogEvent(L"Orderlock_12");
+							//(L"Orderlock_12");
 
 
 							CString StrPrintLino=L"";
 							StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-							////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+							////(StrPrintLino);
 
 
 
@@ -6909,7 +6935,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							CMTStr::Copy(st.m_selecttype ,strValue);
 							CStaticClass::m_Orika_orderHastable.SetAt( orderkey,st);
 							CStaticClass::m_mutex_order.Unlock();
-							//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_12");
+							//(L"U_Orderlock_12");
 
 						}
 					}
@@ -6952,11 +6978,11 @@ void CSqlData::orderUpdate(const char* strforjson)
 
 
 							CStaticClass::m_mutex_order.Lock();		
-							//CStaticClass::m_logfile.LogEvent(L"Orderlock_13");
+							//(L"Orderlock_13");
 
 							CString StrPrintLino=L"";
 							StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-							////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+							////(StrPrintLino);
 
 
 
@@ -6968,7 +6994,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							CMTStr::Copy(st.m_subtype ,strValue);
 							CStaticClass::m_Orika_orderHastable.SetAt( orderkey,st);
 							CStaticClass::m_mutex_order.Unlock();
-							//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_13");
+							//(L"U_Orderlock_13");
 
 
 						}
@@ -7010,12 +7036,12 @@ void CSqlData::orderUpdate(const char* strforjson)
 							strCommand=strCommand+strTmp;
 
 							CStaticClass::m_mutex_order.Lock();	
-							//CStaticClass::m_logfile.LogEvent(L"Orderlock_14");
+							//(L"Orderlock_14");
 
 
 							CString StrPrintLino=L"";
 							StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-							////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+							////(StrPrintLino);
 
 
 
@@ -7026,7 +7052,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							st.m_contraorder =intContractorder;
 							CStaticClass::m_Orika_orderHastable.SetAt( orderkey,st);
 							CStaticClass::m_mutex_order.Unlock();
-							//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_14");
+							//(L"U_Orderlock_14");
 
 						}
 					}
@@ -7085,12 +7111,12 @@ void CSqlData::orderUpdate(const char* strforjson)
 							}*/
 
 							CStaticClass::m_mutex_order.Lock();		
-							//CStaticClass::m_logfile.LogEvent(L"Orderlock_15");
+							//(L"Orderlock_15");
 
 
 							CString StrPrintLino=L"";
 							StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-							////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+							////(StrPrintLino);
 
 
 
@@ -7102,7 +7128,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							st.m_tradeexecutetime=intValue;
 							CStaticClass::m_Orika_orderHastable.SetAt( orderkey,st);
 							CStaticClass::m_mutex_order.Unlock();
-							//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_15");
+							//(L"U_Orderlock_15");
 
 
 						}
@@ -7145,11 +7171,11 @@ void CSqlData::orderUpdate(const char* strforjson)
 
 
 							CStaticClass::m_mutex_order.Lock();	
-							//CStaticClass::m_logfile.LogEvent(L"Orderlock_16");
+							//(L"Orderlock_16");
 
 							CString StrPrintLino=L"";
 							StrPrintLino.Format(L"m_mutex_order Locked(%d)",__LINE__);
-							////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+							////(StrPrintLino);
 
 
 
@@ -7160,7 +7186,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 							CMTStr::Copy(st.m_ourcomment,strValue);
 							CStaticClass::m_Orika_orderHastable.SetAt( orderkey,st);
 							CStaticClass::m_mutex_order.Unlock();
-							//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_16");
+							//(L"U_Orderlock_16");
 						}
 					}
 				}
@@ -7182,7 +7208,7 @@ void CSqlData::orderUpdate(const char* strforjson)
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_17");
+	//(L"U_Orderlock_17");
 	//End of Updating Command
 
 }
@@ -7197,7 +7223,7 @@ int CSqlData::executeCommandwiterrorcode(CString strCommand)
 		return 3;
 	}
 	CSession m_tempSession;
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_18");
+	//(L"Orderlock_18");
 
 
 	
@@ -7217,7 +7243,7 @@ int CSqlData::executeCommandwiterrorcode(CString strCommand)
 	{
 		return 1;
 	}
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_18");
+	//(L"U_Orderlock_18");
 }
 
 
@@ -7239,7 +7265,7 @@ void CSqlData::executeCommand(CString strCommand)
 		UpdateCommand.Close();
 		m_tempSession.Close();
 	
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_18");
+	//(L"U_Orderlock_18");
 }
 
 CString CSqlData::CommentChangeToMT5(const char* strforjson)
@@ -7354,7 +7380,7 @@ CString CSqlData::CommentChangeToMT5(const char* strforjson)
 				
 
 				CStaticClass::m_mutex_ClientList.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"112");
+				//(L"112");
 				POSITION pos = CStaticClass::m_ClientContext.GetStartPosition ();		
 				while (pos != NULL) 
 				{
@@ -7368,7 +7394,7 @@ CString CSqlData::CommentChangeToMT5(const char* strforjson)
 						}
 				}
 				CStaticClass::m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"U112");
+				//(L"U112");
 				changedDealList.Clear();
 
 
@@ -7450,7 +7476,7 @@ CString CSqlData::CommentChangeSaveData(const char* strforjson)
 									CMTStr::Copy(st.comment,strcomment);
 									CMTStr::Copy(st.commentTo,strcommentto);
 									CStaticClass::m_mutex_ClientList.Lock();
-									//CStaticClass::m_logfile.LogEvent(L"114");
+									//(L"114");
 									POSITION pos = CStaticClass::m_ClientContext.GetStartPosition ();		
 									while (pos != NULL) 
 									{
@@ -7471,7 +7497,7 @@ CString CSqlData::CommentChangeSaveData(const char* strforjson)
 										}
 									}
 									CStaticClass::m_mutex_ClientList.Unlock();
-									//CStaticClass::m_logfile.LogEvent(L"U114");
+									//(L"U114");
 
 
 									
@@ -7527,8 +7553,8 @@ CString CSqlData::CommentChangeSaveData(const char* strforjson)
 				UpdateCommand.Close();
 				m_tempSession.Close();
 				
-				//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_20");
-				////CStaticClass::m_logfile.LogEvent(L"m_mutex_order UNLocked _1");
+				//(L"U_Orderlock_20");
+				////(L"m_mutex_order UNLocked _1");
 			}
 	else
 	{
@@ -7831,7 +7857,7 @@ CString CSqlData::UpdateLoginUserCredentials(const char* strforjson)
 		UpdateCommand.Close();
 		m_tempSession.Close();
 		CStaticClass::m_mutex_order.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_21");
+		//(L"U_Orderlock_21");
 
 	}
 	strreturnValue="{ \"type\" : \"RESPONSE_MESSAGE\",\"message\":\"Login Data Has Been Updated\" }";
@@ -7931,7 +7957,7 @@ void CSqlData::GetLoginsClient(CString strLoginuser, vector<CString>&	LA)
 	{
 		return ;
 	}
-	
+	//1
 	CString   strCommand=L"";	
 	strCommand.Format(L"exec GetUserLoginList '%s';",strLoginuser);		
 	CSession m_tempSession;
@@ -7949,4 +7975,124 @@ void CSqlData::GetLoginsClient(CString strLoginuser, vector<CString>&	LA)
 	}
 	m_tempSession.Close();
 	
+}
+
+
+
+CString CSqlData::getAlertSetting(CString alertName)
+{
+	CString returnval = L"";
+	HRESULT hr = NULL;
+	CCommand<CAccessor<CalertSettingTable>> data_table;
+	if (!SUCCEEDED(hr))
+	{
+		return L"";
+	}
+	CString str_where = L"";
+
+	if (alertName.Trim() != "")
+	{
+		str_where.Format(L" where alertName='%s'", alertName);
+	}
+
+	CString   strCommand = L"";
+	strCommand.Format(L"select alertName,alertsetting_jason from orika_Event_Setting  %s", str_where);
+
+	CSession m_tempSession;
+	m_tempSession.Open(CStaticClass::connection);
+	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
+	if (FAILED(hr))
+	{
+		m_tempSession.Close();
+		return L"";
+	}
+	int i = 0;
+
+
+	CString m_alertName = L"";
+	CString m_alertSetting = L"";
+	
+
+
+	CString tmpstr = L"";
+	int row_count = 0;
+
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+	//returnval.Format(L"{\"type\":\"ORDER_DATA\",\"insert\":[%s]}",tmpstr);	
+	writer.StartObject();
+	writer.Key("type");
+	writer.String("ALERT_SETTING_LIST");
+	writer.Key("alrets");
+	writer.StartArray();
+
+
+	
+
+	while (hr = data_table.MoveNext() == S_OK)
+	{
+		m_alertName = data_table.m_alertName;
+		m_alertSetting = data_table.m_alertSetting;							
+		string m_str_alertSetting = CT2A(m_alertSetting);		
+		Document objDoc1;
+		objDoc1.Parse(m_str_alertSetting.c_str());
+		if (objDoc1.HasParseError()) {						
+		}
+		objDoc1.Accept(writer);
+
+	}
+	data_table.Close();
+	m_tempSession.Close();
+	writer.EndArray();
+	writer.EndObject();
+	returnval = s.GetString();
+	//(L"U_Orderlock_35");
+
+	
+	return returnval;
+}
+
+
+
+void CSqlData::loadEventSetting()
+{
+	CString returnval = L"";
+	HRESULT hr = NULL;
+	CCommand<CAccessor<CalertSettingTable>> data_table;
+	if (!SUCCEEDED(hr))
+	{
+		return ;
+	}
+	CString str_where = L"";
+	
+	CString   strCommand = L"";
+	strCommand.Format(L"select alertName,alertsetting_jason from orika_Event_Setting  %s", str_where);
+
+	CSession m_tempSession;
+	m_tempSession.Open(CStaticClass::connection);
+	hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
+	if (FAILED(hr))
+	{
+		m_tempSession.Close();
+		return ;
+	}
+	int i = 0;
+
+	CString m_alertName = L"";
+	CString m_alertSetting = L"";
+	CString tmpstr = L"";
+	int row_count = 0;	
+	while (hr = data_table.MoveNext() == S_OK)
+	{
+		m_alertName = data_table.m_alertName;
+		m_alertSetting = data_table.m_alertSetting;
+		string m_str_alertSetting = CT2A(m_alertSetting);
+		Document objDoc1;
+		objDoc1.Parse(m_str_alertSetting.c_str());
+		if (objDoc1.HasParseError()) 
+		{
+			CStaticClass::st_Alert_Setting m_temp = {};
+		}
+		
+	}			
 }

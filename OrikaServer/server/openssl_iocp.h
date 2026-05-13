@@ -76,9 +76,16 @@ struct SSL_session
 	wchar_t  login[15]; 
 	wchar_t HDSLno[239];
 	void *pdata; // user supplied contextual data, not used by openssl processing
-	char pending_frame_buffer_Rev[BUFFER_SIZE_REV]; // memory used store pending frame
-	int  pending_frame_buffer_size;
+	char frame_buffer[BUFFER_SIZE]; // memory used store pending frame
+	int  frame_buffer_size;
+	int  remaining_frame_buffer_size;
 	BYTE masks[4];
+	char LastFrame[BUFFER_SIZE]; // memory used store pending frame
+	int LastFrame_size;
+	bool fin;
+	int continousframe;
+	char unprocessBuffer[BUFFER_SIZE];
+	int unprocessBuffer_size;
 	volatile LONG refcount; // S3: refcount-based lifetime; struct is freed when this reaches 0
 };
 

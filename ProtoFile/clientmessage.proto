@@ -36,7 +36,7 @@ import "ColorThemes.proto";
 import "FetchColorTheme.proto";
 import "ColorTheme.proto";
 import "SaveColorTemplate.proto";
-import "DeleteTemplate.ptoto";
+import "DeleteTemplate.proto";
 import "DeleteColorTheme.proto";
 import "FetchColorTemplates.proto";
 import "PageDetails.proto";
@@ -85,6 +85,12 @@ import "UpdateSymbolmargin.proto";
 import "LoginByKey.proto";
 import "SetAuthKey.proto";	
 import "AlertMessage.proto";
+import "FetchLoginDevice.proto";
+import "LoginDeviceLog.proto";
+import "AlertSetting.proto";
+import "GetAllEventsSetting.proto";
+import "AlertSettingList.proto";
+import "TimewiseData.proto";
 message ClientMessage 
 {
     string 										type = 1;
@@ -173,4 +179,10 @@ message ClientMessage
 	optional LoginByKey							loginbykey=84;
 	optional SetAuthKey							setauthkey=85;
 	optional AlertMessage						alertmessage=86;
+	optional FetchLoginDevice					fetchlogindevice=87;
+	optional LoginDeviceLog						logindevicelog=88;
+	optional AlertSetting						alertsetting=89;
+	optional GetAllEventsSetting				getalleventssetting=90;
+	optional AlertSettingList					alertsettinglist=91;
+	optional TimewiseData						timewisedata=92;
 }

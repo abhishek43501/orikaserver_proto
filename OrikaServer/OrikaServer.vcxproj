@@ -34,7 +34,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
+    <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>Dynamic</UseOfMfc>
@@ -71,6 +71,10 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <VcpkgEnableManifest>true</VcpkgEnableManifest>
+    <VcpkgManifestInstall>true</VcpkgManifestInstall>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>..\json;..\PushFramework\include;..\OrikaServer;..\PushFramework;..\WebsocketProtocol\src;$(IncludePath)</IncludePath>
@@ -93,13 +97,13 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>\orikaserver\OrikaServer\x32\openssl\include;\OrikaServer\OrikaServer;\orikaserver\OrikaServer\x32;\OrikaServer\OrikaServer\json;\orikaserver\OrikaServer\x32\LZO\include;\orikaserver\OrikaServer\x32\QT\include;\orikaserver\OrikaServer\x32\QT\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\ProtoBuff\include;$(ProjectDir)Dependencies_Debug_64\OpenSSL\include;$(ProjectDir);$(ProjectDir)x32;$(ProjectDir)json;$(ProjectDir)x32\LZO\include;$(ProjectDir)x32\QT\include;$(ProjectDir)x32\QT\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>\orikaserver\OrikaServer\x32\openssl\lib;\orikaserver\OrikaServer\x32\LZO_Lib;\orikaserver\OrikaServer\x32\Qt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libeay32.lib;ssleay32.lib;Qt5Core.lib;lzo.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\ProtoBuff\lib;$(ProjectDir)Dependencies_Debug_64\OpenSSL\lib;$(ProjectDir)x32\LZO_Lib;$(ProjectDir)x32\Qt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;libeay32.lib;ssleay32.lib;Qt5Core.lib;lzo.lib;absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;gpr.lib;re2.lib;upb.lib;utf8_range.lib;utf8_validity.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -117,15 +121,16 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\include;\OrikaServer_proto\OrikaServer;\orikaserver_proto\OrikaServer\x64_Lib;\OrikaServer_proto\OrikaServer\json;C:\OrikaServer_proto\ProtoBuff\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\ProtoBuff\include;$(ProjectDir)Dependencies_Debug_64\OpenSSL\include;$(ProjectDir);$(ProjectDir)x64_Lib;$(ProjectDir)json;$(ProjectDir)x64_Lib\LZO\include;$(ProjectDir)x64_Lib\QT\include\QtCore;$(ProjectDir)x64_Lib\QT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\lib;C:\OrikaServer_proto\ProtoBuff\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libeay32.lib;ssleay32.lib;absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;crypto.lib;gpr.lib;grpc++.lib;grpc++_alts.lib;grpc++_error_details.lib;grpc++_reflection.lib;grpc++_unsecure.lib;grpc.lib;grpcpp_channelz.lib;grpc_authorization_provider.lib;grpc_plugin_support.lib;grpc_unsecure.lib;libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;re2.lib;ssl.lib;upb.lib;utf8_range.lib;utf8_validity.lib;zlib.lib;zlibstatic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\ProtoBuff\lib;$(ProjectDir)Dependencies_Debug_64\OpenSSL\lib;$(ProjectDir)Dependencies_Debug_64\lib;$(ProjectDir)x64_Lib\LZO_Lib;$(ProjectDir)x64_Lib\QT\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;gpr.lib;libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;re2.lib;upb.lib;utf8_range.lib;utf8_validity.lib;zlib.lib;zlibstatic.lib;lzo.lib;Qt5Core.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>500000000000</StackReserveSize>
     </Link>
     <Midl>
@@ -145,14 +150,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\ProtoBuff\include;$(ProjectDir)Dependencies_Debug_64\OpenSSL\include;$(ProjectDir);$(ProjectDir)x32;$(ProjectDir)json;$(ProjectDir)x32\LZO\include;$(ProjectDir)x32\QT\include;$(ProjectDir)x32\QT\include\QtCore;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\ProtoBuff\lib;$(ProjectDir)Dependencies_Debug_64\OpenSSL\lib;$(ProjectDir)x32\LZO_Lib;$(ProjectDir)x32\Qt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;gpr.lib;re2.lib;upb.lib;utf8_range.lib;utf8_validity.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -172,17 +180,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\include;\OrikaServer_proto\OrikaServer;\orikaserver_proto\OrikaServer\x64_Lib;\OrikaServer_proto\OrikaServer\json;C:\OrikaServer_proto\ProtoBuff\include;C:\OrikaServer_proto\OrikaServer\x64_Lib\LZO\include;C:\OrikaServer_proto\OrikaServer\x64_Lib\QT\include\QtCore;C:\OrikaServer_proto\OrikaServer\x64_Lib\QT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)..\ProtoBuff\include;$(ProjectDir)Dependencies_Debug_64\OpenSSL\include;$(ProjectDir);$(ProjectDir)x64_Lib;$(ProjectDir)json;$(ProjectDir)x64_Lib\LZO\include;$(ProjectDir)x64_Lib\QT\include\QtCore;$(ProjectDir)x64_Lib\QT\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>\orikaserver_proto\OrikaServer\x64_Lib\openssl\lib;C:\OrikaServer_proto\ProtoBuff\lib;\orikaserver_proto\OrikaServer\x64_Lib\LZO_Lib;\orikaserver_proto\OrikaServer\x64_Lib\Qt\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;crypto.lib;gpr.lib;grpc++.lib;grpc++_alts.lib;grpc++_error_details.lib;grpc++_reflection.lib;grpc++_unsecure.lib;grpc.lib;grpcpp_channelz.lib;grpc_authorization_provider.lib;grpc_plugin_support.lib;grpc_unsecure.lib;libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;re2.lib;ssl.lib;upb.lib;utf8_range.lib;utf8_validity.lib;zlib.lib;zlibstatic.lib;lzo.lib;Qt5Core.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)..\ProtoBuff\lib;$(ProjectDir)Dependencies_Debug_64\OpenSSL\lib;$(ProjectDir)Dependencies_Debug_64\lib;$(ProjectDir)x64_Lib\LZO_Lib;$(ProjectDir)x64_Lib\QT\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>absl_bad_any_cast_impl.lib;absl_bad_optional_access.lib;absl_bad_variant_access.lib;absl_base.lib;absl_city.lib;absl_civil_time.lib;absl_cord.lib;absl_cordz_functions.lib;absl_cordz_handle.lib;absl_cordz_info.lib;absl_cordz_sample_token.lib;absl_cord_internal.lib;absl_crc32c.lib;absl_crc_cord_state.lib;absl_crc_cpu_detect.lib;absl_crc_internal.lib;absl_debugging_internal.lib;absl_demangle_internal.lib;absl_die_if_null.lib;absl_examine_stack.lib;absl_exponential_biased.lib;absl_failure_signal_handler.lib;absl_flags.lib;absl_flags_commandlineflag.lib;absl_flags_commandlineflag_internal.lib;absl_flags_config.lib;absl_flags_internal.lib;absl_flags_marshalling.lib;absl_flags_parse.lib;absl_flags_private_handle_accessor.lib;absl_flags_program_name.lib;absl_flags_reflection.lib;absl_flags_usage.lib;absl_flags_usage_internal.lib;absl_graphcycles_internal.lib;absl_hash.lib;absl_hashtablez_sampler.lib;absl_int128.lib;absl_leak_check.lib;absl_log_entry.lib;absl_log_flags.lib;absl_log_globals.lib;absl_log_initialize.lib;absl_log_internal_check_op.lib;absl_log_internal_conditions.lib;absl_log_internal_format.lib;absl_log_internal_globals.lib;absl_log_internal_log_sink_set.lib;absl_log_internal_message.lib;absl_log_internal_nullguard.lib;absl_log_internal_proto.lib;absl_log_severity.lib;absl_log_sink.lib;absl_low_level_hash.lib;absl_malloc_internal.lib;absl_periodic_sampler.lib;absl_random_distributions.lib;absl_random_internal_distribution_test_util.lib;absl_random_internal_platform.lib;absl_random_internal_pool_urbg.lib;absl_random_internal_randen.lib;absl_random_internal_randen_hwaes.lib;absl_random_internal_randen_hwaes_impl.lib;absl_random_internal_randen_slow.lib;absl_random_internal_seed_material.lib;absl_random_seed_gen_exception.lib;absl_random_seed_sequences.lib;absl_raw_hash_set.lib;absl_raw_logging_internal.lib;absl_scoped_set_env.lib;absl_spinlock_wait.lib;absl_stacktrace.lib;absl_status.lib;absl_statusor.lib;absl_strerror.lib;absl_strings.lib;absl_strings_internal.lib;absl_str_format_internal.lib;absl_symbolize.lib;absl_synchronization.lib;absl_throw_delegate.lib;absl_time.lib;absl_time_zone.lib;address_sorting.lib;benchmark.lib;benchmark_main.lib;cares.lib;gpr.lib;libprotobuf-lite.lib;libprotobuf.lib;libprotoc.lib;re2.lib;upb.lib;utf8_range.lib;utf8_validity.lib;zlib.lib;zlibstatic.lib;lzo.lib;Qt5Core.lib;libssl.lib;libcrypto.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <StackReserveSize>100000000</StackReserveSize>
     </Link>
     <Midl>
@@ -200,7 +208,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\ProtoFile\ActiveColumnChanged.pb.h" />
+    <ClInclude Include="..\ProtoFile\AlertExecuteMessage.pb.h" />
     <ClInclude Include="..\ProtoFile\AlertMessage.pb.h" />
+    <ClInclude Include="..\ProtoFile\AlertSetting.pb.h" />
+    <ClInclude Include="..\ProtoFile\AlertSettingList.pb.h" />
     <ClInclude Include="..\ProtoFile\AllGroupData.pb.h" />
     <ClInclude Include="..\ProtoFile\AllSymbolgroupinfo.pb.h" />
     <ClInclude Include="..\ProtoFile\BalanceTransferRequest.pb.h" />
@@ -228,7 +239,7 @@
     <ClInclude Include="..\ProtoFile\DeleteDataRequest.pb.h" />
     <ClInclude Include="..\ProtoFile\DeleteDataStatus.pb.h" />
     <ClInclude Include="..\ProtoFile\DeletePage.pb.h" />
-    <ClInclude Include="..\ProtoFile\DeleteTemplate.ptoto.pb.h" />
+    <ClInclude Include="..\ProtoFile\DeleteTemplate.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchBrokerData.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchClientData.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchClientPositions.pb.h" />
@@ -236,11 +247,13 @@
     <ClInclude Include="..\ProtoFile\FetchColorTheme.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchDealingDataInterval.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchHighLowMismatchData.pb.h" />
+    <ClInclude Include="..\ProtoFile\FetchLoginDevice.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchLoginUserWiseDataRequest.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchPageDetails.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchSubbrokerData.pb.h" />
     <ClInclude Include="..\ProtoFile\FetchSymbolgroupinfo.pb.h" />
     <ClInclude Include="..\ProtoFile\GatewayPositiondevideratioUpdate.pb.h" />
+    <ClInclude Include="..\ProtoFile\GetAllEventsSetting.pb.h" />
     <ClInclude Include="..\ProtoFile\HbS.pb.h" />
     <ClInclude Include="..\ProtoFile\Heartbeat.pb.h" />
     <ClInclude Include="..\ProtoFile\HighLowMismatchData.pb.h" />
@@ -248,6 +261,7 @@
     <ClInclude Include="..\ProtoFile\login.pb.h" />
     <ClInclude Include="..\ProtoFile\LoginByKey.pb.h" />
     <ClInclude Include="..\ProtoFile\LoginByToken.pb.h" />
+    <ClInclude Include="..\ProtoFile\LoginDeviceLog.pb.h" />
     <ClInclude Include="..\ProtoFile\loginrequest.pb.h" />
     <ClInclude Include="..\ProtoFile\loginresponse.pb.h" />
     <ClInclude Include="..\ProtoFile\MetaData.pb.h" />
@@ -278,6 +292,7 @@
     <ClInclude Include="..\ProtoFile\TdhExecution.pb.h" />
     <ClInclude Include="..\ProtoFile\TdhResponseMessage.pb.h" />
     <ClInclude Include="..\ProtoFile\tickdata.pb.h" />
+    <ClInclude Include="..\ProtoFile\TimewiseData.pb.h" />
     <ClInclude Include="..\ProtoFile\TotalClientForBalanceTransfer.pb.h" />
     <ClInclude Include="..\ProtoFile\TotalDealForTransfer.pb.h" />
     <ClInclude Include="..\ProtoFile\TotalNoOfData.pb.h" />
@@ -291,6 +306,7 @@
     <ClInclude Include="..\ProtoFile\UpdateSymbolmargin.pb.h" />
     <ClInclude Include="..\ProtoFile\UserData.pb.h" />
     <ClInclude Include="..\ProtoFile\UserDetails.pb.h" />
+    <ClInclude Include="AlertStaticClass.h" />
     <ClInclude Include="ClientSocket\ClientSocket.h" />
     <ClInclude Include="ClientSocket\DataSource.h" />
     <ClInclude Include="ClientSocket\Sync.h" />
@@ -316,7 +332,6 @@
     <ClInclude Include="DealerSink.h" />
     <ClInclude Include="EchoService.h" />
     <ClInclude Include="LogWriter\LogFile.h" />
-    <ClInclude Include="LZ\lzstring.h" />
     <ClInclude Include="Manager.h" />
     <ClInclude Include="MSMQ\MSMQApiWrapper.h" />
     <ClInclude Include="OrikaServer.h" />
@@ -336,6 +351,9 @@
     <ClInclude Include="server\WebsocketDataMessage.h" />
     <ClInclude Include="server\WebsocketHandshakeMessage.h" />
     <ClInclude Include="server\WebsocketMessage.h" />
+    <ClInclude Include="SocketServer.h" />
+    <ClInclude Include="SocketServer\ClientContext.h" />
+    <ClInclude Include="SocketServer\IOCPServer.h" />
     <ClInclude Include="SQLDATA\SqlData.h" />
     <ClInclude Include="StaticClass.h" />
     <ClInclude Include="stdafx.h" />
@@ -345,7 +363,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ProtoFile\ActiveColumnChanged.pb.cc" />
+    <ClCompile Include="..\ProtoFile\AlertExecuteMessage.pb.cc" />
     <ClCompile Include="..\ProtoFile\AlertMessage.pb.cc" />
+    <ClCompile Include="..\ProtoFile\AlertSetting.pb.cc" />
+    <ClCompile Include="..\ProtoFile\AlertSettingList.pb.cc" />
     <ClCompile Include="..\ProtoFile\AllGroupData.pb.cc" />
     <ClCompile Include="..\ProtoFile\AllSymbolgroupinfo.pb.cc" />
     <ClCompile Include="..\ProtoFile\BalanceTransferRequest.pb.cc" />
@@ -373,7 +394,7 @@
     <ClCompile Include="..\ProtoFile\DeleteDataRequest.pb.cc" />
     <ClCompile Include="..\ProtoFile\DeleteDataStatus.pb.cc" />
     <ClCompile Include="..\ProtoFile\DeletePage.pb.cc" />
-    <ClCompile Include="..\ProtoFile\DeleteTemplate.ptoto.pb.cc" />
+    <ClCompile Include="..\ProtoFile\DeleteTemplate.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchBrokerData.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchClientData.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchClientPositions.pb.cc" />
@@ -381,11 +402,13 @@
     <ClCompile Include="..\ProtoFile\FetchColorTheme.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchDealingDataInterval.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchHighLowMismatchData.pb.cc" />
+    <ClCompile Include="..\ProtoFile\FetchLoginDevice.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchLoginUserWiseDataRequest.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchPageDetails.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchSubbrokerData.pb.cc" />
     <ClCompile Include="..\ProtoFile\FetchSymbolgroupinfo.pb.cc" />
     <ClCompile Include="..\ProtoFile\GatewayPositiondevideratioUpdate.pb.cc" />
+    <ClCompile Include="..\ProtoFile\GetAllEventsSetting.pb.cc" />
     <ClCompile Include="..\ProtoFile\HbS.pb.cc" />
     <ClCompile Include="..\ProtoFile\Heartbeat.pb.cc" />
     <ClCompile Include="..\ProtoFile\HighLowMismatchData.pb.cc" />
@@ -393,6 +416,7 @@
     <ClCompile Include="..\ProtoFile\login.pb.cc" />
     <ClCompile Include="..\ProtoFile\LoginByKey.pb.cc" />
     <ClCompile Include="..\ProtoFile\LoginByToken.pb.cc" />
+    <ClCompile Include="..\ProtoFile\LoginDeviceLog.pb.cc" />
     <ClCompile Include="..\ProtoFile\loginrequest.pb.cc" />
     <ClCompile Include="..\ProtoFile\loginresponse.pb.cc" />
     <ClCompile Include="..\ProtoFile\MetaData.pb.cc" />
@@ -423,6 +447,7 @@
     <ClCompile Include="..\ProtoFile\TdhExecution.pb.cc" />
     <ClCompile Include="..\ProtoFile\TdhResponseMessage.pb.cc" />
     <ClCompile Include="..\ProtoFile\tickdata.pb.cc" />
+    <ClCompile Include="..\ProtoFile\TimewiseData.pb.cc" />
     <ClCompile Include="..\ProtoFile\TotalClientForBalanceTransfer.pb.cc" />
     <ClCompile Include="..\ProtoFile\TotalDealForTransfer.pb.cc" />
     <ClCompile Include="..\ProtoFile\TotalNoOfData.pb.cc" />
@@ -436,12 +461,12 @@
     <ClCompile Include="..\ProtoFile\UpdateSymbolmargin.pb.cc" />
     <ClCompile Include="..\ProtoFile\UserData.pb.cc" />
     <ClCompile Include="..\ProtoFile\UserDetails.pb.cc" />
+    <ClCompile Include="AlertStaticClass.cpp" />
     <ClCompile Include="ClientSocket\ClientSocket.cpp" />
     <ClCompile Include="ClientSocket\DataSource.cpp" />
     <ClCompile Include="ClientSocket\UniFeederSocket.cpp" />
     <ClCompile Include="EchoService.cpp" />
     <ClCompile Include="LogWriter\LogFile.cpp" />
-    <ClCompile Include="LZ\lzstring.cpp" />
     <ClCompile Include="Manager.cpp" />
     <ClCompile Include="MSMQ\MSMQApiWrapper.cpp" />
     <ClCompile Include="OrikaServer.cpp" />
@@ -459,6 +484,13 @@
     <ClCompile Include="server\WebsocketDataMessage.cpp" />
     <ClCompile Include="server\WebsocketHandshakeMessage.cpp" />
     <ClCompile Include="server\WebsocketMessage.cpp" />
+    <ClCompile Include="SocketServer.cpp" />
+    <ClCompile Include="SocketServer\IOCPServer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="SQLDATA\SqlData.cpp" />
     <ClCompile Include="StaticClass.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -493,3 +525,24 @@
     </VisualStudio>
   </ProjectExtensions>
 </Project>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -10,6 +10,7 @@
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
+//#define ABSL_HAVE_STD_STRING_VIEW 1
 #include "targetver.h"
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
@@ -37,6 +38,11 @@
 
 #include <afxcontrolbars.h>     // MFC support for ribbons and control bars
 
+
+#include <winsock2.h>
+#pragma comment(lib,"ws2_32.lib")
+
+
 #define _CRT_SECURE_NO_WARNINGS
 
 
@@ -47,8 +53,7 @@
 //#include <afxwin.h>
 //#include <windows.h>				// Windows Header Files:
 
-#include <winsock2.h>
-#pragma comment(lib,"ws2_32.lib")
+
 
 
 using namespace std;

@@ -58,4 +58,5 @@ public:
 	
 
 	afx_msg void OnBnClickedImportMasterdata();
+	void ThreadProc_Log();
 };

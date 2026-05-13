@@ -1,0 +1,8 @@
+	
+syntax = "proto3";
+package Oreka;
+message GetAllEventsSetting
+{
+    string type = 1;
+    string alert_name = 2;
+}

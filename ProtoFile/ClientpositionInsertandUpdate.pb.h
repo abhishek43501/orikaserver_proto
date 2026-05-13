@@ -1486,6 +1486,7 @@ class ClientpositionInsertandUpdate_Update final :
     kCompanybrokeragerateFieldNumber = 47,
     kBrokerbrokeragerateFieldNumber = 48,
     kSubbrokerbrokeragerateFieldNumber = 49,
+    kClientbrokeragerateFieldNumber = 50,
     kClientgrossamountFieldNumber = 51,
     kBrokergrossamountFieldNumber = 52,
     kSubbrokergrossamountFieldNumber = 53,
@@ -1496,7 +1497,6 @@ class ClientpositionInsertandUpdate_Update final :
     kQtymultiFieldNumber = 66,
     kLpratioFieldNumber = 67,
     kLpvolumeFieldNumber = 68,
-    kClientbrokeragerateFieldNumber = 510,
   };
   // string login = 1;
   void clear_login() ;
@@ -2315,6 +2315,17 @@ class ClientpositionInsertandUpdate_Update final :
   void _internal_set_subbrokerbrokeragerate(double value);
 
   public:
+  // optional double clientbrokeragerate = 50;
+  bool has_clientbrokeragerate() const;
+  void clear_clientbrokeragerate() ;
+  double clientbrokeragerate() const;
+  void set_clientbrokeragerate(double value);
+
+  private:
+  double _internal_clientbrokeragerate() const;
+  void _internal_set_clientbrokeragerate(double value);
+
+  public:
   // optional double clientgrossamount = 51;
   bool has_clientgrossamount() const;
   void clear_clientgrossamount() ;
@@ -2425,17 +2436,6 @@ class ClientpositionInsertandUpdate_Update final :
   void _internal_set_lpvolume(double value);
 
   public:
-  // optional double clientbrokeragerate = 510;
-  bool has_clientbrokeragerate() const;
-  void clear_clientbrokeragerate() ;
-  double clientbrokeragerate() const;
-  void set_clientbrokeragerate(double value);
-
-  private:
-  double _internal_clientbrokeragerate() const;
-  void _internal_set_clientbrokeragerate(double value);
-
-  public:
   // @@protoc_insertion_point(class_scope:Oreka.ClientpositionInsertandUpdate.Update)
  private:
   class _Internal;
@@ -2505,6 +2505,7 @@ class ClientpositionInsertandUpdate_Update final :
     double companybrokeragerate_;
     double brokerbrokeragerate_;
     double subbrokerbrokeragerate_;
+    double clientbrokeragerate_;
     double clientgrossamount_;
     double brokergrossamount_;
     double subbrokergrossamount_;
@@ -2515,7 +2516,6 @@ class ClientpositionInsertandUpdate_Update final :
     double qtymulti_;
     double lpratio_;
     double lpvolume_;
-    double clientbrokeragerate_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_ClientpositionInsertandUpdate_2eproto;
@@ -6648,14 +6648,14 @@ inline void ClientpositionInsertandUpdate_Update::_internal_set_subbrokerbrokera
   _impl_.subbrokerbrokeragerate_ = value;
 }
 
-// optional double clientbrokeragerate = 510;
+// optional double clientbrokeragerate = 50;
 inline bool ClientpositionInsertandUpdate_Update::has_clientbrokeragerate() const {
-  bool value = (_impl_._has_bits_[2] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x02000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_clientbrokeragerate() {
   _impl_.clientbrokeragerate_ = 0;
-  _impl_._has_bits_[2] &= ~0x00000008u;
+  _impl_._has_bits_[1] &= ~0x02000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::clientbrokeragerate() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.clientbrokeragerate)
@@ -6669,18 +6669,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_clientbrokeragerat
   return _impl_.clientbrokeragerate_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_clientbrokeragerate(double value) {
-  _impl_._has_bits_[2] |= 0x00000008u;
+  _impl_._has_bits_[1] |= 0x02000000u;
   _impl_.clientbrokeragerate_ = value;
 }
 
 // optional double clientgrossamount = 51;
 inline bool ClientpositionInsertandUpdate_Update::has_clientgrossamount() const {
-  bool value = (_impl_._has_bits_[1] & 0x02000000u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x04000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_clientgrossamount() {
   _impl_.clientgrossamount_ = 0;
-  _impl_._has_bits_[1] &= ~0x02000000u;
+  _impl_._has_bits_[1] &= ~0x04000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::clientgrossamount() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.clientgrossamount)
@@ -6694,18 +6694,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_clientgrossamount(
   return _impl_.clientgrossamount_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_clientgrossamount(double value) {
-  _impl_._has_bits_[1] |= 0x02000000u;
+  _impl_._has_bits_[1] |= 0x04000000u;
   _impl_.clientgrossamount_ = value;
 }
 
 // optional double brokergrossamount = 52;
 inline bool ClientpositionInsertandUpdate_Update::has_brokergrossamount() const {
-  bool value = (_impl_._has_bits_[1] & 0x04000000u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x08000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_brokergrossamount() {
   _impl_.brokergrossamount_ = 0;
-  _impl_._has_bits_[1] &= ~0x04000000u;
+  _impl_._has_bits_[1] &= ~0x08000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::brokergrossamount() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.brokergrossamount)
@@ -6719,18 +6719,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_brokergrossamount(
   return _impl_.brokergrossamount_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_brokergrossamount(double value) {
-  _impl_._has_bits_[1] |= 0x04000000u;
+  _impl_._has_bits_[1] |= 0x08000000u;
   _impl_.brokergrossamount_ = value;
 }
 
 // optional double subbrokergrossamount = 53;
 inline bool ClientpositionInsertandUpdate_Update::has_subbrokergrossamount() const {
-  bool value = (_impl_._has_bits_[1] & 0x08000000u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x10000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_subbrokergrossamount() {
   _impl_.subbrokergrossamount_ = 0;
-  _impl_._has_bits_[1] &= ~0x08000000u;
+  _impl_._has_bits_[1] &= ~0x10000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::subbrokergrossamount() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.subbrokergrossamount)
@@ -6744,18 +6744,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_subbrokergrossamou
   return _impl_.subbrokergrossamount_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_subbrokergrossamount(double value) {
-  _impl_._has_bits_[1] |= 0x08000000u;
+  _impl_._has_bits_[1] |= 0x10000000u;
   _impl_.subbrokergrossamount_ = value;
 }
 
 // optional double companygrossamount = 54;
 inline bool ClientpositionInsertandUpdate_Update::has_companygrossamount() const {
-  bool value = (_impl_._has_bits_[1] & 0x10000000u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x20000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_companygrossamount() {
   _impl_.companygrossamount_ = 0;
-  _impl_._has_bits_[1] &= ~0x10000000u;
+  _impl_._has_bits_[1] &= ~0x20000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::companygrossamount() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.companygrossamount)
@@ -6769,7 +6769,7 @@ inline double ClientpositionInsertandUpdate_Update::_internal_companygrossamount
   return _impl_.companygrossamount_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_companygrossamount(double value) {
-  _impl_._has_bits_[1] |= 0x10000000u;
+  _impl_._has_bits_[1] |= 0x20000000u;
   _impl_.companygrossamount_ = value;
 }
 
@@ -7295,12 +7295,12 @@ inline void ClientpositionInsertandUpdate_Update::set_allocated_categary(std::st
 
 // optional double rm = 63;
 inline bool ClientpositionInsertandUpdate_Update::has_rm() const {
-  bool value = (_impl_._has_bits_[1] & 0x20000000u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x40000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_rm() {
   _impl_.rm_ = 0;
-  _impl_._has_bits_[1] &= ~0x20000000u;
+  _impl_._has_bits_[1] &= ~0x40000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::rm() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.rm)
@@ -7314,18 +7314,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_rm() const {
   return _impl_.rm_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_rm(double value) {
-  _impl_._has_bits_[1] |= 0x20000000u;
+  _impl_._has_bits_[1] |= 0x40000000u;
   _impl_.rm_ = value;
 }
 
 // optional double qtyaftermulti = 64;
 inline bool ClientpositionInsertandUpdate_Update::has_qtyaftermulti() const {
-  bool value = (_impl_._has_bits_[1] & 0x40000000u) != 0;
+  bool value = (_impl_._has_bits_[1] & 0x80000000u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_qtyaftermulti() {
   _impl_.qtyaftermulti_ = 0;
-  _impl_._has_bits_[1] &= ~0x40000000u;
+  _impl_._has_bits_[1] &= ~0x80000000u;
 }
 inline double ClientpositionInsertandUpdate_Update::qtyaftermulti() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.qtyaftermulti)
@@ -7339,18 +7339,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_qtyaftermulti() co
   return _impl_.qtyaftermulti_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_qtyaftermulti(double value) {
-  _impl_._has_bits_[1] |= 0x40000000u;
+  _impl_._has_bits_[1] |= 0x80000000u;
   _impl_.qtyaftermulti_ = value;
 }
 
 // optional double rmp = 65;
 inline bool ClientpositionInsertandUpdate_Update::has_rmp() const {
-  bool value = (_impl_._has_bits_[1] & 0x80000000u) != 0;
+  bool value = (_impl_._has_bits_[2] & 0x00000001u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_rmp() {
   _impl_.rmp_ = 0;
-  _impl_._has_bits_[1] &= ~0x80000000u;
+  _impl_._has_bits_[2] &= ~0x00000001u;
 }
 inline double ClientpositionInsertandUpdate_Update::rmp() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.rmp)
@@ -7364,18 +7364,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_rmp() const {
   return _impl_.rmp_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_rmp(double value) {
-  _impl_._has_bits_[1] |= 0x80000000u;
+  _impl_._has_bits_[2] |= 0x00000001u;
   _impl_.rmp_ = value;
 }
 
 // optional double qtymulti = 66;
 inline bool ClientpositionInsertandUpdate_Update::has_qtymulti() const {
-  bool value = (_impl_._has_bits_[2] & 0x00000001u) != 0;
+  bool value = (_impl_._has_bits_[2] & 0x00000002u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_qtymulti() {
   _impl_.qtymulti_ = 0;
-  _impl_._has_bits_[2] &= ~0x00000001u;
+  _impl_._has_bits_[2] &= ~0x00000002u;
 }
 inline double ClientpositionInsertandUpdate_Update::qtymulti() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.qtymulti)
@@ -7389,18 +7389,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_qtymulti() const {
   return _impl_.qtymulti_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_qtymulti(double value) {
-  _impl_._has_bits_[2] |= 0x00000001u;
+  _impl_._has_bits_[2] |= 0x00000002u;
   _impl_.qtymulti_ = value;
 }
 
 // optional double lpratio = 67;
 inline bool ClientpositionInsertandUpdate_Update::has_lpratio() const {
-  bool value = (_impl_._has_bits_[2] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[2] & 0x00000004u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_lpratio() {
   _impl_.lpratio_ = 0;
-  _impl_._has_bits_[2] &= ~0x00000002u;
+  _impl_._has_bits_[2] &= ~0x00000004u;
 }
 inline double ClientpositionInsertandUpdate_Update::lpratio() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.lpratio)
@@ -7414,18 +7414,18 @@ inline double ClientpositionInsertandUpdate_Update::_internal_lpratio() const {
   return _impl_.lpratio_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_lpratio(double value) {
-  _impl_._has_bits_[2] |= 0x00000002u;
+  _impl_._has_bits_[2] |= 0x00000004u;
   _impl_.lpratio_ = value;
 }
 
 // optional double lpvolume = 68;
 inline bool ClientpositionInsertandUpdate_Update::has_lpvolume() const {
-  bool value = (_impl_._has_bits_[2] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[2] & 0x00000008u) != 0;
   return value;
 }
 inline void ClientpositionInsertandUpdate_Update::clear_lpvolume() {
   _impl_.lpvolume_ = 0;
-  _impl_._has_bits_[2] &= ~0x00000004u;
+  _impl_._has_bits_[2] &= ~0x00000008u;
 }
 inline double ClientpositionInsertandUpdate_Update::lpvolume() const {
   // @@protoc_insertion_point(field_get:Oreka.ClientpositionInsertandUpdate.Update.lpvolume)
@@ -7439,7 +7439,7 @@ inline double ClientpositionInsertandUpdate_Update::_internal_lpvolume() const {
   return _impl_.lpvolume_;
 }
 inline void ClientpositionInsertandUpdate_Update::_internal_set_lpvolume(double value) {
-  _impl_._has_bits_[2] |= 0x00000004u;
+  _impl_._has_bits_[2] |= 0x00000008u;
   _impl_.lpvolume_ = value;
 }
 

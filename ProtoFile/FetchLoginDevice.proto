@@ -1,0 +1,7 @@
+syntax = "proto3";
+package Oreka;
+message FetchLoginDevice {
+    string type = 1;      
+    uint32 startTime = 2;
+    uint32 endTime = 3;
+}

@@ -6,7 +6,7 @@
 #include "stringbuffer.h"
 #include <iostream>
 #include "server/server.h"
-
+#include "AlertStaticClass.h"
  
 using namespace rapidjson;
 bool CStaticClass::terminated=false;
@@ -20,9 +20,16 @@ CDataSource CStaticClass::conntmp;
 int CStaticClass::m_dealing_ID = 0;
 CMutex CStaticClass::m_mutexcommoditygroup;
 
+
+CMutex CStaticClass::m_SqlLock;
+
 CString  CStaticClass::strKeyTransfer=L"";
 CMutex   CStaticClass::mutex_keytranssfer; 
 CMap<int, int, double, double> CStaticClass::m_ClientBalance;
+
+
+
+CMutex CStaticClass::m_mutexLog;
 
 CMap<CString, LPCTSTR, double, double> CStaticClass::m_LPLots;
 CMap<CString, LPCTSTR, double, double> CStaticClass::m_comTotalLotsAfterMultiGroupWise;
@@ -35,6 +42,13 @@ CMap<CString, LPCTSTR, CStaticClass::st_LoginSymbolWiseLastTrade, CStaticClass::
 CMap<CString, LPCTSTR, CStaticClass::st_BadTradeGoodTrade, CStaticClass::st_BadTradeGoodTrade> CStaticClass::m_BadTradeGoodTrade;
 CMap <CString, LPCTSTR, int, int> CStaticClass::m_columnsubscription;
 CMap<CString, LPCTSTR, double, double> CStaticClass::m_LpRatioCommodityGroupWiseMap;
+
+CMap < CString, LPCTSTR, double, double> CStaticClass::m_mismatch_position;
+
+
+CMap<CString, LPCTSTR, CStaticClass::st_Alert_Setting, CStaticClass::st_Alert_Setting> CStaticClass::m_AlertSettingMap;
+
+
 
 CString CStaticClass::m_ordertypedesc[] = {L"Instant/Market Buy",L"Instant/Market Sell" ,L"Buy Limit" ,L"Sell Limit" ,L"Buy Stop" ,L"Sell Stop" ,L"" ,L"" };
 CString CStaticClass::m_dealtypedesc[] = { L"DEAL_BUY",L"DEAL_SELL",L"DEAL_BALANCE",L"DEAL_CREDIT",L"DEAL_CHARGE",L"DEAL_CORRECTION",L"DEAL_BONUS",L"DEAL_COMMISSION",L"DEAL_COMMISSION_DAILY",L"DEAL_COMMISSION_MONTHLY" };
@@ -81,6 +95,12 @@ CMap<CString, LPCTSTR, double, double> CStaticClass::m_ignoreClosingprice;
 CMap<CString, LPCTSTR, CStaticClass::st_TradesHighLowPriceSymbolWise, CStaticClass::st_TradesHighLowPriceSymbolWise> CStaticClass::m_TradesHighLowPriceSymbolWise;
 CMutex CStaticClass::TradesHighLowLockUpdate;
 CMap<CString, LPCTSTR, CStaticClass::st_token, CStaticClass::st_token&> CStaticClass::m_tokenlist;
+
+
+int CStaticClass::startComparePosition = 1;
+
+
+
 
 ////For FO
 //CString  CStaticClass::orikaPort = L"82";
@@ -187,38 +207,40 @@ CMap<CString, LPCTSTR, CStaticClass::st_token, CStaticClass::st_token&> CStaticC
 
 
 
-////For Protobuffer MCX
-//CString  CStaticClass::orikaPort = L"86";
-//CString  CStaticClass::SqlServerAdd = L"95.111.253.230,7082";
-//CString  CStaticClass::SqlServerDatabase = L"orika_proto";
-//CString  CStaticClass::SqlServerUserID = L"sa";
-//CString  CStaticClass::SqlServerPassword = L"ok@12345";
-//CString  CStaticClass::MTServerAdd = L"38.170.242.2:443";
-//CString  CStaticClass::MTServerUserID = L"1017";
-//CString  CStaticClass::MTServerPassword = L"ASDF123";
-//CString  CStaticClass::MSMQQueuName = L"orika_proto";
-//LPCSTR  CStaticClass::dataFeedServer = "13.126.83.17:60631";
-//LPCSTR  CStaticClass::GatewayServer = "95.111.253.230:99801";
-//int		 CStaticClass::ExchangeCode = 0;
+//For Protobuffer MCX
+CString  CStaticClass::orikaPort = L"86";
+CString  CStaticClass::SqlServerAdd = L"95.111.253.230,7082";
+CString  CStaticClass::SqlServerDatabase = L"orika_proto";
+CString  CStaticClass::SqlServerUserID = L"sa";
+CString  CStaticClass::SqlServerPassword = L"ok@12345";
+CString  CStaticClass::MTServerAdd = L"38.170.242.2:443";
+CString  CStaticClass::MTServerUserID = L"1017";
+CString  CStaticClass::MTServerPassword = L"ASDF123";
+CString  CStaticClass::MSMQQueuName = L"orika_proto";
+LPCSTR  CStaticClass::dataFeedServer = "13.126.83.17:60631";
+LPCSTR  CStaticClass::GatewayServer = "95.111.253.230:99801";
+int		 CStaticClass::ExchangeCode = 0;
+CString  CStaticClass::APIFolderPath = L"";
+int			CStaticClass::APISERVER_PORT = 0;
 //CString  CStaticClass::APIFolderPath = L"C:\\OrikaClient_proto_95\\API\\ClosingFile\\App_Data\\";
 
 
 
 
-//For Protobuffer Nsefo
-CString  CStaticClass::orikaPort = L"187";
-CString  CStaticClass::SqlServerAdd = L"95.111.253.230,7082";
-CString  CStaticClass::SqlServerDatabase = L"orika_proto_share";
-CString  CStaticClass::SqlServerUserID = L"sa";
-CString  CStaticClass::SqlServerPassword = L"ok@12345";
-CString  CStaticClass::MTServerAdd = L"51.68.208.248:443";
-CString  CStaticClass::MTServerUserID = L"1017";
-CString  CStaticClass::MTServerPassword = L"hello12345@";
-CString  CStaticClass::MSMQQueuName = L"orika_proto_share";
-LPCSTR  CStaticClass::dataFeedServer = "13.126.83.17:60631";
-LPCSTR  CStaticClass::GatewayServer = "95.111.253.230:99801";
-int		 CStaticClass::ExchangeCode = 0;
-CString  CStaticClass::APIFolderPath = L"C:\\4007API\\ClosingFile\\App_Data\\";
+////For Protobuffer Nsefo
+//CString  CStaticClass::orikaPort = L"187";
+//CString  CStaticClass::SqlServerAdd = L"95.111.253.230,7082";
+//CString  CStaticClass::SqlServerDatabase = L"orika_proto_share";
+//CString  CStaticClass::SqlServerUserID = L"sa";
+//CString  CStaticClass::SqlServerPassword = L"ok@12345";
+//CString  CStaticClass::MTServerAdd = L"51.68.208.248:443";
+//CString  CStaticClass::MTServerUserID = L"1017";
+//CString  CStaticClass::MTServerPassword = L"hello12345@";
+//CString  CStaticClass::MSMQQueuName = L"orika_proto_share";
+//LPCSTR  CStaticClass::dataFeedServer = "13.126.83.17:60631";
+//LPCSTR  CStaticClass::GatewayServer = "95.111.253.230:99801";
+//int		 CStaticClass::ExchangeCode = 0;
+//CString  CStaticClass::APIFolderPath = L"";
 
 
 
@@ -269,7 +291,7 @@ CStaticClass::MapbrokerPosition CStaticClass::m_MapbrokerPosition;
 CStaticClass::MapbrokerPosition CStaticClass::m_MapbrokerPosition_Fix;
 
 
-
+CMap<CString, LPCTSTR, double, double> CStaticClass::m_ClientSymbolPosition_MT;
 
 
 CMutex CStaticClass::m_mutex_order;
@@ -323,6 +345,8 @@ CStaticClass::brokerageLoginSymbolWiseHastable CStaticClass::m_brokerageLoginSym
 
 CStaticClass::Orika_orderHastable CStaticClass::m_Orika_orderHastable;
 
+CStaticClass::logindeviceArray CStaticClass::m_logindeviceArray;
+
 CMap<int, int, int, int> CStaticClass::m_Orika_dealNO;
 
 CMap<int, int, int, int> CStaticClass::m_OrikaOrderdealNO;
@@ -351,6 +375,8 @@ CStaticClass::ClientList CStaticClass::m_ClientList_forOrder;
 CStaticClass::ClientList CStaticClass::m_ClientList_forDeal;
 
 CMutex CStaticClass::m_mutex_ClientList;
+
+
 CMutex CStaticClass::m_mutex_dealingClientList;
 int CStaticClass::startTickData=0;
 int CStaticClass::startSendingNetpositionClientWise=0;
@@ -361,7 +387,7 @@ int CStaticClass::heartBeatStart=0;
 CStaticClass::ClientContext CStaticClass::m_ClientContext;
 
 
-CMutex CStaticClass::m_mutex_Thread;
+//CMutex CStaticClass::m_mutex_Thread;
 CRITICAL_SECTION CStaticClass::m_cs_Thread;
 CONDITION_VARIABLE CStaticClass::m_cv_Thread;
 
@@ -373,7 +399,7 @@ UINT64 CStaticClass::LastTickSendTime=0;
 
 
 
-CStaticClass::st_TickBidAskLast*           CStaticClass::lastrateArray[20000];
+CStaticClass::st_TickBidAskLast*           CStaticClass::lastrateArray[35000];
 CMap<CString,LPCTSTR,int ,int> CStaticClass::symbolLastTickArrayIndex;
 
 
@@ -442,6 +468,7 @@ void CStaticClass::set_protoandjsonmessage()
 	m_protoandjsonmessage.SetAt(L"BROKERDATA", L"brokerdata");
 	m_protoandjsonmessage.SetAt(L"CLIENTDATA", L"clientdata");
 	m_protoandjsonmessage.SetAt(L"CLIENT_POSITION", L"clientposition");
+	m_protoandjsonmessage.SetAt(L"DASHBOARD_DATA", L"clientposition");	
 	m_protoandjsonmessage.SetAt(L"DEALING_DATA_INTERVAL", L"dealingdatainterval");
 	m_protoandjsonmessage.SetAt(L"DASHBOARD", L"dashboard");
 	m_protoandjsonmessage.SetAt(L"SYMBOLGROUPINFO", L"symbolgroupinfo");
@@ -484,14 +511,17 @@ void CStaticClass::set_protoandjsonmessage()
 	m_protoandjsonmessage.SetAt(L"ORDER_ACTIVATE_RESPONSE", L"orderactivateresponse");
 	m_protoandjsonmessage.SetAt(L"SYMBOLMAPPING_DATA", L"symbolmappingdata");
 	m_protoandjsonmessage.SetAt(L"ALERT_MESSAGE", L"alertmessage");
-	//datadeleteresponse
+	m_protoandjsonmessage.SetAt(L"SAVE_UPDATE_ALERT", L"alertsetting");	
+	m_protoandjsonmessage.SetAt(L"LOGIN_DEVICE_LOG", L"logindevicelog");
+	m_protoandjsonmessage.SetAt(L"ALERT_SETTING", L"alertsetting");	
+	m_protoandjsonmessage.SetAt(L"ALERT_SETTING_LIST", L"alertsettinglist");
+	m_protoandjsonmessage.SetAt(L"ALERT_EXECUTE_MESSAGE", L"alertexecutemessage");
+	//alertsettinglist	
 }
 
 
 UINT64 CStaticClass::getcurrentTime_Unix()
 {
-
-
 	/*CString dateString = L"2023-02-27 10:15:00";
 	COleDateTime dateTime;
 	dateTime.ParseDateTime(dateString);
@@ -510,22 +540,5311 @@ UINT64 CStaticClass::getcurrentTime_Unix()
 	return m_Time;
 }
 
+UINT64 CStaticClass::getPreviousDateTime_Unix()
+{
+	/*CString dateString = L"2023-02-27 10:15:00";
+	COleDateTime dateTime;
+	dateTime.ParseDateTime(dateString);
+
+	SYSTEMTIME sysTime;
+	dateTime.GetAsSystemTime(sysTime);
+
+	UINT64 m_Time = 0;
+	m_Time = SMTTime::STToTime(sysTime);*/
+
+	SYSTEMTIME	time;
+	::GetLocalTime(&time);	
+	time.wHour = 0;
+	time.wMinute = 5;
+	time.wSecond = 10;
+	UINT64 m_Time = 0; m_Time = SMTTime::STToTime(time);
+	return m_Time;
+}
 
 
+void CStaticClass::sendClientPosition_NewUpdate(SSL_session* client, int m_activeClient, CString strUserID, CString m_clientcontexKey, CString m_Requestmessage, CString m_messageType, NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise, TMTArray<st_netpositionClientWise>* tmpNewposition)
+{
+	st_ClientContext st_Check = {};
+	m_mutex_ClientList.Lock();
+	m_ClientContext.Lookup(m_clientcontexKey, st_Check);
+	m_mutex_ClientList.Unlock();
+	CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
+	int  totalColumns = st_Check.m_clientrequests_List.Total();
+	for (int ci = 0; ci < totalColumns; ci++)
+	{
+		CString  m_ColumnsData = L"";
+		m_ColumnsData = st_Check.m_clientrequests_List[ci];
+
+		CString m_messageType_Subs = L"";
+		m_messageType_Subs.Format(L":%s:", m_Requestmessage);
+
+		if (m_ColumnsData.Find(m_messageType_Subs) >= 0)
+		{
+			int activate = 1;
+			m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
+		}
+
+	}
+	m_mutex_ClientList.Lock();
+	m_ClientContext.SetAt(m_clientcontexKey, st_Check);
+	m_mutex_ClientList.Unlock();
+
+	int jsonType = 0;
+	int total_count = tmpNewposition->Total();
+	CString strUpdateData = L"";
+	int firstCheck = 0;
+	CString str_columnJson = L"";
+	CString str_FinalJsonUpdate = L"";
+
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+	writer.StartObject();
+
+
+
+	string ssmessageType = string(CT2CA(m_messageType));
+	const char* stmessageType = ssmessageType.c_str();
+	if (total_count > 0)
+	{
+		writer.Key("type");
+		writer.String(stmessageType);
+		writer.Key("updatekey");
+		writer.StartArray();
+		writer.String("login");
+		writer.String("symbol");
+		writer.EndArray();
+		writer.Key("update");		
+		////(L"U1");
+		writer.StartArray();
+	}
+	int dataSendingFlag = 0;
+
+	for (int i = 0; i < total_count; i++)
+	{
+		//////(L"Data 5");
+		dataSendingFlag = 1;
+
+		CString strKey = L"";
+		CStaticClass::st_netpositionClientWise st_tmpData = {};
+
+		CStaticClass::m_mutex_Tick.Lock();
+		tmpNewposition->Next(i, &st_tmpData);
+
+		CString    m_login = st_tmpData.m_login;
+		CString    m_name = st_tmpData.m_name;
+		CString    m_symbol = st_tmpData.m_symbol;
+		double     m_volume = *st_tmpData.m_volume;
+
+
+		CString m_login_symbolKey = L"";
+		m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
+
+		mapNetPositionClientWise_ThreadWise->Lookup(m_login_symbolKey, st_tmpData);
+		double     m_previousvolume = st_tmpData.m_previousvolume;
+		double     m_difference =  m_volume- st_tmpData.m_previousvolume;
+		st_tmpData.m_difference = m_difference;
+		mapNetPositionClientWise_ThreadWise->SetAt(m_login_symbolKey, st_tmpData);
+
+
+
+		
+		double     m_average = *st_tmpData.m_average;
+		st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
+
+		double     m_clientbalance = *st_tmpData.m_clientbalance;
+		double     m_clientnetamount = *st_tmpData.m_clientnetamount;
+
+		double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
+		double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
+		double     m_clientnettotal = *st_tmpData.m_clientnettotal;
+		double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
+		CString    m_subbroker = st_tmpData.m_subbroker;
+		CString    m_broker = st_tmpData.m_broker;
+
+		double     m_extravolume = *st_tmpData.m_extravolume;
+		double     m_freemargin = *st_tmpData.m_freemargin;
+		double     m_multi = *st_tmpData.m_multi;
+
+		CString     m_Company = st_tmpData.m_company;;
+
+		double     m_companyvolume = *st_tmpData.m_companyvolume;
+		double     m_brokervolume = *st_tmpData.m_brokervolume;
+		double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
+		double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
+		double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
+
+		double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
+		double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
+
+
+		double     m_clientexposure = (*st_tmpData.m_clientexposure) / 10000000;
+		double     m_Companyexposure = (*st_tmpData.m_companyexposure) / 10000000;
+		double     m_brokerexposure = (*st_tmpData.m_brokerexposure) / 10000000;
+		double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) / 10000000;
+		m_clientexposure = abs(m_clientexposure);
+		m_Companyexposure = abs(m_Companyexposure);
+		m_brokerexposure = abs(m_brokerexposure);
+		m_subbrokerexposure = abs(m_subbrokerexposure);
+
+		double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
+		double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
+		double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
+		double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
+		double     m_clientbalancepl = *st_tmpData.m_clientbalance;
+		double     m_companybalancepl = *st_tmpData.m_companybalance;
+		double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
+		double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
+		double     m_clientplnet = *st_tmpData.m_clientnetamount;
+		double     m_companyplnet = *st_tmpData.m_companyNetAmount;
+		double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
+		double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
+		double     m_clientpatti = 100;
+		double     m_companypatti = *st_tmpData.m_companyRatio;
+		double     m_brokerpatti = *st_tmpData.m_brokerRatio;
+		double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
+		double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
+		double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
+		double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
+		double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
+
+		double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
+
+		double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
+		double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
+		double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
+
+		double     m_CreditLimit = *st_tmpData.m_creditLimit;
+
+		/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
+		double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
+		double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
+
+		CString  m_Exchange = st_tmpData.m_exchange;
+		CString  m_international = st_tmpData.m_international;
+		CString  m_sector = st_tmpData.m_sector;
+		CString  m_industry = st_tmpData.m_industry;
+		double   m_rmp = st_tmpData.m_rmp;
+		double   m_QtyMulti = st_tmpData.m_QtyMulti;
+		CString  m_page = st_tmpData.m_page;
+		CString  m_categary = st_tmpData.m_categary;
+		double   m_rm = st_tmpData.m_rm;
+		double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
+		CString  m_buySell = st_tmpData.m_buySell;
+		CString  m_debitCredit = st_tmpData.m_debitCredit;
+		CString  m_currencybase = st_tmpData.m_currencybase;
+
+		double m_lpratio = st_tmpData.m_LpRatio;
+		double m_lpvolume = st_tmpData.m_LpVolume;
+
+		CString m_commoditygroup = st_tmpData.m_commoditygroup;
+
+
+
+		//m_login_symbolKey
+		CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
+		CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
+		double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
+		double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
+		m_TotalTradedTO = m_TotalTradedTO / 10000000;
+
+
+		double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
+		double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
+
+
+		CStaticClass::m_mutex_Tick.Unlock();
+		writer.StartObject();
+
+		if (jsonType == 0)
+		{
+			CString m_loginColumnKey = L"";
+			int m_columnSubs = 0;
+			CStaticClass::m_mutexcolumnSubs.Lock();
+
+			writer.Key("login");
+			string sslogin = string(CT2CA(m_login));
+			const char* stlogin = sslogin.c_str();
+			writer.String(stlogin);
+
+			m_columnSubs = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_Requestmessage);
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("name");
+				string ssname = string(CT2CA(m_name));
+				const char* stName = ssname.c_str();
+				writer.String(stName);
+			}
+			writer.Key("symbol");
+			string sssymbol = string(CT2CA(m_symbol));
+			const char* stsymbol = sssymbol.c_str();
+			writer.String(stsymbol);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("previousvolume");
+				writer.Double(m_previousvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("difference");
+				writer.Double(m_difference);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("volume");
+				writer.Double(m_volume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("average");
+				writer.Double(m_average);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lastrate");
+				writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalance");
+				writer.Double(m_clientbalance);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientnetamount");
+				writer.Double(m_clientnetamount);
+			}
+			CString strLogString = L"";
+			//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
+			////(strLogString);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientplnet");
+				writer.Double(m_clientplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyplnet");
+				writer.Double(m_companyplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerplnet");
+				writer.Double(m_brokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerplnet");
+				writer.Double(m_subbrokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("maxallotedqty");
+				writer.Double(m_maxallotedqty);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedlot");
+				writer.Double(m_TotalTradedLot);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedto");
+				writer.Double(m_TotalTradedTO);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("company");
+				string sscompany = string(CT2CA(m_Company));
+				const char* stcompany = sscompany.c_str();
+				writer.String(stcompany);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbroker");
+				string sssubbroker = string(CT2CA(m_subbroker));
+				const char* stsubbroker = sssubbroker.c_str();
+				writer.String(stsubbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("broker");
+				string ssbroker = string(CT2CA(m_broker));
+				const char* stbroker = ssbroker.c_str();
+				writer.String(stbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("extravolume");
+				writer.Double(m_extravolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("freemargin");
+				writer.Double(m_freemargin);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyvolume");
+				writer.Double(m_companyvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokervolume");
+				writer.Double(m_brokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokervolume");
+				writer.Double(m_subbrokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokerage");
+				writer.Double(m_clientbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokerage");
+				writer.Double(m_brokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokerage");
+				writer.Double(m_subbrokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokerage");
+				writer.Double(m_companybrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientexposure");
+				writer.Double(m_clientexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("Companyexposure");
+				writer.Double(m_Companyexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerexposure");
+				writer.Double(m_brokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerexposure");
+				writer.Double(m_subbrokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientfloatingpl");
+				writer.Double(m_clientfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyfloatingpl");
+				writer.Double(m_companyfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerfloatingpl");
+				writer.Double(m_brokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerfloatingpl");
+				writer.Double(m_subbrokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalancepl");
+				writer.Double(m_clientbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybalancepl");
+				writer.Double(m_companybalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbalancepl");
+				writer.Double(m_brokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbalancepl");
+				writer.Double(m_subbrokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientpatti");
+				writer.Double(m_clientpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companypatti");
+				writer.Double(m_companypatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerpatti");
+				writer.Double(m_brokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerpatti");
+				writer.Double(m_subbrokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokeragerate");
+				writer.Double(m_companybrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokeragerate");
+				writer.Double(m_brokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokeragerate");
+				writer.Double(m_subbrokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokeragerate");
+				writer.Double(m_clientbrokeragerate);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientgrossamount");
+				writer.Double(m_clientgrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokergrossamount");
+				writer.Double(m_brokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokergrossamount");
+				writer.Double(m_subbrokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companygrossamount");
+				writer.Double(m_companygrossamount);
+			}
+
+			int m_TotalNo_Of_StopBuy = 0;
+			int m_TotalNo_Of_Cancelled_StopBuy = 0;
+			int m_TotalNo_Of_Passed_StopBuy = 0;
+			int m_TotalNo_Of_Pending_StopBuy = 0;
+
+			int m_TotalNo_Of_StopSell = 0;
+			int m_TotalNo_Of_Cancelled_StopSell = 0;
+			int m_TotalNo_Of_Passed_StopSell = 0;
+			int m_TotalNo_Of_Pending_StopSell = 0;
+
+			int m_TotalNo_Of_BuyLimit = 0;
+			int m_TotalNo_Of_Cancelled_BuyLimit = 0;
+			int m_TotalNo_Of_Passed_BuyLimit = 0;
+			int m_TotalNo_Of_Pending_BuyLimit = 0;
+
+			int m_TotalNo_Of_SellLimit = 0;
+			int m_TotalNo_Of_Cancelled_SellLimit = 0;
+			int m_TotalNo_Of_Passed_SellLimit = 0;
+			int m_TotalNo_Of_Pending_SellLimit = 0;
+
+
+
+			int m_TotalNo_Of_MarketDeal = 0;
+			int m_TotalNo_Of_LimitDeal = 0;
+			int m_TotalNo_Of_StopLimitDeal = 0;
+
+
+
+
+			CString strloginSymbolKey = L"";
+			//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
+			strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);
+			st_OrderCount m_stOrderCount = {};
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopBuy = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopBuy = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopSell = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopSell = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopSell = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_BuyLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_BuyLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_SellLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_SellLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
+
+
+			int totalMarketBuyDeal = 0;
+			int totalMarketSellDeal = 0;
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketBuyDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketSellDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_TotalNo_Of_MarketDeal = totalMarketBuyDeal + totalMarketSellDeal;
+			m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit + m_TotalNo_Of_BuyLimit;
+			m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy + m_TotalNo_Of_StopSell;
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopBuy");
+				writer.Int(m_TotalNo_Of_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopBuy");
+				writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopBuy");
+				writer.Int(m_TotalNo_Of_Passed_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopBuy");
+				writer.Int(m_TotalNo_Of_Pending_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopSell");
+				writer.Int(m_TotalNo_Of_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopSell");
+				writer.Int(m_TotalNo_Of_Cancelled_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopSell");
+				writer.Int(m_TotalNo_Of_Passed_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopSell");
+				writer.Int(m_TotalNo_Of_Pending_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_BuyLimit");
+				writer.Int(m_TotalNo_Of_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_BuyLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_BuyLimit");
+				writer.Int(m_TotalNo_Of_Passed_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_BuyLimit");
+				writer.Int(m_TotalNo_Of_Pending_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_SellLimit");
+				writer.Int(m_TotalNo_Of_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_SellLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_SellLimit");
+				writer.Int(m_TotalNo_Of_Passed_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_SellLimit");
+				writer.Int(m_TotalNo_Of_Pending_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_MarketDeal");
+				writer.Int(m_TotalNo_Of_MarketDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_LimitDeal");
+				writer.Int(m_TotalNo_Of_LimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopLimitDeal");
+				writer.Int(m_TotalNo_Of_StopLimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Buy");
+				writer.Double(m_TotalTradedLot_Buy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Sell");
+				writer.Double(m_TotalTradedLot_Sell);
+			}
+
+			CString  strLoginSymbolGroup = L"";
+			strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
+			CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
+			CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
+			double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
+			double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
+			double m_badtradePer = 0;
+			if (m_badtrade != 0)
+			{
+				m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
+			}
+			double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
+			double m_badTradeIPCper = 0;
+			if (m_badtradeIgnorePosition != 0)
+			{
+				m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeper");
+				writer.Double(m_badtradePer);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipcper");
+				writer.Double(m_badTradeIPCper);
+			}
+
+			int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradeipc");
+				writer.Double(m_totaltradeipc);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltrade");
+				writer.Double(m_TotalTrade);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipc");
+				writer.Double(m_badtradeIgnorePosition);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtrade");
+				writer.Double(m_badtrade);
+			}
+
+
+			/*CString strLogVal = L"";
+			strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
+			//(strLogVal);*/
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("buysell");
+				/*string ssbuySell = string(CT2CA(m_buySell));
+				const char* strbuySell = ssbuySell.c_str();*/
+				if (m_volume < 0)
+				{
+					writer.String("Sell");
+				}
+				else
+				{
+					writer.String("Buy");
+				}
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("debitcredit");
+				/*string ssdebitCredit = string(CT2CA(m_debitCredit));
+				const char* strdebitCredit = ssdebitCredit.c_str();*/
+				if (m_clientplnet < 0)
+				{
+					writer.String("Debit");
+				}
+				else
+				{
+					writer.String("Credit");
+				}
+
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("exchange");
+				string ssexchange = string(CT2CA(m_Exchange));
+				const char* strexchange = ssexchange.c_str();
+				writer.String(strexchange);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("international");
+				string ssinternational = string(CT2CA(m_international));
+				const char* strinternational = ssinternational.c_str();
+				writer.String(strinternational);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("sector");
+				string sssector = string(CT2CA(m_sector));
+				const char* strsector = sssector.c_str();
+				writer.String(strsector);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("industry");
+				string ssindustry = string(CT2CA(m_industry));
+				const char* strindustry = ssindustry.c_str();
+				writer.String(strindustry);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("page");
+				string sspage = string(CT2CA(m_page));
+				const char* strpage = sspage.c_str();
+				writer.String(strpage);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("categary");
+				string sscategary = string(CT2CA(m_categary));
+				const char* strcategary = sscategary.c_str();
+				writer.String(strcategary);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rm");
+				writer.Double(m_rm);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpratio", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpratio");
+				writer.Double(m_lpratio);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("commoditygroup");
+				string sscommoditygroup = string(CT2CA(m_commoditygroup));
+				const char* strcommoditygroup = sscommoditygroup.c_str();
+				writer.String(strcommoditygroup);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpvolume");
+				writer.Double(m_lpvolume);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtyaftermulti");
+				writer.Double(m_qtyAfterMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rmp");
+				writer.Double(m_rmp);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtymulti");
+				writer.Double(m_QtyMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("currencybase");
+				string sscurrencybase = string(CT2CA(m_currencybase));
+				const char* strcurrencybase = sscurrencybase.c_str();
+				writer.String(strcurrencybase);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("creditLimit");
+				writer.Double(m_CreditLimit);
+			}
+
+			CStaticClass::stConfig m_stConfig = {};
+			CString loginSymbolKey = L"";
+			CStaticClass::m_mutex_LimitConfig.Lock();
+			CString SymbolGroup = L"";
+			if (m_symbol.GetLength() >= 5)
+			{
+				SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
+			}
+			else
+			{
+				SymbolGroup = m_symbol;
+			}
+			int limitValue = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("BuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("SellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolBuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolSellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllPositionLimitLoginwise");
+				writer.Int(limitValue);
+			}
+			CStaticClass::m_mutex_LimitConfig.Unlock();
+
+
+
+
+
+			CStaticClass::m_mutexcolumnSubs.Unlock();
+
+
+		}
+
+		writer.EndObject();
+
+
+		if (dataSendingFlag == 1)
+		{
+			string strforsend = "";
+			str_FinalJsonUpdate = s.GetString();
+			int dataSize = str_FinalJsonUpdate.GetLength();
+
+			//if (dataSize >= 1500)
+			if (dataSize >= 1500000)
+			{
+				writer.EndArray();
+				writer.EndObject();
+
+				str_FinalJsonUpdate = s.GetString();
+				////(L"Test");
+				
+				strforsend = CT2A(str_FinalJsonUpdate.GetString());
+				SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+
+				s.Clear();
+				writer.Flush();
+
+				writer.Reset(s);
+
+				writer.StartObject();
+				writer.Key("type");
+				writer.String(stmessageType);
+				writer.Key("updatekey");
+				writer.StartArray();
+				writer.String("login");
+				writer.String("symbol");
+				writer.EndArray();
+				writer.Key("update");
+				writer.StartArray();
+				dataSendingFlag = 0;
+			}
+		}
+
+	}
+
+	if (dataSendingFlag == 1)
+	{
+		writer.EndArray();
+		writer.EndObject();
+		string strforsend = "";
+		str_FinalJsonUpdate = s.GetString();
+		strforsend = CT2A(str_FinalJsonUpdate.GetString());
+		
+		SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+		dataSendingFlag = 0;
+	}
+}
+
+void CStaticClass::sendClientPosition_NewInsert(SSL_session* client, int m_activeClient, CString strUserID, CString m_clientcontexKey, CString m_Requestmessage, CString m_messageType, NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise, TMTArray<st_netpositionClientWise>* tmpNewposition)
+{
+	int total_count = tmpNewposition->Total();
+	/*if (total_count == 0)
+	{
+		return;
+	}*/
+	st_ClientContext st_Check = {};
+	m_mutex_ClientList.Lock();
+	m_ClientContext.Lookup(m_clientcontexKey, st_Check);	
+	m_mutex_ClientList.Unlock();
+	CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
+	int  totalColumns = st_Check.m_clientrequests_List.Total();
+	for (int ci = 0; ci < totalColumns; ci++)
+	{
+		CString  m_ColumnsData = L"";
+		m_ColumnsData = st_Check.m_clientrequests_List[ci];
+
+		CString m_messageType_Subs = L"";
+		m_messageType_Subs.Format(L":%s:", m_Requestmessage);
+
+		if (m_ColumnsData.Find(m_messageType_Subs) >= 0)
+		{
+			int activate = 1;
+			m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
+		}
+
+	}	
+	m_mutex_ClientList.Lock();
+	m_ClientContext.SetAt(m_clientcontexKey, st_Check);
+	m_mutex_ClientList.Unlock();
+		
+	int jsonType = 0;	
+	
+	CString strUpdateData = L"";
+	int firstCheck = 0;
+	CString str_columnJson = L"";
+	CString str_FinalJsonUpdate = L"";
+
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+	writer.StartObject();
+
+	string ssmessageType = string(CT2CA(m_messageType));
+	const char* stmessageType = ssmessageType.c_str();
+	if (total_count > 0)
+	{
+		writer.Key("type");
+		writer.String(stmessageType);
+		writer.Key("insert");
+
+		////(L"U1");
+
+		writer.StartArray();
+	}
+		int dataSendingFlag = 0;
+	
+	for (int i=0;i< total_count;i++)
+	{
+		//////(L"Data 5");
+		dataSendingFlag = 1;
+
+		CString strKey = L"";
+		CStaticClass::st_netpositionClientWise st_tmpData = {};
+
+		CStaticClass::m_mutex_Tick.Lock();
+		tmpNewposition->Next(i,&st_tmpData);
+
+		CString    m_login = st_tmpData.m_login;
+		CString    m_name = st_tmpData.m_name;
+		CString    m_symbol = st_tmpData.m_symbol;
+		double     m_volume = *st_tmpData.m_volume;
+
+		
+		CString m_login_symbolKey = L"";
+		m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
+
+		mapNetPositionClientWise_ThreadWise->SetAt(m_login_symbolKey, st_tmpData);
+
+
+
+		double     m_previousvolume = 0;
+		double     m_difference = 0;
+		double     m_average = *st_tmpData.m_average;
+		st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
+
+		double     m_clientbalance = *st_tmpData.m_clientbalance;
+		double     m_clientnetamount = *st_tmpData.m_clientnetamount;
+
+		double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
+		double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
+		double     m_clientnettotal = *st_tmpData.m_clientnettotal;
+		double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
+		CString    m_subbroker = st_tmpData.m_subbroker;
+		CString    m_broker = st_tmpData.m_broker;
+
+		double     m_extravolume = *st_tmpData.m_extravolume;
+		double     m_freemargin = *st_tmpData.m_freemargin;
+		double     m_multi = *st_tmpData.m_multi;
+
+		CString     m_Company = st_tmpData.m_company;;
+
+		double     m_companyvolume = *st_tmpData.m_companyvolume;
+		double     m_brokervolume = *st_tmpData.m_brokervolume;
+		double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
+		double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
+		double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
+
+		double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
+		double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
+
+
+		double     m_clientexposure = (*st_tmpData.m_clientexposure) / 10000000;
+		double     m_Companyexposure = (*st_tmpData.m_companyexposure) / 10000000;
+		double     m_brokerexposure = (*st_tmpData.m_brokerexposure) / 10000000;
+		double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) / 10000000;
+		m_clientexposure = abs(m_clientexposure);
+		m_Companyexposure = abs(m_Companyexposure);
+		m_brokerexposure = abs(m_brokerexposure);
+		m_subbrokerexposure = abs(m_subbrokerexposure);
+
+		double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
+		double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
+		double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
+		double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
+		double     m_clientbalancepl = *st_tmpData.m_clientbalance;
+		double     m_companybalancepl = *st_tmpData.m_companybalance;
+		double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
+		double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
+		double     m_clientplnet = *st_tmpData.m_clientnetamount;
+		double     m_companyplnet = *st_tmpData.m_companyNetAmount;
+		double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
+		double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
+		double     m_clientpatti = 100;
+		double     m_companypatti = *st_tmpData.m_companyRatio;
+		double     m_brokerpatti = *st_tmpData.m_brokerRatio;
+		double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
+		double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
+		double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
+		double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
+		double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
+
+		double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
+
+		double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
+		double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
+		double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
+
+		double     m_CreditLimit = *st_tmpData.m_creditLimit;
+
+		/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
+		double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
+		double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
+
+		CString  m_Exchange = st_tmpData.m_exchange;
+		CString  m_international = st_tmpData.m_international;
+		CString  m_sector = st_tmpData.m_sector;
+		CString  m_industry = st_tmpData.m_industry;
+		double   m_rmp = st_tmpData.m_rmp;
+		double   m_QtyMulti = st_tmpData.m_QtyMulti;
+		CString  m_page = st_tmpData.m_page;
+		CString  m_categary = st_tmpData.m_categary;
+		double   m_rm = st_tmpData.m_rm;
+		double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
+		CString  m_buySell = st_tmpData.m_buySell;
+		CString  m_debitCredit = st_tmpData.m_debitCredit;
+		CString  m_currencybase = st_tmpData.m_currencybase;
+
+		double m_lpratio = st_tmpData.m_LpRatio;
+		double m_lpvolume = st_tmpData.m_LpVolume;
+
+		CString m_commoditygroup = st_tmpData.m_commoditygroup;
+
+
+
+		//m_login_symbolKey
+		CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
+		CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
+		double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
+		double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
+		m_TotalTradedTO = m_TotalTradedTO / 10000000;
+
+
+		double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
+		double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
+
+
+		CStaticClass::m_mutex_Tick.Unlock();
+		writer.StartObject();
+
+		if (jsonType == 0)
+		{
+			CString m_loginColumnKey = L"";
+			int m_columnSubs = 0;
+			CStaticClass::m_mutexcolumnSubs.Lock();
+
+			writer.Key("login");
+			string sslogin = string(CT2CA(m_login));
+			const char* stlogin = sslogin.c_str();
+			writer.String(stlogin);
+
+			m_columnSubs = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_Requestmessage);
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("name");
+				string ssname = string(CT2CA(m_name));
+				const char* stName = ssname.c_str();
+				writer.String(stName);
+			}
+			writer.Key("symbol");
+			string sssymbol = string(CT2CA(m_symbol));
+			const char* stsymbol = sssymbol.c_str();
+			writer.String(stsymbol);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("previousvolume");
+				writer.Double(m_previousvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("difference");
+				writer.Double(m_difference);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("volume");
+				writer.Double(m_volume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("average");
+				writer.Double(m_average);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lastrate");
+				writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalance");
+				writer.Double(m_clientbalance);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientnetamount");
+				writer.Double(m_clientnetamount);
+			}
+			CString strLogString = L"";
+			//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
+			////(strLogString);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientplnet");
+				writer.Double(m_clientplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyplnet");
+				writer.Double(m_companyplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerplnet");
+				writer.Double(m_brokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerplnet");
+				writer.Double(m_subbrokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("maxallotedqty");
+				writer.Double(m_maxallotedqty);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedlot");
+				writer.Double(m_TotalTradedLot);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedto");
+				writer.Double(m_TotalTradedTO);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("company");
+				string sscompany = string(CT2CA(m_Company));
+				const char* stcompany = sscompany.c_str();
+				writer.String(stcompany);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbroker");
+				string sssubbroker = string(CT2CA(m_subbroker));
+				const char* stsubbroker = sssubbroker.c_str();
+				writer.String(stsubbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("broker");
+				string ssbroker = string(CT2CA(m_broker));
+				const char* stbroker = ssbroker.c_str();
+				writer.String(stbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("extravolume");
+				writer.Double(m_extravolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("freemargin");
+				writer.Double(m_freemargin);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyvolume");
+				writer.Double(m_companyvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokervolume");
+				writer.Double(m_brokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokervolume");
+				writer.Double(m_subbrokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokerage");
+				writer.Double(m_clientbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokerage");
+				writer.Double(m_brokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokerage");
+				writer.Double(m_subbrokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokerage");
+				writer.Double(m_companybrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientexposure");
+				writer.Double(m_clientexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("Companyexposure");
+				writer.Double(m_Companyexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerexposure");
+				writer.Double(m_brokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerexposure");
+				writer.Double(m_subbrokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientfloatingpl");
+				writer.Double(m_clientfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyfloatingpl");
+				writer.Double(m_companyfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerfloatingpl");
+				writer.Double(m_brokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerfloatingpl");
+				writer.Double(m_subbrokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalancepl");
+				writer.Double(m_clientbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybalancepl");
+				writer.Double(m_companybalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbalancepl");
+				writer.Double(m_brokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbalancepl");
+				writer.Double(m_subbrokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientpatti");
+				writer.Double(m_clientpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companypatti");
+				writer.Double(m_companypatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerpatti");
+				writer.Double(m_brokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerpatti");
+				writer.Double(m_subbrokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokeragerate");
+				writer.Double(m_companybrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokeragerate");
+				writer.Double(m_brokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokeragerate");
+				writer.Double(m_subbrokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokeragerate");
+				writer.Double(m_clientbrokeragerate);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientgrossamount");
+				writer.Double(m_clientgrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokergrossamount");
+				writer.Double(m_brokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokergrossamount");
+				writer.Double(m_subbrokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companygrossamount");
+				writer.Double(m_companygrossamount);
+			}
+
+			int m_TotalNo_Of_StopBuy = 0;
+			int m_TotalNo_Of_Cancelled_StopBuy = 0;
+			int m_TotalNo_Of_Passed_StopBuy = 0;
+			int m_TotalNo_Of_Pending_StopBuy = 0;
+
+			int m_TotalNo_Of_StopSell = 0;
+			int m_TotalNo_Of_Cancelled_StopSell = 0;
+			int m_TotalNo_Of_Passed_StopSell = 0;
+			int m_TotalNo_Of_Pending_StopSell = 0;
+
+			int m_TotalNo_Of_BuyLimit = 0;
+			int m_TotalNo_Of_Cancelled_BuyLimit = 0;
+			int m_TotalNo_Of_Passed_BuyLimit = 0;
+			int m_TotalNo_Of_Pending_BuyLimit = 0;
+
+			int m_TotalNo_Of_SellLimit = 0;
+			int m_TotalNo_Of_Cancelled_SellLimit = 0;
+			int m_TotalNo_Of_Passed_SellLimit = 0;
+			int m_TotalNo_Of_Pending_SellLimit = 0;
+
+
+
+			int m_TotalNo_Of_MarketDeal = 0;
+			int m_TotalNo_Of_LimitDeal = 0;
+			int m_TotalNo_Of_StopLimitDeal = 0;
+
+
+
+
+			CString strloginSymbolKey = L"";
+			//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
+			strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);
+			st_OrderCount m_stOrderCount = {};
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopBuy = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopBuy = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopSell = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopSell = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopSell = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_BuyLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_BuyLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_SellLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_SellLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
+
+
+			int totalMarketBuyDeal = 0;
+			int totalMarketSellDeal = 0;
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketBuyDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketSellDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_TotalNo_Of_MarketDeal = totalMarketBuyDeal + totalMarketSellDeal;
+			m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit + m_TotalNo_Of_BuyLimit;
+			m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy + m_TotalNo_Of_StopSell;
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopBuy");
+				writer.Int(m_TotalNo_Of_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopBuy");
+				writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopBuy");
+				writer.Int(m_TotalNo_Of_Passed_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopBuy");
+				writer.Int(m_TotalNo_Of_Pending_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopSell");
+				writer.Int(m_TotalNo_Of_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopSell");
+				writer.Int(m_TotalNo_Of_Cancelled_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopSell");
+				writer.Int(m_TotalNo_Of_Passed_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopSell");
+				writer.Int(m_TotalNo_Of_Pending_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_BuyLimit");
+				writer.Int(m_TotalNo_Of_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_BuyLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_BuyLimit");
+				writer.Int(m_TotalNo_Of_Passed_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_BuyLimit");
+				writer.Int(m_TotalNo_Of_Pending_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_SellLimit");
+				writer.Int(m_TotalNo_Of_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_SellLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_SellLimit");
+				writer.Int(m_TotalNo_Of_Passed_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_SellLimit");
+				writer.Int(m_TotalNo_Of_Pending_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_MarketDeal");
+				writer.Int(m_TotalNo_Of_MarketDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_LimitDeal");
+				writer.Int(m_TotalNo_Of_LimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopLimitDeal");
+				writer.Int(m_TotalNo_Of_StopLimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Buy");
+				writer.Double(m_TotalTradedLot_Buy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Sell");
+				writer.Double(m_TotalTradedLot_Sell);
+			}
+
+			CString  strLoginSymbolGroup = L"";
+			strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
+			CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
+			CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
+			double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
+			double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
+			double m_badtradePer = 0;
+			if (m_badtrade != 0)
+			{
+				m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
+			}
+			double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
+			double m_badTradeIPCper = 0;
+			if (m_badtradeIgnorePosition != 0)
+			{
+				m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeper");
+				writer.Double(m_badtradePer);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipcper");
+				writer.Double(m_badTradeIPCper);
+			}
+
+			int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradeipc");
+				writer.Double(m_totaltradeipc);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltrade");
+				writer.Double(m_TotalTrade);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipc");
+				writer.Double(m_badtradeIgnorePosition);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtrade");
+				writer.Double(m_badtrade);
+			}
+
+
+			/*CString strLogVal = L"";
+			strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
+			//(strLogVal);*/
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("buysell");
+				/*string ssbuySell = string(CT2CA(m_buySell));
+				const char* strbuySell = ssbuySell.c_str();*/
+				if (m_volume < 0)
+				{
+					writer.String("Sell");
+				}
+				else
+				{
+					writer.String("Buy");
+				}
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("debitcredit");
+				/*string ssdebitCredit = string(CT2CA(m_debitCredit));
+				const char* strdebitCredit = ssdebitCredit.c_str();*/
+				if (m_clientplnet < 0)
+				{
+					writer.String("Debit");
+				}
+				else
+				{
+					writer.String("Credit");
+				}
+
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("exchange");
+				string ssexchange = string(CT2CA(m_Exchange));
+				const char* strexchange = ssexchange.c_str();
+				writer.String(strexchange);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("international");
+				string ssinternational = string(CT2CA(m_international));
+				const char* strinternational = ssinternational.c_str();
+				writer.String(strinternational);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("sector");
+				string sssector = string(CT2CA(m_sector));
+				const char* strsector = sssector.c_str();
+				writer.String(strsector);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("industry");
+				string ssindustry = string(CT2CA(m_industry));
+				const char* strindustry = ssindustry.c_str();
+				writer.String(strindustry);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("page");
+				string sspage = string(CT2CA(m_page));
+				const char* strpage = sspage.c_str();
+				writer.String(strpage);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("categary");
+				string sscategary = string(CT2CA(m_categary));
+				const char* strcategary = sscategary.c_str();
+				writer.String(strcategary);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rm");
+				writer.Double(m_rm);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpratio", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpratio");
+				writer.Double(m_lpratio);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("commoditygroup");
+				string sscommoditygroup = string(CT2CA(m_commoditygroup));
+				const char* strcommoditygroup = sscommoditygroup.c_str();
+				writer.String(strcommoditygroup);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpvolume");
+				writer.Double(m_lpvolume);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtyaftermulti");
+				writer.Double(m_qtyAfterMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rmp");
+				writer.Double(m_rmp);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtymulti");
+				writer.Double(m_QtyMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("currencybase");
+				string sscurrencybase = string(CT2CA(m_currencybase));
+				const char* strcurrencybase = sscurrencybase.c_str();
+				writer.String(strcurrencybase);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("creditLimit");
+				writer.Double(m_CreditLimit);
+			}
+
+			CStaticClass::stConfig m_stConfig = {};
+			CString loginSymbolKey = L"";
+			CStaticClass::m_mutex_LimitConfig.Lock();
+			CString SymbolGroup = L"";
+			if (m_symbol.GetLength() >= 5)
+			{
+				SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
+			}
+			else
+			{
+				SymbolGroup = m_symbol;
+			}
+			int limitValue = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("BuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("SellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolBuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolSellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllPositionLimitLoginwise");
+				writer.Int(limitValue);
+			}
+			CStaticClass::m_mutex_LimitConfig.Unlock();
+
+
+
+
+
+			CStaticClass::m_mutexcolumnSubs.Unlock();
+
+
+		}
+
+		writer.EndObject();
+
+
+		if (dataSendingFlag == 1)
+		{
+			string strforsend = "";
+			str_FinalJsonUpdate = s.GetString();
+			int dataSize = str_FinalJsonUpdate.GetLength();
+
+			//if (dataSize >= 1500)
+			if (dataSize >= 1500000)
+			{
+				writer.EndArray();
+				writer.EndObject();
+
+				str_FinalJsonUpdate = s.GetString();
+				////(L"Test");
+				//(str_FinalJsonUpdate);
+				strforsend = CT2A(str_FinalJsonUpdate.GetString());
+				SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+
+				s.Clear();
+				writer.Flush();
+
+				writer.Reset(s);
+
+				writer.StartObject();
+				writer.Key("type");
+				writer.String(stmessageType);
+				writer.Key("insert");
+				writer.StartArray();
+				dataSendingFlag = 0;
+			}
+		}
+
+	}
+
+	if (dataSendingFlag == 1)
+	{
+		writer.EndArray();
+		writer.EndObject();
+		string strforsend = "";
+		str_FinalJsonUpdate = s.GetString();
+		
+		strforsend = CT2A(str_FinalJsonUpdate.GetString());
+		SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);		
+		dataSendingFlag = 0;
+	}
+}
+void CStaticClass::sendClientPosition_Update(SSL_session* client, int m_activeClient, CString strUserID, CString m_clientcontexKey, CString m_Requestmessage, CString m_messageType, NetPositionClientWise_All* mapNetPositionClientWise_ThreadWise)
+{
+	st_ClientContext st_Check = {};
+	m_mutex_ClientList.Lock();
+	m_ClientContext.Lookup(m_clientcontexKey, st_Check);
+	m_mutex_ClientList.Unlock();
+	CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
+	int  totalColumns = st_Check.m_clientrequests_List.Total();
+	for (int ci = 0; ci < totalColumns; ci++)
+	{
+		CString  m_ColumnsData = L"";
+		m_ColumnsData = st_Check.m_clientrequests_List[ci];
+
+		CString m_messageType_Subs = L"";
+		m_messageType_Subs.Format(L":%s:", m_Requestmessage);
+
+		if (m_ColumnsData.Find(m_messageType_Subs) >= 0)
+		{
+			int activate = 1;
+			m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
+		}
+
+	}
+	//Getting PreNetQty				
+	CString returnval = L"";
+	HRESULT hr = NULL;
+	CCommand<CAccessor<CNetpositionPreQtyTable>> data_table;
+	if (!SUCCEEDED(hr))
+	{
+		return;
+	}
+	CString   strCommand = L"";
+
+	UINT64 m_preVolumeTime = 0;
+	if (m_Requestmessage == L"FETCH_DASHBOARD_DATA")
+	{
+		m_preVolumeTime = st_Check.m_DashboardTime;
+	}
+	else
+	{
+		m_preVolumeTime = st_Check.m_netPositionTime;
+	}
+	if (m_preVolumeTime == 0)
+	{
+		m_preVolumeTime = getPreviousDateTime_Unix();
+	}
+
+	strCommand.Format(L"orika_GetClientPreviousNetQty '%I64u';", m_preVolumeTime);
+
+	//CStaticClass::m_mutex_order.Lock();				
+	//(L"L13");
+	CSession m_tmpSession;
+	m_tmpSession.Open(CStaticClass::connection);
+	hr = data_table.Open(m_tmpSession, (LPCTSTR)strCommand);
+	if (FAILED(hr))
+	{
+		m_tmpSession.Close();
+	}
+	int i = 0;
+	CString m_login = L"";
+	CString m_symbol = L"";
+	double m_volume = 0;
+
+	CString tmpstr = L"";
+	int row_count = 0;
+	//hr=data_table.MoveNext();
+
+	struct stPrevolume
+	{
+		wchar_t m_login[30];
+		wchar_t m_symbol[32];
+		double m_volume;
+	};
+	CMap<CString, LPCTSTR, stPrevolume, stPrevolume&> preVolumeMap;
+	st_Check.m_preQtyLoginSymbolWise.Clear();
+	int m_dashboard_SplitData = 0;
+
+	//m_ClientContext.Lookup(m_clientcontexKey, st_Check);
+	while (hr = data_table.MoveNext() == S_OK)
+	{
+		m_login = data_table.m_login;
+		m_symbol = data_table.m_symbol;
+		m_volume = data_table.m_volume;
+
+		stPrevolume m_stTempPreqty = {};
+		CMTStr::Copy(m_stTempPreqty.m_login, m_login);
+		CMTStr::Copy(m_stTempPreqty.m_symbol, m_symbol);
+		m_stTempPreqty.m_volume = m_volume;
+
+		CString m_login_symbolKey = L"";
+		m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
+		preVolumeMap.SetAt(m_login_symbolKey, m_stTempPreqty);
+
+		CStaticClass::stPrevolumeClientWise m_prestCS = {};
+		CMTStr::Copy(m_prestCS.m_login, m_login);
+		CMTStr::Copy(m_prestCS.m_symbol, m_symbol);
+		m_prestCS.m_volume = m_volume;
+		st_Check.m_preQtyLoginSymbolWise.Add(&m_prestCS);
+	}
+	//For Update Pre Qty in m_ClientContext
+
+	m_mutex_ClientList.Lock();
+	m_ClientContext.SetAt(m_clientcontexKey, st_Check);
+	m_mutex_ClientList.Unlock();
+
+	data_table.Close();
+	m_tmpSession.Close();
+	//CStaticClass::m_mutex_order.Unlock();
+	////(L"UL13");
+	//End of Getting PreNetqty
+
+	int jsonType = 0;
+
+	POSITION pos = mapNetPositionClientWise_ThreadWise->GetStartPosition();
+	int total_count = mapNetPositionClientWise_ThreadWise->GetSize();
+	CString strUpdateData = L"";
+	int firstCheck = 0;
+	CString str_columnJson = L"";
+	CString str_FinalJsonUpdate = L"";
+
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+	writer.StartObject();
+	writer.Key("type");
+
+
+	string ssmessageType = string(CT2CA(m_messageType));
+	const char* stmessageType = ssmessageType.c_str();
+
+
+	writer.String(stmessageType);	
+	writer.Key("updatekey");
+	writer.StartArray();
+	writer.String("login");
+	writer.String("symbol");
+	writer.EndArray();
+	writer.Key("update");
+
+
+	////(L"U1");
+
+	writer.StartArray();
+	int dataSendingFlag = 0;
+
+	while (pos != NULL)
+	{
+		//////(L"Data 5");
+		dataSendingFlag = 1;
+
+		CString strKey = L"";
+		CStaticClass::st_netpositionClientWise st_tmpData = {};
+
+		CStaticClass::m_mutex_Tick.Lock();
+		mapNetPositionClientWise_ThreadWise->GetNextAssoc(pos, strKey, st_tmpData);
+		CString    m_login = st_tmpData.m_login;
+		CString    m_name = st_tmpData.m_name;
+		CString    m_symbol = st_tmpData.m_symbol;
+		double     m_volume = *st_tmpData.m_volume;
+
+		stPrevolume m_stTempPreqty = {};
+		CString m_login_symbolKey = L"";
+		m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
+		preVolumeMap.Lookup(m_login_symbolKey, m_stTempPreqty);
+
+
+		double     m_previousvolume = m_stTempPreqty.m_volume;
+		double     m_difference = m_volume - m_previousvolume;
+
+		st_tmpData.m_previousvolume = m_previousvolume;
+		st_tmpData.m_difference = m_difference;
+
+		mapNetPositionClientWise_ThreadWise->SetAt(strKey, st_tmpData);
+
+		double     m_average = *st_tmpData.m_average;
+		st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
+
+		double     m_clientbalance = *st_tmpData.m_clientbalance;
+		double     m_clientnetamount = *st_tmpData.m_clientnetamount;
+
+		double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
+		double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
+		double     m_clientnettotal = *st_tmpData.m_clientnettotal;
+		double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
+		CString    m_subbroker = st_tmpData.m_subbroker;
+		CString    m_broker = st_tmpData.m_broker;
+
+		double     m_extravolume = *st_tmpData.m_extravolume;
+		double     m_freemargin = *st_tmpData.m_freemargin;
+		double     m_multi = *st_tmpData.m_multi;
+
+		CString     m_Company = st_tmpData.m_company;;
+
+		double     m_companyvolume = *st_tmpData.m_companyvolume;
+		double     m_brokervolume = *st_tmpData.m_brokervolume;
+		double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
+		double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
+		double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
+
+		double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
+		double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
+
+
+		double     m_clientexposure = (*st_tmpData.m_clientexposure) / 10000000;
+		double     m_Companyexposure = (*st_tmpData.m_companyexposure) / 10000000;
+		double     m_brokerexposure = (*st_tmpData.m_brokerexposure) / 10000000;
+		double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) / 10000000;
+		m_clientexposure = abs(m_clientexposure);
+		m_Companyexposure = abs(m_Companyexposure);
+		m_brokerexposure = abs(m_brokerexposure);
+		m_subbrokerexposure = abs(m_subbrokerexposure);
+
+		double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
+		double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
+		double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
+		double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
+		double     m_clientbalancepl = *st_tmpData.m_clientbalance;
+		double     m_companybalancepl = *st_tmpData.m_companybalance;
+		double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
+		double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
+		double     m_clientplnet = *st_tmpData.m_clientnetamount;
+		double     m_companyplnet = *st_tmpData.m_companyNetAmount;
+		double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
+		double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
+		double     m_clientpatti = 100;
+		double     m_companypatti = *st_tmpData.m_companyRatio;
+		double     m_brokerpatti = *st_tmpData.m_brokerRatio;
+		double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
+		double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
+		double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
+		double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
+		double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
+
+		double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
+
+		double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
+		double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
+		double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
+
+		double     m_CreditLimit = *st_tmpData.m_creditLimit;
+
+		/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
+		double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
+		double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
+
+		CString  m_Exchange = st_tmpData.m_exchange;
+		CString  m_international = st_tmpData.m_international;
+		CString  m_sector = st_tmpData.m_sector;
+		CString  m_industry = st_tmpData.m_industry;
+		double   m_rmp = st_tmpData.m_rmp;
+		double   m_QtyMulti = st_tmpData.m_QtyMulti;
+		CString  m_page = st_tmpData.m_page;
+		CString  m_categary = st_tmpData.m_categary;
+		double   m_rm = st_tmpData.m_rm;
+		double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
+		CString  m_buySell = st_tmpData.m_buySell;
+		CString  m_debitCredit = st_tmpData.m_debitCredit;
+		CString  m_currencybase = st_tmpData.m_currencybase;
+
+		double m_lpratio = st_tmpData.m_LpRatio;
+		double m_lpvolume = st_tmpData.m_LpVolume;
+
+		CString m_commoditygroup = st_tmpData.m_commoditygroup;
+
+
+
+		//m_login_symbolKey
+		CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
+		CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
+		double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
+		double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
+		m_TotalTradedTO = m_TotalTradedTO / 10000000;
+
+
+		double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
+		double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
+
+
+		CStaticClass::m_mutex_Tick.Unlock();
+		writer.StartObject();
+
+		if (jsonType == 0)
+		{
+			CString m_loginColumnKey = L"";
+			int m_columnSubs = 0;
+			CStaticClass::m_mutexcolumnSubs.Lock();
+
+			writer.Key("login");
+			string sslogin = string(CT2CA(m_login));
+			const char* stlogin = sslogin.c_str();
+			writer.String(stlogin);
+
+			m_columnSubs = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_Requestmessage);
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("name");
+				string ssname = string(CT2CA(m_name));
+				const char* stName = ssname.c_str();
+				writer.String(stName);
+			}
+			writer.Key("symbol");
+			string sssymbol = string(CT2CA(m_symbol));
+			const char* stsymbol = sssymbol.c_str();
+			writer.String(stsymbol);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("previousvolume");
+				writer.Double(m_previousvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("difference");
+				writer.Double(m_difference);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("volume");
+				writer.Double(m_volume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("average");
+				writer.Double(m_average);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lastrate");
+				writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalance");
+				writer.Double(m_clientbalance);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientnetamount");
+				writer.Double(m_clientnetamount);
+			}
+			CString strLogString = L"";
+			//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
+			////(strLogString);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientplnet");
+				writer.Double(m_clientplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyplnet");
+				writer.Double(m_companyplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerplnet");
+				writer.Double(m_brokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerplnet");
+				writer.Double(m_subbrokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("maxallotedqty");
+				writer.Double(m_maxallotedqty);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedlot");
+				writer.Double(m_TotalTradedLot);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedto");
+				writer.Double(m_TotalTradedTO);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("company");
+				string sscompany = string(CT2CA(m_Company));
+				const char* stcompany = sscompany.c_str();
+				writer.String(stcompany);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbroker");
+				string sssubbroker = string(CT2CA(m_subbroker));
+				const char* stsubbroker = sssubbroker.c_str();
+				writer.String(stsubbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("broker");
+				string ssbroker = string(CT2CA(m_broker));
+				const char* stbroker = ssbroker.c_str();
+				writer.String(stbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("extravolume");
+				writer.Double(m_extravolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("freemargin");
+				writer.Double(m_freemargin);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyvolume");
+				writer.Double(m_companyvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokervolume");
+				writer.Double(m_brokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokervolume");
+				writer.Double(m_subbrokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokerage");
+				writer.Double(m_clientbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokerage");
+				writer.Double(m_brokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokerage");
+				writer.Double(m_subbrokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokerage");
+				writer.Double(m_companybrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientexposure");
+				writer.Double(m_clientexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("Companyexposure");
+				writer.Double(m_Companyexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerexposure");
+				writer.Double(m_brokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerexposure");
+				writer.Double(m_subbrokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientfloatingpl");
+				writer.Double(m_clientfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyfloatingpl");
+				writer.Double(m_companyfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerfloatingpl");
+				writer.Double(m_brokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerfloatingpl");
+				writer.Double(m_subbrokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalancepl");
+				writer.Double(m_clientbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybalancepl");
+				writer.Double(m_companybalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbalancepl");
+				writer.Double(m_brokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbalancepl");
+				writer.Double(m_subbrokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientpatti");
+				writer.Double(m_clientpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companypatti");
+				writer.Double(m_companypatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerpatti");
+				writer.Double(m_brokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerpatti");
+				writer.Double(m_subbrokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokeragerate");
+				writer.Double(m_companybrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokeragerate");
+				writer.Double(m_brokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokeragerate");
+				writer.Double(m_subbrokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokeragerate");
+				writer.Double(m_clientbrokeragerate);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientgrossamount");
+				writer.Double(m_clientgrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokergrossamount");
+				writer.Double(m_brokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokergrossamount");
+				writer.Double(m_subbrokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companygrossamount");
+				writer.Double(m_companygrossamount);
+			}
+
+			int m_TotalNo_Of_StopBuy = 0;
+			int m_TotalNo_Of_Cancelled_StopBuy = 0;
+			int m_TotalNo_Of_Passed_StopBuy = 0;
+			int m_TotalNo_Of_Pending_StopBuy = 0;
+
+			int m_TotalNo_Of_StopSell = 0;
+			int m_TotalNo_Of_Cancelled_StopSell = 0;
+			int m_TotalNo_Of_Passed_StopSell = 0;
+			int m_TotalNo_Of_Pending_StopSell = 0;
+
+			int m_TotalNo_Of_BuyLimit = 0;
+			int m_TotalNo_Of_Cancelled_BuyLimit = 0;
+			int m_TotalNo_Of_Passed_BuyLimit = 0;
+			int m_TotalNo_Of_Pending_BuyLimit = 0;
+
+			int m_TotalNo_Of_SellLimit = 0;
+			int m_TotalNo_Of_Cancelled_SellLimit = 0;
+			int m_TotalNo_Of_Passed_SellLimit = 0;
+			int m_TotalNo_Of_Pending_SellLimit = 0;
+
+
+
+			int m_TotalNo_Of_MarketDeal = 0;
+			int m_TotalNo_Of_LimitDeal = 0;
+			int m_TotalNo_Of_StopLimitDeal = 0;
+
+
+
+
+			CString strloginSymbolKey = L"";
+			//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
+			strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);
+			st_OrderCount m_stOrderCount = {};
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopBuy = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopBuy = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopSell = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopSell = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopSell = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_BuyLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_BuyLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_SellLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_SellLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
+
+
+			int totalMarketBuyDeal = 0;
+			int totalMarketSellDeal = 0;
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketBuyDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketSellDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_TotalNo_Of_MarketDeal = totalMarketBuyDeal + totalMarketSellDeal;
+			m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit + m_TotalNo_Of_BuyLimit;
+			m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy + m_TotalNo_Of_StopSell;
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopBuy");
+				writer.Int(m_TotalNo_Of_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopBuy");
+				writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopBuy");
+				writer.Int(m_TotalNo_Of_Passed_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopBuy");
+				writer.Int(m_TotalNo_Of_Pending_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopSell");
+				writer.Int(m_TotalNo_Of_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopSell");
+				writer.Int(m_TotalNo_Of_Cancelled_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopSell");
+				writer.Int(m_TotalNo_Of_Passed_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopSell");
+				writer.Int(m_TotalNo_Of_Pending_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_BuyLimit");
+				writer.Int(m_TotalNo_Of_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_BuyLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_BuyLimit");
+				writer.Int(m_TotalNo_Of_Passed_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_BuyLimit");
+				writer.Int(m_TotalNo_Of_Pending_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_SellLimit");
+				writer.Int(m_TotalNo_Of_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_SellLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_SellLimit");
+				writer.Int(m_TotalNo_Of_Passed_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_SellLimit");
+				writer.Int(m_TotalNo_Of_Pending_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_MarketDeal");
+				writer.Int(m_TotalNo_Of_MarketDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_LimitDeal");
+				writer.Int(m_TotalNo_Of_LimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopLimitDeal");
+				writer.Int(m_TotalNo_Of_StopLimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Buy");
+				writer.Double(m_TotalTradedLot_Buy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Sell");
+				writer.Double(m_TotalTradedLot_Sell);
+			}
+
+			CString  strLoginSymbolGroup = L"";
+			strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
+			CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
+			CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
+			double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
+			double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
+			double m_badtradePer = 0;
+			if (m_badtrade != 0)
+			{
+				m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
+			}
+			double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
+			double m_badTradeIPCper = 0;
+			if (m_badtradeIgnorePosition != 0)
+			{
+				m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeper");
+				writer.Double(m_badtradePer);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipcper");
+				writer.Double(m_badTradeIPCper);
+			}
+
+			int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradeipc");
+				writer.Double(m_totaltradeipc);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltrade");
+				writer.Double(m_TotalTrade);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipc");
+				writer.Double(m_badtradeIgnorePosition);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtrade");
+				writer.Double(m_badtrade);
+			}
+
+
+			/*CString strLogVal = L"";
+			strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
+			//(strLogVal);*/
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("buysell");
+				/*string ssbuySell = string(CT2CA(m_buySell));
+				const char* strbuySell = ssbuySell.c_str();*/
+				if (m_volume < 0)
+				{
+					writer.String("Sell");
+				}
+				else
+				{
+					writer.String("Buy");
+				}
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("debitcredit");
+				/*string ssdebitCredit = string(CT2CA(m_debitCredit));
+				const char* strdebitCredit = ssdebitCredit.c_str();*/
+				if (m_clientplnet < 0)
+				{
+					writer.String("Debit");
+				}
+				else
+				{
+					writer.String("Credit");
+				}
+
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("exchange");
+				string ssexchange = string(CT2CA(m_Exchange));
+				const char* strexchange = ssexchange.c_str();
+				writer.String(strexchange);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("international");
+				string ssinternational = string(CT2CA(m_international));
+				const char* strinternational = ssinternational.c_str();
+				writer.String(strinternational);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("sector");
+				string sssector = string(CT2CA(m_sector));
+				const char* strsector = sssector.c_str();
+				writer.String(strsector);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("industry");
+				string ssindustry = string(CT2CA(m_industry));
+				const char* strindustry = ssindustry.c_str();
+				writer.String(strindustry);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("page");
+				string sspage = string(CT2CA(m_page));
+				const char* strpage = sspage.c_str();
+				writer.String(strpage);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("categary");
+				string sscategary = string(CT2CA(m_categary));
+				const char* strcategary = sscategary.c_str();
+				writer.String(strcategary);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rm");
+				writer.Double(m_rm);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpratio", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpratio");
+				writer.Double(m_lpratio);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("commoditygroup");
+				string sscommoditygroup = string(CT2CA(m_commoditygroup));
+				const char* strcommoditygroup = sscommoditygroup.c_str();
+				writer.String(strcommoditygroup);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpvolume");
+				writer.Double(m_lpvolume);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtyaftermulti");
+				writer.Double(m_qtyAfterMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rmp");
+				writer.Double(m_rmp);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtymulti");
+				writer.Double(m_QtyMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("currencybase");
+				string sscurrencybase = string(CT2CA(m_currencybase));
+				const char* strcurrencybase = sscurrencybase.c_str();
+				writer.String(strcurrencybase);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("creditLimit");
+				writer.Double(m_CreditLimit);
+			}
+
+			CStaticClass::stConfig m_stConfig = {};
+			CString loginSymbolKey = L"";
+			CStaticClass::m_mutex_LimitConfig.Lock();
+			CString SymbolGroup = L"";
+			if (m_symbol.GetLength() >= 5)
+			{
+				SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
+			}
+			else
+			{
+				SymbolGroup = m_symbol;
+			}
+			int limitValue = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("BuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("SellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolBuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolSellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllPositionLimitLoginwise");
+				writer.Int(limitValue);
+			}
+			CStaticClass::m_mutex_LimitConfig.Unlock();
+
+
+
+
+
+			CStaticClass::m_mutexcolumnSubs.Unlock();
+
+
+		}
+		
+		writer.EndObject();
+
+
+		if (dataSendingFlag == 1)
+		{
+			string strforsend = "";
+			str_FinalJsonUpdate = s.GetString();
+
+			
+
+			int dataSize = str_FinalJsonUpdate.GetLength();
+
+			
+
+			//if (dataSize >= 1500)
+			if (dataSize >= 1500000)
+			{
+				writer.EndArray();
+				writer.EndObject();
+
+				str_FinalJsonUpdate = s.GetString();
+				////(L"Test");
+				//(str_FinalJsonUpdate);
+				strforsend = CT2A(str_FinalJsonUpdate.GetString());
+				SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+
+				s.Clear();
+				writer.Flush();
+
+				writer.Reset(s);
+
+				writer.StartObject();
+				writer.Key("type");
+				writer.String(stmessageType);
+				writer.Key("updatekey");
+				writer.StartArray();
+				writer.String("login");
+				writer.String("symbol");
+				writer.EndArray();
+				writer.Key("update");
+				writer.StartArray();
+
+
+
+				dataSendingFlag = 0;
+			}
+		}
+
+	}
+
+	if (dataSendingFlag == 1)
+	{
+		writer.EndArray();
+		writer.EndObject();
+		string strforsend = "";
+		str_FinalJsonUpdate = s.GetString();
+		
+		strforsend = CT2A(str_FinalJsonUpdate.GetString());
+		SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+		dataSendingFlag = 0;
+	}
+}
+
+void CStaticClass::sendClientPosition_Insert(SSL_session* client, int m_activeClient,CString strUserID,CString m_clientcontexKey, CString m_Requestmessage,CString m_messageType,  NetPositionClientWise_All*   mapNetPositionClientWise_ThreadWise)
+{
+	
+	st_ClientContext st_Check = {};
+	m_mutex_ClientList.Lock();
+		m_ClientContext.Lookup(m_clientcontexKey, st_Check);	
+	CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
+	int  totalColumns = st_Check.m_clientrequests_List.Total();
+	for (int ci = 0; ci < totalColumns; ci++)
+	{
+		CString  m_ColumnsData = L"";
+		m_ColumnsData = st_Check.m_clientrequests_List[ci];
+		CString m_messageType_Subs = L"";
+		m_messageType_Subs.Format(L":%s:",m_Requestmessage);
+		CString m_logStr = L"";
+		
+		if (m_ColumnsData.Find(m_messageType_Subs) >= 0)
+		{
+			int activate = 1;
+			m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
+		}		
+	}	
+	m_mutex_ClientList.Unlock();
+	
+	//Getting PreNetQty				
+	CString returnval = L"";
+	HRESULT hr = NULL;
+	CCommand<CAccessor<CNetpositionPreQtyTable>> data_table;
+	if (!SUCCEEDED(hr))
+	{
+		return;
+	}
+	CString   strCommand = L"";
+
+	UINT64 m_preVolumeTime = 0;
+	if (m_Requestmessage == L"FETCH_DASHBOARD_DATA")
+	{
+		m_preVolumeTime = st_Check.m_DashboardTime;
+	}
+	else
+	{
+		m_preVolumeTime = st_Check.m_netPositionTime;
+	}
+	//if (m_preVolumeTime == 0)
+	//{
+		m_preVolumeTime=getPreviousDateTime_Unix();
+	//}
+
+	strCommand.Format(L"orika_GetClientPreviousNetQty '%I64u';", m_preVolumeTime);
+
+	//CStaticClass::m_mutex_order.Lock();				
+	//(L"L13");
+	CSession m_tmpSession;
+	m_tmpSession.Open(CStaticClass::connection);
+	hr = data_table.Open(m_tmpSession, (LPCTSTR)strCommand);
+	if (FAILED(hr))
+	{
+		m_tmpSession.Close();	
+	}
+	int i = 0;
+	CString m_login = L"";
+	CString m_symbol = L"";
+	double m_volume = 0;
+
+	CString tmpstr = L"";
+	int row_count = 0;
+	//hr=data_table.MoveNext();
+
+	struct stPrevolume
+	{
+		wchar_t m_login[30];
+		wchar_t m_symbol[32];
+		double m_volume;
+	};
+	CMap<CString, LPCTSTR, stPrevolume, stPrevolume&> preVolumeMap;
+	st_Check.m_preQtyLoginSymbolWise.Clear();
+	int m_dashboard_SplitData = 0;
+	
+	//m_ClientContext.Lookup(m_clientcontexKey, st_Check);
+	while (hr = data_table.MoveNext() == S_OK)
+	{
+		m_login = data_table.m_login;
+		m_symbol = data_table.m_symbol;
+		m_volume = data_table.m_volume;
+
+		stPrevolume m_stTempPreqty = {};
+		CMTStr::Copy(m_stTempPreqty.m_login, m_login);
+		CMTStr::Copy(m_stTempPreqty.m_symbol, m_symbol);
+		m_stTempPreqty.m_volume = m_volume;
+
+		CString m_login_symbolKey = L"";
+		m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
+		preVolumeMap.SetAt(m_login_symbolKey, m_stTempPreqty);
+
+		CStaticClass::stPrevolumeClientWise m_prestCS = {};
+		CMTStr::Copy(m_prestCS.m_login, m_login);
+		CMTStr::Copy(m_prestCS.m_symbol, m_symbol);
+		m_prestCS.m_volume = m_volume;
+		st_Check.m_preQtyLoginSymbolWise.Add(&m_prestCS);
+	}
+	//For Update Pre Qty in m_ClientContext
+
+	m_mutex_ClientList.Lock();	
+	m_ClientContext.SetAt(m_clientcontexKey, st_Check);
+	m_mutex_ClientList.Unlock();
+
+	data_table.Close();
+	m_tmpSession.Close();
+	//CStaticClass::m_mutex_order.Unlock();
+	////(L"UL13");
+	//End of Getting PreNetqty
+
+	int jsonType = 0;
+
+	POSITION pos = mapNetPositionClientWise_ThreadWise->GetStartPosition();
+	int total_count = mapNetPositionClientWise_ThreadWise->GetSize();
+	CString strUpdateData = L"";
+	int firstCheck = 0;
+	CString str_columnJson = L"";
+	CString str_FinalJsonUpdate = L"";
+
+	StringBuffer s;
+	Writer<StringBuffer> writer(s);
+	writer.StartObject();
+	
+
+	
+	string ssmessageType = string(CT2CA(m_messageType));
+	const char* stmessageType = ssmessageType.c_str();
+
+	writer.Key("type");
+	writer.String(stmessageType);
+	writer.Key("insert");
+
+	////(L"U1");
+
+	writer.StartArray();
+	int dataSendingFlag = 0;
+
+	while (pos != NULL)
+	{
+		//////(L"Data 5");
+		dataSendingFlag = 1;
+
+		CString strKey = L"";
+		CStaticClass::st_netpositionClientWise st_tmpData = {};
+
+		CStaticClass::m_mutex_Tick.Lock();
+		mapNetPositionClientWise_ThreadWise->GetNextAssoc(pos, strKey, st_tmpData);
+		CString    m_login = st_tmpData.m_login;
+		CString    m_name = st_tmpData.m_name;
+		CString    m_symbol = st_tmpData.m_symbol;
+		double     m_volume = *st_tmpData.m_volume;
+
+		stPrevolume m_stTempPreqty = {};
+		CString m_login_symbolKey = L"";
+		m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
+		preVolumeMap.Lookup(m_login_symbolKey, m_stTempPreqty);
+
+
+		double     m_previousvolume = m_stTempPreqty.m_volume;
+		double     m_difference = m_volume - m_previousvolume;
+		double     m_average = *st_tmpData.m_average;
+		st_tmpData.m_previousvolume = m_previousvolume;
+		st_tmpData.m_difference = m_difference;
+
+		mapNetPositionClientWise_ThreadWise->SetAt(strKey, st_tmpData);
+
+
+
+		st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
+
+		double     m_clientbalance = *st_tmpData.m_clientbalance;
+		double     m_clientnetamount = *st_tmpData.m_clientnetamount;
+
+		double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
+		double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
+		double     m_clientnettotal = *st_tmpData.m_clientnettotal;
+		double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
+		CString    m_subbroker = st_tmpData.m_subbroker;
+		CString    m_broker = st_tmpData.m_broker;
+
+		double     m_extravolume = *st_tmpData.m_extravolume;
+		double     m_freemargin = *st_tmpData.m_freemargin;
+		double     m_multi = *st_tmpData.m_multi;
+
+		CString     m_Company = st_tmpData.m_company;;
+
+		double     m_companyvolume = *st_tmpData.m_companyvolume;
+		double     m_brokervolume = *st_tmpData.m_brokervolume;
+		double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
+		double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
+		double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
+
+		double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
+		double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
+
+
+		double     m_clientexposure = (*st_tmpData.m_clientexposure) / 10000000;
+		double     m_Companyexposure = (*st_tmpData.m_companyexposure) / 10000000;
+		double     m_brokerexposure = (*st_tmpData.m_brokerexposure) / 10000000;
+		double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) / 10000000;
+		m_clientexposure = abs(m_clientexposure);
+		m_Companyexposure = abs(m_Companyexposure);
+		m_brokerexposure = abs(m_brokerexposure);
+		m_subbrokerexposure = abs(m_subbrokerexposure);
+
+		double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
+		double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
+		double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
+		double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
+		double     m_clientbalancepl = *st_tmpData.m_clientbalance;
+		double     m_companybalancepl = *st_tmpData.m_companybalance;
+		double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
+		double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
+		double     m_clientplnet = *st_tmpData.m_clientnetamount;
+		double     m_companyplnet = *st_tmpData.m_companyNetAmount;
+		double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
+		double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
+		double     m_clientpatti = 100;
+		double     m_companypatti = *st_tmpData.m_companyRatio;
+		double     m_brokerpatti = *st_tmpData.m_brokerRatio;
+		double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
+		double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
+		double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
+		double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
+		double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
+
+		double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
+
+		double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
+		double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
+		double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
+
+		double     m_CreditLimit = *st_tmpData.m_creditLimit;
+
+		/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
+		double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
+		double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
+
+		CString  m_Exchange = st_tmpData.m_exchange;
+		CString  m_international = st_tmpData.m_international;
+		CString  m_sector = st_tmpData.m_sector;
+		CString  m_industry = st_tmpData.m_industry;
+		double   m_rmp = st_tmpData.m_rmp;
+		double   m_QtyMulti = st_tmpData.m_QtyMulti;
+		CString  m_page = st_tmpData.m_page;
+		CString  m_categary = st_tmpData.m_categary;
+		double   m_rm = st_tmpData.m_rm;
+		double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
+		CString  m_buySell = st_tmpData.m_buySell;
+		CString  m_debitCredit = st_tmpData.m_debitCredit;
+		CString  m_currencybase = st_tmpData.m_currencybase;
+
+		double m_lpratio = st_tmpData.m_LpRatio;
+		double m_lpvolume = st_tmpData.m_LpVolume;
+
+		CString m_commoditygroup = st_tmpData.m_commoditygroup;
+
+
+		//m_login_symbolKey
+		CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
+		CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
+		double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
+		double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
+		m_TotalTradedTO = m_TotalTradedTO / 10000000;
+
+
+		double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
+		double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
+
+
+		CStaticClass::m_mutex_Tick.Unlock();
+		writer.StartObject();
+
+		if (jsonType == 0)
+		{
+			CString m_loginColumnKey = L"";
+			int m_columnSubs = 0;
+			CStaticClass::m_mutexcolumnSubs.Lock();
+
+			writer.Key("login");
+			string sslogin = string(CT2CA(m_login));
+			const char* stlogin = sslogin.c_str();
+			writer.String(stlogin);
+
+			m_columnSubs = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_Requestmessage);
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("name");
+				string ssname = string(CT2CA(m_name));
+				const char* stName = ssname.c_str();
+				writer.String(stName);
+			}
+			writer.Key("symbol");
+			string sssymbol = string(CT2CA(m_symbol));
+			const char* stsymbol = sssymbol.c_str();
+			writer.String(stsymbol);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("previousvolume");
+				writer.Double(m_previousvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("difference");
+				writer.Double(m_difference);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("volume");
+				writer.Double(m_volume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("average");
+				writer.Double(m_average);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lastrate");
+				writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalance");
+				writer.Double(m_clientbalance);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientnetamount");
+				writer.Double(m_clientnetamount);
+			}
+			CString strLogString = L"";
+			//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
+			////(strLogString);
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientplnet");
+				writer.Double(m_clientplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyplnet");
+				writer.Double(m_companyplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerplnet");
+				writer.Double(m_brokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerplnet");
+				writer.Double(m_subbrokerplnet);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("maxallotedqty");
+				writer.Double(m_maxallotedqty);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedlot");
+				writer.Double(m_TotalTradedLot);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradedto");
+				writer.Double(m_TotalTradedTO);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("company");
+				string sscompany = string(CT2CA(m_Company));
+				const char* stcompany = sscompany.c_str();
+				writer.String(stcompany);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbroker");
+				string sssubbroker = string(CT2CA(m_subbroker));
+				const char* stsubbroker = sssubbroker.c_str();
+				writer.String(stsubbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("broker");
+				string ssbroker = string(CT2CA(m_broker));
+				const char* stbroker = ssbroker.c_str();
+				writer.String(stbroker);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("extravolume");
+				writer.Double(m_extravolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("freemargin");
+				writer.Double(m_freemargin);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyvolume");
+				writer.Double(m_companyvolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokervolume");
+				writer.Double(m_brokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokervolume");
+				writer.Double(m_subbrokervolume);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokerage");
+				writer.Double(m_clientbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokerage");
+				writer.Double(m_brokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokerage");
+				writer.Double(m_subbrokerbrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokerage");
+				writer.Double(m_companybrokerage);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientexposure");
+				writer.Double(m_clientexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("Companyexposure");
+				writer.Double(m_Companyexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerexposure");
+				writer.Double(m_brokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerexposure");
+				writer.Double(m_subbrokerexposure);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientfloatingpl");
+				writer.Double(m_clientfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companyfloatingpl");
+				writer.Double(m_companyfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerfloatingpl");
+				writer.Double(m_brokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerfloatingpl");
+				writer.Double(m_subbrokerfloatingpl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbalancepl");
+				writer.Double(m_clientbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybalancepl");
+				writer.Double(m_companybalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbalancepl");
+				writer.Double(m_brokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbalancepl");
+				writer.Double(m_subbrokerbalancepl);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientpatti");
+				writer.Double(m_clientpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companypatti");
+				writer.Double(m_companypatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerpatti");
+				writer.Double(m_brokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerpatti");
+				writer.Double(m_subbrokerpatti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companybrokeragerate");
+				writer.Double(m_companybrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokerbrokeragerate");
+				writer.Double(m_brokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokerbrokeragerate");
+				writer.Double(m_subbrokerbrokeragerate);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientbrokeragerate");
+				writer.Double(m_clientbrokeragerate);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("clientgrossamount");
+				writer.Double(m_clientgrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("brokergrossamount");
+				writer.Double(m_brokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("subbrokergrossamount");
+				writer.Double(m_subbrokergrossamount);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("companygrossamount");
+				writer.Double(m_companygrossamount);
+			}
+
+			int m_TotalNo_Of_StopBuy = 0;
+			int m_TotalNo_Of_Cancelled_StopBuy = 0;
+			int m_TotalNo_Of_Passed_StopBuy = 0;
+			int m_TotalNo_Of_Pending_StopBuy = 0;
+
+			int m_TotalNo_Of_StopSell = 0;
+			int m_TotalNo_Of_Cancelled_StopSell = 0;
+			int m_TotalNo_Of_Passed_StopSell = 0;
+			int m_TotalNo_Of_Pending_StopSell = 0;
+
+			int m_TotalNo_Of_BuyLimit = 0;
+			int m_TotalNo_Of_Cancelled_BuyLimit = 0;
+			int m_TotalNo_Of_Passed_BuyLimit = 0;
+			int m_TotalNo_Of_Pending_BuyLimit = 0;
+
+			int m_TotalNo_Of_SellLimit = 0;
+			int m_TotalNo_Of_Cancelled_SellLimit = 0;
+			int m_TotalNo_Of_Passed_SellLimit = 0;
+			int m_TotalNo_Of_Pending_SellLimit = 0;
+
+
+
+			int m_TotalNo_Of_MarketDeal = 0;
+			int m_TotalNo_Of_LimitDeal = 0;
+			int m_TotalNo_Of_StopLimitDeal = 0;
+
+
+
+
+			CString strloginSymbolKey = L"";
+			//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
+			strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);
+			st_OrderCount m_stOrderCount = {};
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopBuy = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopBuy = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_StopSell = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_StopSell = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_StopSell = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_BuyLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_BuyLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			m_TotalNo_Of_SellLimit = m_stOrderCount.m_TotalOrder;
+			m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCount.m_TotalCancelledOrder;
+			m_TotalNo_Of_Passed_SellLimit = m_stOrderCount.m_TotalExecutedOrder;
+			m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
+
+
+			int totalMarketBuyDeal = 0;
+			int totalMarketSellDeal = 0;
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketBuyDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_stOrderCount = {};
+			strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
+			CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
+			totalMarketSellDeal = m_stOrderCount.m_TotalOrder;
+
+
+			m_TotalNo_Of_MarketDeal = totalMarketBuyDeal + totalMarketSellDeal;
+			m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit + m_TotalNo_Of_BuyLimit;
+			m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy + m_TotalNo_Of_StopSell;
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopBuy");
+				writer.Int(m_TotalNo_Of_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopBuy");
+				writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopBuy");
+				writer.Int(m_TotalNo_Of_Passed_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopBuy");
+				writer.Int(m_TotalNo_Of_Pending_StopBuy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopSell");
+				writer.Int(m_TotalNo_Of_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_StopSell");
+				writer.Int(m_TotalNo_Of_Cancelled_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_StopSell");
+				writer.Int(m_TotalNo_Of_Passed_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_StopSell");
+				writer.Int(m_TotalNo_Of_Pending_StopSell);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_BuyLimit");
+				writer.Int(m_TotalNo_Of_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_BuyLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_BuyLimit");
+				writer.Int(m_TotalNo_Of_Passed_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_BuyLimit");
+				writer.Int(m_TotalNo_Of_Pending_BuyLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_SellLimit");
+				writer.Int(m_TotalNo_Of_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Cancelled_SellLimit");
+				writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Passed_SellLimit");
+				writer.Int(m_TotalNo_Of_Passed_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_Pending_SellLimit");
+				writer.Int(m_TotalNo_Of_Pending_SellLimit);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_MarketDeal");
+				writer.Int(m_TotalNo_Of_MarketDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_LimitDeal");
+				writer.Int(m_TotalNo_Of_LimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalNo_Of_StopLimitDeal");
+				writer.Int(m_TotalNo_Of_StopLimitDeal);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Buy");
+				writer.Double(m_TotalTradedLot_Buy);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("TotalTradedLot_Sell");
+				writer.Double(m_TotalTradedLot_Sell);
+			}
+
+			CString  strLoginSymbolGroup = L"";
+			strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
+			CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
+			CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
+			double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
+			double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
+			double m_badtradePer = 0;
+			if (m_badtrade != 0)
+			{
+				m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
+			}
+			double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
+			double m_badTradeIPCper = 0;
+			if (m_badtradeIgnorePosition != 0)
+			{
+				m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeper");
+				writer.Double(m_badtradePer);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipcper");
+				writer.Double(m_badTradeIPCper);
+			}
+
+			int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltradeipc");
+				writer.Double(m_totaltradeipc);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("totaltrade");
+				writer.Double(m_TotalTrade);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtradeipc");
+				writer.Double(m_badtradeIgnorePosition);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("badtrade");
+				writer.Double(m_badtrade);
+			}
+
+
+			/*CString strLogVal = L"";
+			strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
+			//(strLogVal);*/
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("buysell");
+				/*string ssbuySell = string(CT2CA(m_buySell));
+				const char* strbuySell = ssbuySell.c_str();*/
+				if (m_volume < 0)
+				{
+					writer.String("Sell");
+				}
+				else
+				{
+					writer.String("Buy");
+				}
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("debitcredit");
+				/*string ssdebitCredit = string(CT2CA(m_debitCredit));
+				const char* strdebitCredit = ssdebitCredit.c_str();*/
+				if (m_clientplnet < 0)
+				{
+					writer.String("Debit");
+				}
+				else
+				{
+					writer.String("Credit");
+				}
+
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("exchange");
+				string ssexchange = string(CT2CA(m_Exchange));
+				const char* strexchange = ssexchange.c_str();
+				writer.String(strexchange);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("international");
+				string ssinternational = string(CT2CA(m_international));
+				const char* strinternational = ssinternational.c_str();
+				writer.String(strinternational);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("sector");
+				string sssector = string(CT2CA(m_sector));
+				const char* strsector = sssector.c_str();
+				writer.String(strsector);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("industry");
+				string ssindustry = string(CT2CA(m_industry));
+				const char* strindustry = ssindustry.c_str();
+				writer.String(strindustry);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("page");
+				string sspage = string(CT2CA(m_page));
+				const char* strpage = sspage.c_str();
+				writer.String(strpage);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("categary");
+				string sscategary = string(CT2CA(m_categary));
+				const char* strcategary = sscategary.c_str();
+				writer.String(strcategary);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rm");
+				writer.Double(m_rm);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpratio", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpratio");
+				writer.Double(m_lpratio);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("commoditygroup");
+				string sscommoditygroup = string(CT2CA(m_commoditygroup));
+				const char* strcommoditygroup = sscommoditygroup.c_str();
+				writer.String(strcommoditygroup);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpvolume", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("lpvolume");
+				writer.Double(m_lpvolume);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtyaftermulti");
+				writer.Double(m_qtyAfterMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("rmp");
+				writer.Double(m_rmp);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("qtymulti");
+				writer.Double(m_QtyMulti);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("currencybase");
+				string sscurrencybase = string(CT2CA(m_currencybase));
+				const char* strcurrencybase = sscurrencybase.c_str();
+				writer.String(strcurrencybase);
+			}
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				writer.Key("creditLimit");
+				writer.Double(m_CreditLimit);
+			}
+
+			CStaticClass::stConfig m_stConfig = {};
+			CString loginSymbolKey = L"";
+			CStaticClass::m_mutex_LimitConfig.Lock();
+			CString SymbolGroup = L"";
+			if (m_symbol.GetLength() >= 5)
+			{
+				SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
+			}
+			else
+			{
+				SymbolGroup = m_symbol;
+			}
+			int limitValue = 0;
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("BuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("SellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolBuyPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllSymbolSellPositionLimit");
+				writer.Int(limitValue);
+			}
+
+			m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise", m_Requestmessage);
+			m_columnSubs = 0;
+			m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+			if (m_columnSubs == 1)
+			{
+				loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
+				m_stConfig = {};
+				CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
+				limitValue = m_stConfig.Limit;
+				writer.Key("AllPositionLimitLoginwise");
+				writer.Int(limitValue);
+			}
+			CStaticClass::m_mutex_LimitConfig.Unlock();
+
+
+
+
+
+			CStaticClass::m_mutexcolumnSubs.Unlock();
+
+
+		}
+		
+		writer.EndObject();
+
+
+		if (dataSendingFlag == 1)
+		{
+			string strforsend = "";
+			str_FinalJsonUpdate = s.GetString();
+			int dataSize = str_FinalJsonUpdate.GetLength();
+
+			//if (dataSize >= 1500)
+			if (dataSize >= 1500000)
+			{
+				writer.EndArray();
+				writer.EndObject();
+
+				str_FinalJsonUpdate = s.GetString();
+				////(L"Test");
+				//(str_FinalJsonUpdate);
+				strforsend = CT2A(str_FinalJsonUpdate.GetString());
+				SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+				
+				s.Clear();
+				writer.Flush();
+
+				writer.Reset(s);
+
+				writer.StartObject();
+				writer.Key("type");
+				writer.String(stmessageType);
+				writer.Key("insert");
+				writer.StartArray();
+				dataSendingFlag = 0;
+			}
+		}
+
+	}
+
+	if (dataSendingFlag == 1)
+	{
+		writer.EndArray();
+		writer.EndObject();
+		string strforsend = "";
+		str_FinalJsonUpdate = s.GetString();
+		//(str_FinalJsonUpdate);
+		
+		strforsend = CT2A(str_FinalJsonUpdate.GetString());
+		SendDataToClient(client, strforsend, m_clientcontexKey, m_activeClient);
+		dataSendingFlag = 0;
+	}
+}
 
 void CStaticClass::calculateClientWiseAllPosition()
-{			
+{	
+#pragma region Setting_Global_Variable_To_Local_Variable
+	
 	CString strkey=CStaticClass::strKeyTransfer;	
 	WakeAllConditionVariable(&m_cv_Thread);
 	CString strUserID=strkey.Mid(0,strkey.Find(L":"));		
-	CMap<CString,LPCTSTR,CStaticClass::st_netpositionClientWise,CStaticClass::st_netpositionClientWise&>  mapNetPositionClientWise_ThreadWise;
+	//CMap<CString,LPCTSTR,CStaticClass::st_netpositionClientWise,CStaticClass::st_netpositionClientWise&>  mapNetPositionClientWise_ThreadWise;
+	NetPositionClientWise_All mapNetPositionClientWise_ThreadWise;
 	struct localClientTotalAmount
 	{
 		double m_clientgrosstotal;
 		double m_clientBrokTotal;
 		double m_clientnettotal;
-	};
-	MapscripWiseNetPosition m_MapscripWiseNetPosition_ThreadWiseGlobal;
+	};	
 	CMap<CString,LPCTSTR,localClientTotalAmount,localClientTotalAmount>  maplocalClientTotalAmount;
 	CMap<CString,LPCTSTR, st_TickBidAskLast, st_TickBidAskLast>  maplocalClientSendedLTP;
 
@@ -534,17 +5853,21 @@ void CStaticClass::calculateClientWiseAllPosition()
 		
 	int m_activeClient = 0;
 	m_mutex_ClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"L24");
+	//(L"L24");
 		st_ClientContext tmp_st={};
 		m_ClientContext.Lookup(strkey,tmp_st);
-			thread_Status=tmp_st.m_startCalculationThread ;
-			client=tmp_st.m_clientConnection;
-			m_activeClient = tmp_st.m_activeClient;
-		m_mutex_ClientList.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"_U24");
+		thread_Status=tmp_st.m_startCalculationThread ;
+		client=tmp_st.m_clientConnection;
+		m_activeClient = tmp_st.m_activeClient;
+	m_mutex_ClientList.Unlock();
+	//(L"_U24");
 	
 	m_mutex_Tick.Lock();
 	POSITION pos=mapNetPositionClientWise.GetStartPosition();	
+	int All_positiondata_count = mapNetPositionClientWise.GetCount();
+	CString str_AllPositionData = L"";	
+	str_AllPositionData.Format(L"All Position Data Count %d", All_positiondata_count);
+	CStaticClass::m_logfile.LogEvent(str_AllPositionData);
 	while (pos!=NULL )
 	{
 		st_netpositionClientWise m_stMain={};
@@ -557,4178 +5880,66 @@ void CStaticClass::calculateClientWiseAllPosition()
 		}
 	}
 	m_mutex_Tick.Unlock();	
+#pragma endregion
+
 	while (thread_Status==1)
-	{				
-		////CStaticClass::m_logfile.LogEvent(L"Data Start Processing");
+	{
+				
+		//Sleep(500);
+		#pragma region Getting_Client_Status
 		thread_Status = 0;
-		m_mutex_ClientList.Lock();
-		//CStaticClass::m_logfile.LogEvent(L"L100");
+		m_mutex_ClientList.Lock();		
 			st_ClientContext st_Check={};
 			m_ClientContext.Lookup(strkey,st_Check);
 			thread_Status=st_Check.m_startCalculationThread;
 			int subscribedRequest = st_Check.m_clientrequests_List.Total();
 			CString m_strLogData = L"";
 			m_strLogData.Format(L"");
-		m_mutex_ClientList.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"_U100");
-		//Calculating First Data For Client NetPosition
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		m_mutex_ClientList.Unlock();		
+		#pragma endregion
 		if (st_Check.m_sendDashboardData == 1)
-		{			
-				/*m_mutex_ClientList.Lock();
+		{	
+			
+			sendClientPosition_Insert(client, m_activeClient, strUserID, strkey,L"FETCH_DASHBOARD_DATA", L"DASHBOARD_DATA",  &mapNetPositionClientWise_ThreadWise);
+			
+			m_mutex_ClientList.Lock();
+				st_Check.m_sendDashboardData = 0;			
 				m_ClientContext.SetAt(strkey, st_Check);
-				m_mutex_ClientList.Unlock();*/
-
-				CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
-				int  totalColumns = st_Check.m_clientrequests_List.Total();
-				for (int ci = 0; ci < totalColumns; ci++)
-				{
-					CString  m_ColumnsData = L"";
-					m_ColumnsData = st_Check.m_clientrequests_List[ci];
-					if (m_ColumnsData.Find(L":FETCH_DASHBOARD_DATA:") >= 0)
-					{
-						int activate = 1;
-						m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
-					}
-					//CStaticClass::m_logfile.LogEvent(m_ColumnsData);
-				}
-				////CStaticClass::m_logfile.LogEvent(L"L26");						
-				//Getting PreNetQty				
-				CString returnval = L"";
-				HRESULT hr = NULL;
-				CCommand<CAccessor<CNetpositionPreQtyTable>> data_table;
-				if (!SUCCEEDED(hr))
-				{
-					return;
-				}
-				CString   strCommand = L"";
-				strCommand.Format(L"orika_GetClientPreviousNetQty '%I64u';", st_Check.m_DashboardTime);
-
-				//CStaticClass::m_mutex_order.Lock();				
-				//CStaticClass::m_logfile.LogEvent(L"L13");
-				CSession m_tmpSession;
-				m_tmpSession.Open(CStaticClass::connection);
-				hr = data_table.Open(m_tmpSession, (LPCTSTR)strCommand);
-				if (FAILED(hr))
-				{
-					m_tmpSession.Close();
-					//CStaticClass::m_mutex_order.Unlock();
-					//CStaticClass::m_logfile.LogEvent(L"UL13");
-				}
-				int i = 0;
-				CString m_login = L"";
-				CString m_symbol = L"";
-				double m_volume = 0;
-
-				CString tmpstr = L"";
-				int row_count = 0;
-				//hr=data_table.MoveNext();
-
-				struct stPrevolume
-				{
-					wchar_t m_login[30];
-					wchar_t m_symbol[32];
-					double m_volume;
-				};
-				CMap<CString, LPCTSTR, stPrevolume, stPrevolume&> preVolumeMap;
-
-
-				st_Check.m_preQtyLoginSymbolWise.Clear();
-
-				int m_dashboard_SplitData = 0;
-				m_mutex_ClientList.Lock();
-				m_ClientContext.Lookup(strkey, st_Check);
-				while (hr = data_table.MoveNext() == S_OK)
-				{
-					m_login = data_table.m_login;
-					m_symbol = data_table.m_symbol;
-					m_volume = data_table.m_volume;
-
-					stPrevolume m_stTempPreqty = {};
-					CMTStr::Copy(m_stTempPreqty.m_login, m_login);
-					CMTStr::Copy(m_stTempPreqty.m_symbol, m_symbol);
-					m_stTempPreqty.m_volume = m_volume;
-
-					CString m_login_symbolKey = L"";
-					m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
-					preVolumeMap.SetAt(m_login_symbolKey, m_stTempPreqty);
-
-					CStaticClass::stPrevolumeClientWise m_prestCS = {};
-					CMTStr::Copy(m_prestCS.m_login, m_login);
-					CMTStr::Copy(m_prestCS.m_symbol, m_symbol);
-					m_prestCS.m_volume = m_volume;
-					st_Check.m_preQtyLoginSymbolWise.Add(&m_prestCS);
-				}
-				//For Update Pre Qty in m_ClientContext
-				
-				st_Check.m_sendDashboardData = 0;
-				m_ClientContext.SetAt(strkey, st_Check);
-				m_mutex_ClientList.Unlock();
-
-				data_table.Close();
-				m_tmpSession.Close();
-				//CStaticClass::m_mutex_order.Unlock();
-				////CStaticClass::m_logfile.LogEvent(L"UL13");
-				//End of Getting PreNetqty
-
-				int jsonType = 0;
-
-				POSITION pos = mapNetPositionClientWise_ThreadWise.GetStartPosition();
-				int total_count = mapNetPositionClientWise_ThreadWise.GetSize();
-				CString strUpdateData = L"";
-				int firstCheck = 0;
-				CString str_columnJson = L"";
-				CString str_FinalJsonUpdate = L"";
-
-				StringBuffer s;
-				Writer<StringBuffer> writer(s);
-				writer.StartObject();
-				writer.Key("type");
-
-				writer.String("DASHBOARD_DATA");
-
-				writer.Key("insert");
-
-
-
-
-				////CStaticClass::m_logfile.LogEvent(L"U1");
-
-				writer.StartArray();
-				int dataSendingFlag = 0;
-
-				while (pos != NULL)
-				{
-					//////CStaticClass::m_logfile.LogEvent(L"Data 5");
-					dataSendingFlag = 1;
-
-					CString strKey = L"";
-					CStaticClass::st_netpositionClientWise st_tmpData = {};
-
-					CStaticClass::m_mutex_Tick.Lock();
-					mapNetPositionClientWise_ThreadWise.GetNextAssoc(pos, strKey, st_tmpData);
-					CString    m_login = st_tmpData.m_login;
-					CString    m_name = st_tmpData.m_name;
-					CString    m_symbol = st_tmpData.m_symbol;
-					double     m_volume = *st_tmpData.m_volume;
-
-					stPrevolume m_stTempPreqty = {};
-					CString m_login_symbolKey = L"";
-					m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
-					preVolumeMap.Lookup(m_login_symbolKey, m_stTempPreqty);
-
-
-					double     m_previousvolume = m_stTempPreqty.m_volume;
-					double     m_difference = m_volume - m_previousvolume;
-					double     m_average = *st_tmpData.m_average;
-					st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
-
-					double     m_clientbalance = *st_tmpData.m_clientbalance;
-					double     m_clientnetamount = *st_tmpData.m_clientnetamount;
-
-					double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
-					double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
-					double     m_clientnettotal = *st_tmpData.m_clientnettotal;
-					double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
-					CString    m_subbroker = st_tmpData.m_subbroker;
-					CString    m_broker = st_tmpData.m_broker;
-
-					double     m_extravolume = *st_tmpData.m_extravolume;
-					double     m_freemargin = *st_tmpData.m_freemargin;
-					double     m_multi = *st_tmpData.m_multi;
-
-					CString     m_Company = st_tmpData.m_company;;
-
-					double     m_companyvolume = *st_tmpData.m_companyvolume;
-					double     m_brokervolume = *st_tmpData.m_brokervolume;
-					double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
-					double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
-					double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
-
-					double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
-					double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
-
-
-					double     m_clientexposure = (*st_tmpData.m_clientexposure) / 10000000;
-					double     m_Companyexposure = (*st_tmpData.m_companyexposure) / 10000000;
-					double     m_brokerexposure = (*st_tmpData.m_brokerexposure) / 10000000;
-					double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) / 10000000;
-					m_clientexposure = abs(m_clientexposure);
-					m_Companyexposure = abs(m_Companyexposure);
-					m_brokerexposure = abs(m_brokerexposure);
-					m_subbrokerexposure = abs(m_subbrokerexposure);
-
-					double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
-					double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
-					double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
-					double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
-					double     m_clientbalancepl = *st_tmpData.m_clientbalance;
-					double     m_companybalancepl = *st_tmpData.m_companybalance;
-					double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
-					double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
-					double     m_clientplnet = *st_tmpData.m_clientnetamount;
-					double     m_companyplnet = *st_tmpData.m_companyNetAmount;
-					double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
-					double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
-					double     m_clientpatti = 100;
-					double     m_companypatti = *st_tmpData.m_companyRatio;
-					double     m_brokerpatti = *st_tmpData.m_brokerRatio;
-					double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
-					double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
-					double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
-					double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
-					double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
-
-					double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
-
-					double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
-					double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
-					double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
-
-					double     m_CreditLimit = *st_tmpData.m_creditLimit;
-
-					/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
-					double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
-					double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
-
-					CString  m_Exchange = st_tmpData.m_exchange;
-					CString  m_international = st_tmpData.m_international;
-					CString  m_sector = st_tmpData.m_sector;
-					CString  m_industry = st_tmpData.m_industry;
-					double   m_rmp = st_tmpData.m_rmp;
-					double   m_QtyMulti = st_tmpData.m_QtyMulti;
-					CString  m_page = st_tmpData.m_page;
-					CString  m_categary = st_tmpData.m_categary;
-					double   m_rm = st_tmpData.m_rm;
-					double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
-					CString  m_buySell = st_tmpData.m_buySell;
-					CString  m_debitCredit = st_tmpData.m_debitCredit;
-					CString  m_currencybase = st_tmpData.m_currencybase;
-
-					double m_lpratio = st_tmpData.m_LpRatio;
-					double m_lpvolume = st_tmpData.m_LpVolume;
-
-					CString m_commoditygroup = st_tmpData.m_commoditygroup;
-
-
-
-					//m_login_symbolKey
-					CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
-					CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
-					double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
-					double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
-					m_TotalTradedTO = m_TotalTradedTO / 10000000;
-
-
-					double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
-					double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
-
-
-					CStaticClass::m_mutex_Tick.Unlock();
-					writer.StartObject();
-
-					if (jsonType == 0)
-					{
-						CString m_loginColumnKey = L"";
-						int m_columnSubs = 0;
-						CStaticClass::m_mutexcolumnSubs.Lock();
-
-						writer.Key("login");
-						string sslogin = string(CT2CA(m_login));
-						const char* stlogin = sslogin.c_str();
-						writer.String(stlogin);
-
-						m_columnSubs = 0;
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_DashboardRequest);
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("name");
-							string ssname = string(CT2CA(m_name));
-							const char* stName = ssname.c_str();
-							writer.String(stName);
-						}
-						writer.Key("symbol");
-						string sssymbol = string(CT2CA(m_symbol));
-						const char* stsymbol = sssymbol.c_str();
-						writer.String(stsymbol);
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("previousvolume");
-							writer.Double(m_previousvolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("difference");
-							writer.Double(m_difference);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("volume");
-							writer.Double(m_volume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("average");
-							writer.Double(m_average);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("lastrate");
-							writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientbalance");
-							writer.Double(m_clientbalance);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientnetamount");
-							writer.Double(m_clientnetamount);
-						}
-						CString strLogString = L"";
-						//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
-						////CStaticClass::m_logfile.LogEvent(strLogString);
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientplnet");
-							writer.Double(m_clientplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companyplnet");
-							writer.Double(m_companyplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerplnet");
-							writer.Double(m_brokerplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerplnet");
-							writer.Double(m_subbrokerplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("maxallotedqty");
-							writer.Double(m_maxallotedqty);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("totaltradedlot");
-							writer.Double(m_TotalTradedLot);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("totaltradedto");
-							writer.Double(m_TotalTradedTO);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("company");
-							string sscompany = string(CT2CA(m_Company));
-							const char* stcompany = sscompany.c_str();
-							writer.String(stcompany);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbroker");
-							string sssubbroker = string(CT2CA(m_subbroker));
-							const char* stsubbroker = sssubbroker.c_str();
-							writer.String(stsubbroker);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("broker");
-							string ssbroker = string(CT2CA(m_broker));
-							const char* stbroker = ssbroker.c_str();
-							writer.String(stbroker);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("extravolume");
-							writer.Double(m_extravolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("freemargin");
-							writer.Double(m_freemargin);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companyvolume");
-							writer.Double(m_companyvolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokervolume");
-							writer.Double(m_brokervolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokervolume");
-							writer.Double(m_subbrokervolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientbrokerage");
-							writer.Double(m_clientbrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerbrokerage");
-							writer.Double(m_brokerbrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerbrokerage");
-							writer.Double(m_subbrokerbrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companybrokerage");
-							writer.Double(m_companybrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientexposure");
-							writer.Double(m_clientexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("Companyexposure");
-							writer.Double(m_Companyexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerexposure");
-							writer.Double(m_brokerexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerexposure");
-							writer.Double(m_subbrokerexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientfloatingpl");
-							writer.Double(m_clientfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companyfloatingpl");
-							writer.Double(m_companyfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerfloatingpl");
-							writer.Double(m_brokerfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerfloatingpl");
-							writer.Double(m_subbrokerfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientbalancepl");
-							writer.Double(m_clientbalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companybalancepl");
-							writer.Double(m_companybalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerbalancepl");
-							writer.Double(m_brokerbalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerbalancepl");
-							writer.Double(m_subbrokerbalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientpatti");
-							writer.Double(m_clientpatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companypatti");
-							writer.Double(m_companypatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerpatti");
-							writer.Double(m_brokerpatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerpatti");
-							writer.Double(m_subbrokerpatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companybrokeragerate");
-							writer.Double(m_companybrokeragerate);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokerbrokeragerate");
-							writer.Double(m_brokerbrokeragerate);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokerbrokeragerate");
-							writer.Double(m_subbrokerbrokeragerate);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientbrokeragerate");
-							writer.Double(m_clientbrokeragerate);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("clientgrossamount");
-							writer.Double(m_clientgrossamount);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("brokergrossamount");
-							writer.Double(m_brokergrossamount);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("subbrokergrossamount");
-							writer.Double(m_subbrokergrossamount);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("companygrossamount");
-							writer.Double(m_companygrossamount);
-						}
-
-						int m_TotalNo_Of_StopBuy = 0;
-						int m_TotalNo_Of_Cancelled_StopBuy = 0;
-						int m_TotalNo_Of_Passed_StopBuy = 0;
-						int m_TotalNo_Of_Pending_StopBuy = 0;
-
-						int m_TotalNo_Of_StopSell = 0;
-						int m_TotalNo_Of_Cancelled_StopSell = 0;
-						int m_TotalNo_Of_Passed_StopSell = 0;
-						int m_TotalNo_Of_Pending_StopSell = 0;
-
-						int m_TotalNo_Of_BuyLimit = 0;
-						int m_TotalNo_Of_Cancelled_BuyLimit = 0;
-						int m_TotalNo_Of_Passed_BuyLimit = 0;
-						int m_TotalNo_Of_Pending_BuyLimit = 0;
-
-						int m_TotalNo_Of_SellLimit = 0;
-						int m_TotalNo_Of_Cancelled_SellLimit = 0;
-						int m_TotalNo_Of_Passed_SellLimit = 0;
-						int m_TotalNo_Of_Pending_SellLimit = 0;
-
-
-
-						int m_TotalNo_Of_MarketDeal = 0;
-						int m_TotalNo_Of_LimitDeal = 0;
-						int m_TotalNo_Of_StopLimitDeal = 0;
-
-
-
-
-						CString strloginSymbolKey = L"";
-						//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
-						strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);
-						st_OrderCount m_stOrderCount = {};
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-						m_TotalNo_Of_StopBuy = m_stOrderCount.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCount.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_StopBuy = m_stOrderCount.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
-
-						m_stOrderCount = {};
-						strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-						m_TotalNo_Of_StopSell = m_stOrderCount.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_StopSell = m_stOrderCount.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_StopSell = m_stOrderCount.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
-
-						m_stOrderCount = {};
-						strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-						m_TotalNo_Of_BuyLimit = m_stOrderCount.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCount.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_BuyLimit = m_stOrderCount.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
-
-						m_stOrderCount = {};
-						strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-						m_TotalNo_Of_SellLimit = m_stOrderCount.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCount.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_SellLimit = m_stOrderCount.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
-
-
-						int totalMarketBuyDeal = 0;
-						int totalMarketSellDeal = 0;
-						m_stOrderCount = {};
-						strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-						totalMarketBuyDeal = m_stOrderCount.m_TotalOrder;
-
-
-						m_stOrderCount = {};
-						strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-						totalMarketSellDeal = m_stOrderCount.m_TotalOrder;
-
-
-						m_TotalNo_Of_MarketDeal = totalMarketBuyDeal + totalMarketSellDeal;
-						m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit + m_TotalNo_Of_BuyLimit;
-						m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy + m_TotalNo_Of_StopSell;
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_StopBuy");
-							writer.Int(m_TotalNo_Of_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Cancelled_StopBuy");
-							writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Passed_StopBuy");
-							writer.Int(m_TotalNo_Of_Passed_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Pending_StopBuy");
-							writer.Int(m_TotalNo_Of_Pending_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_StopSell");
-							writer.Int(m_TotalNo_Of_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Cancelled_StopSell");
-							writer.Int(m_TotalNo_Of_Cancelled_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Passed_StopSell");
-							writer.Int(m_TotalNo_Of_Passed_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Pending_StopSell");
-							writer.Int(m_TotalNo_Of_Pending_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_BuyLimit");
-							writer.Int(m_TotalNo_Of_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Cancelled_BuyLimit");
-							writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Passed_BuyLimit");
-							writer.Int(m_TotalNo_Of_Passed_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Pending_BuyLimit");
-							writer.Int(m_TotalNo_Of_Pending_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_SellLimit");
-							writer.Int(m_TotalNo_Of_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Cancelled_SellLimit");
-							writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Passed_SellLimit");
-							writer.Int(m_TotalNo_Of_Passed_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_Pending_SellLimit");
-							writer.Int(m_TotalNo_Of_Pending_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_MarketDeal");
-							writer.Int(m_TotalNo_Of_MarketDeal);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_LimitDeal");
-							writer.Int(m_TotalNo_Of_LimitDeal);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalNo_Of_StopLimitDeal");
-							writer.Int(m_TotalNo_Of_StopLimitDeal);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalTradedLot_Buy");
-							writer.Double(m_TotalTradedLot_Buy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("TotalTradedLot_Sell");
-							writer.Double(m_TotalTradedLot_Sell);
-						}
-
-						CString  strLoginSymbolGroup = L"";
-						strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
-						CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
-						CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
-						double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
-						double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
-						double m_badtradePer = 0;
-						if (m_badtrade != 0)
-						{
-							m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
-						}
-						double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
-						double m_badTradeIPCper = 0;
-						if (m_badtradeIgnorePosition != 0)
-						{
-							m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("badtradeper");
-							writer.Double(m_badtradePer);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("badtradeipcper");
-							writer.Double(m_badTradeIPCper);
-						}
-
-						int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("totaltradeipc");
-							writer.Double(m_totaltradeipc);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("totaltrade");
-							writer.Double(m_TotalTrade);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("badtradeipc");
-							writer.Double(m_badtradeIgnorePosition);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("badtrade");
-							writer.Double(m_badtrade);
-						}
-
-
-						/*CString strLogVal = L"";
-						strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
-						//CStaticClass::m_logfile.LogEvent(strLogVal);*/
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("buysell");
-							/*string ssbuySell = string(CT2CA(m_buySell));
-							const char* strbuySell = ssbuySell.c_str();*/
-							if (m_volume < 0)
-							{
-								writer.String("Sell");
-							}
-							else
-							{
-								writer.String("Buy");
-							}
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("debitcredit");
-							/*string ssdebitCredit = string(CT2CA(m_debitCredit));
-							const char* strdebitCredit = ssdebitCredit.c_str();*/
-							if (m_clientplnet < 0)
-							{
-								writer.String("Debit");
-							}
-							else
-							{
-								writer.String("Credit");
-							}
-
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("exchange");
-							string ssexchange = string(CT2CA(m_Exchange));
-							const char* strexchange = ssexchange.c_str();
-							writer.String(strexchange);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("international");
-							string ssinternational = string(CT2CA(m_international));
-							const char* strinternational = ssinternational.c_str();
-							writer.String(strinternational);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("sector");
-							string sssector = string(CT2CA(m_sector));
-							const char* strsector = sssector.c_str();
-							writer.String(strsector);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("industry");
-							string ssindustry = string(CT2CA(m_industry));
-							const char* strindustry = ssindustry.c_str();
-							writer.String(strindustry);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("page");
-							string sspage = string(CT2CA(m_page));
-							const char* strpage = sspage.c_str();
-							writer.String(strpage);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("categary");
-							string sscategary = string(CT2CA(m_categary));
-							const char* strcategary = sscategary.c_str();
-							writer.String(strcategary);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("rm");
-							writer.Double(m_rm);
-						}
-
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpratio", m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("lpratio");
-							writer.Double(m_lpratio);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("commoditygroup");
-							string sscommoditygroup = string(CT2CA(m_commoditygroup));
-							const char* strcommoditygroup = sscommoditygroup.c_str();
-							writer.String(strcommoditygroup);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpvolume", m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("lpvolume");
-							writer.Double(m_lpvolume);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("qtyaftermulti");
-							writer.Double(m_qtyAfterMulti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("rmp");
-							writer.Double(m_rmp);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("qtymulti");
-							writer.Double(m_QtyMulti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("currencybase");
-							string sscurrencybase = string(CT2CA(m_currencybase));
-							const char* strcurrencybase = sscurrencybase.c_str();
-							writer.String(strcurrencybase);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("creditLimit");
-							writer.Double(m_CreditLimit);
-						}
-
-						CStaticClass::stConfig m_stConfig = {};
-						CString loginSymbolKey = L"";
-						CStaticClass::m_mutex_LimitConfig.Lock();
-						CString SymbolGroup = L"";
-						if (m_symbol.GetLength() >= 5)
-						{
-							SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
-						}
-						else
-						{
-							SymbolGroup = m_symbol;
-						}
-						int limitValue = 0;
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("BuyPositionLimit");
-							writer.Int(limitValue);
-						}
-
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("SellPositionLimit");
-							writer.Int(limitValue);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("AllSymbolBuyPositionLimit");
-							writer.Int(limitValue);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("AllSymbolSellPositionLimit");
-							writer.Int(limitValue);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise",m_DashboardRequest);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("AllPositionLimitLoginwise");
-							writer.Int(limitValue);
-						}
-						CStaticClass::m_mutex_LimitConfig.Unlock();
-
-
-
-
-
-						CStaticClass::m_mutexcolumnSubs.Unlock();
-
-
-					}
-					else
-					{
-						writer.Key("login");
-						string sslogin = string(CT2CA(m_login));
-						const char* stlogin = sslogin.c_str();
-						writer.String(stlogin);
-						writer.Key("symbol");
-						string sssymbol = string(CT2CA(m_symbol));
-						const char* stsymbol = sssymbol.c_str();
-						writer.String(stsymbol);
-						writer.Key("previousvolume");
-						writer.Double(m_previousvolume);
-						writer.Key("difference");
-						writer.Double(m_difference);
-						writer.Key("volume");
-						writer.Double(m_volume);
-					}
-					writer.EndObject();
-
-
-					if (dataSendingFlag == 1)
-					{
-						string strforsend = "";
-						str_FinalJsonUpdate = s.GetString();
-						int dataSize = str_FinalJsonUpdate.GetLength();
-
-						//if (dataSize >= 1500)
-						if (dataSize >= 1500000)
-						{
-							writer.EndArray();
-							writer.EndObject();
-
-							str_FinalJsonUpdate = s.GetString();
-							////CStaticClass::m_logfile.LogEvent(L"Test");
-							//CStaticClass::m_logfile.LogEvent(str_FinalJsonUpdate);
-							strforsend = CT2A(str_FinalJsonUpdate.GetString());
-							SendDataToClient(client, strforsend, strkey, m_activeClient);
-
-							s.Clear();
-							writer.Flush();
-
-							writer.Reset(s);
-
-							writer.StartObject();
-							writer.Key("type");
-
-							writer.String("DASHBOARD_DATA");
-
-							writer.Key("insert");
-							writer.StartArray();
-
-
-
-							dataSendingFlag = 0;
-						}
-					}
-
-				}
-
-				if (dataSendingFlag == 1)
-				{
-					writer.EndArray();
-					writer.EndObject();
-					string strforsend = "";
-					str_FinalJsonUpdate = s.GetString();
-					strforsend = CT2A(str_FinalJsonUpdate.GetString());
-					SendDataToClient(client, strforsend, strkey, m_activeClient);
-					dataSendingFlag = 0;
-				}
-
-			}
-		
+			m_mutex_ClientList.Unlock();
+		}		
 		//End Of Calculating Data For Dashboard
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		
 		if (st_Check.m_fetch_client_position_timerwise == 1)
 		{
 			UINT64 CurrentTime = _time64(NULL);
 			if((CurrentTime- st_Check.m_netPositionTime_TIMERWISE_LastTime)>=5)
 			{
-
 				
-
-
-				m_mutex_ClientList.Lock();				
-					m_ClientContext.Lookup(strkey, st_Check);
-					st_Check.m_netPositionTime_TIMERWISE_LastTime = CurrentTime;
-					m_ClientContext.SetAt(strkey, st_Check);				
-				m_mutex_ClientList.Unlock();
-
-
-
-			CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
-			int  totalColumns = st_Check.m_clientrequests_List.Total();
-			for (int ci = 0; ci < totalColumns; ci++)
-			{
-				CString  m_ColumnsData = L"";
-				m_ColumnsData = st_Check.m_clientrequests_List[ci];
-				if (m_ColumnsData.Find(L":FETCH_CLIENT_POSITIONS_TIMERWISE_START:") >= 0)
-				{
-					int activate = 1;
-					m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
-				}
-				//CStaticClass::m_logfile.LogEvent(m_ColumnsData);
-			}
-			////CStaticClass::m_logfile.LogEvent(L"L26");						
-			//Getting PreNetQty				
-			CString returnval = L"";
-			HRESULT hr = NULL;
-			CCommand<CAccessor<CNetpositionPreQtyTable>> data_table;
-			if (!SUCCEEDED(hr))
-			{
-				return;
-			}
-			CString   strCommand = L"";
-			strCommand.Format(L"orika_GetClientPreviousNetQty '%I64u';", st_Check.m_netPositionTime);
-
-			//CStaticClass::m_mutex_order.Lock();
-			//CStaticClass::m_logfile.LogEvent(L"L13");
-
-
-			CSession m_tempSession;
-			m_tempSession.Open(CStaticClass::connection);
-			hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
-			if (FAILED(hr))
-			{
-				m_tempSession.Close();
-				//CStaticClass::m_mutex_order.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"UL13");
-			}
-			int i = 0;
-			CString m_login = L"";
-			CString m_symbol = L"";
-			double m_volume = 0;
-
-			CString tmpstr = L"";
-			int row_count = 0;
-			//hr=data_table.MoveNext();
-
-			struct stPrevolume
-			{
-				wchar_t m_login[30];
-				wchar_t m_symbol[32];
-				double m_volume;
-			};
-			CMap<CString, LPCTSTR, stPrevolume, stPrevolume&> preVolumeMap;
-
-
-			st_Check.m_preQtyLoginSymbolWise.Clear();
-
-			int m_dashboard_SplitData = 0;
-			m_mutex_ClientList.Lock();
-			m_ClientContext.Lookup(strkey, st_Check);
-			while (hr = data_table.MoveNext() == S_OK)
-			{
-				m_login = data_table.m_login;
-				m_symbol = data_table.m_symbol;
-				m_volume = data_table.m_volume;
-
-				stPrevolume m_stTempPreqty = {};
-				CMTStr::Copy(m_stTempPreqty.m_login, m_login);
-				CMTStr::Copy(m_stTempPreqty.m_symbol, m_symbol);
-				m_stTempPreqty.m_volume = m_volume;
-
-				CString m_login_symbolKey = L"";
-				m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
-				preVolumeMap.SetAt(m_login_symbolKey, m_stTempPreqty);
-
-				CStaticClass::stPrevolumeClientWise m_prestCS = {};
-				CMTStr::Copy(m_prestCS.m_login, m_login);
-				CMTStr::Copy(m_prestCS.m_symbol, m_symbol);
-				m_prestCS.m_volume = m_volume;
-				st_Check.m_preQtyLoginSymbolWise.Add(&m_prestCS);
-			}
-			//For Update Pre Qty in m_ClientContext
-			
-			m_ClientContext.SetAt(strkey, st_Check);
-			m_mutex_ClientList.Unlock();
-
-			data_table.Close();
-			m_tempSession.Close();
-			
-			////CStaticClass::m_logfile.LogEvent(L"UL13");
-			//End of Getting PreNetqty
-
-			int jsonType = 0;
-
-			POSITION pos = mapNetPositionClientWise_ThreadWise.GetStartPosition();
-			int total_count = mapNetPositionClientWise_ThreadWise.GetSize();
-			CString strUpdateData = L"";
-			int firstCheck = 0;
-			CString str_columnJson = L"";
-			CString str_FinalJsonUpdate = L"";
-
-			StringBuffer s;
-			Writer<StringBuffer> writer(s);
-			writer.StartObject();
-			writer.Key("type");
-			
-			writer.String("CLIENT_POSITIONS_TIMERWISE");
-			
-												
-				writer.Key("insert");
-			
-			
-			
-			
-			////CStaticClass::m_logfile.LogEvent(L"U1");
-
-			writer.StartArray();
-			int dataSendingFlag = 0;
-
-			while (pos != NULL)
-			{
-				//////CStaticClass::m_logfile.LogEvent(L"Data 5");
-				dataSendingFlag = 1;
-
-
-				CString strKey = L"";
-				CStaticClass::st_netpositionClientWise st_tmpData = {};
-
-				CStaticClass::m_mutex_Tick.Lock();
-				mapNetPositionClientWise_ThreadWise.GetNextAssoc(pos, strKey, st_tmpData);
-				CString    m_login = st_tmpData.m_login;
-				CString    m_name = st_tmpData.m_name;
-				CString    m_symbol = st_tmpData.m_symbol;
-				double     m_volume = *st_tmpData.m_volume;
-
-				stPrevolume m_stTempPreqty = {};
-				CString m_login_symbolKey = L"";
-				m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
-				preVolumeMap.Lookup(m_login_symbolKey, m_stTempPreqty);
-
-
-				double     m_previousvolume = m_stTempPreqty.m_volume;
-				double     m_difference = m_volume - m_previousvolume;
-				double     m_average = *st_tmpData.m_average;
-				st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
-
-				double     m_clientbalance = *st_tmpData.m_clientbalance;
-				double     m_clientnetamount = *st_tmpData.m_clientnetamount;
-
-				double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
-				double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
-				double     m_clientnettotal = *st_tmpData.m_clientnettotal;
-				double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
-				CString    m_subbroker = st_tmpData.m_subbroker;
-				CString    m_broker = st_tmpData.m_broker;
-
-				double     m_extravolume = *st_tmpData.m_extravolume;
-				double     m_freemargin = *st_tmpData.m_freemargin;
-				double     m_multi = *st_tmpData.m_multi;
-
-
-
-				CString     m_Company = st_tmpData.m_company;;
-
-				double     m_companyvolume = *st_tmpData.m_companyvolume;
-				double     m_brokervolume = *st_tmpData.m_brokervolume;
-				double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
-				double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
-				double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
-
-				double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
-				double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
-
-
-				double     m_clientexposure = (*st_tmpData.m_clientexposure) / 10000000;
-				double     m_Companyexposure = (*st_tmpData.m_companyexposure) / 10000000;
-				double     m_brokerexposure = (*st_tmpData.m_brokerexposure) / 10000000;
-				double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) / 10000000;
-				m_clientexposure = abs(m_clientexposure);
-				m_Companyexposure = abs(m_Companyexposure);
-				m_brokerexposure = abs(m_brokerexposure);
-				m_subbrokerexposure = abs(m_subbrokerexposure);
-
-				double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
-				double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
-				double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
-				double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
-				double     m_clientbalancepl = *st_tmpData.m_clientbalance;
-				double     m_companybalancepl = *st_tmpData.m_companybalance;
-				double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
-				double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
-				double     m_clientplnet = *st_tmpData.m_clientnetamount;
-				double     m_companyplnet = *st_tmpData.m_companyNetAmount;
-				double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
-				double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
-				double     m_clientpatti = 100;
-				double     m_companypatti = *st_tmpData.m_companyRatio;
-				double     m_brokerpatti = *st_tmpData.m_brokerRatio;
-				double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
-				double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
-				double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
-				double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
-				double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
-
-				double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
-
-				double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
-				double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
-				double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
-
-				double     m_CreditLimit = *st_tmpData.m_creditLimit;
-
-				/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
-				double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
-				double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
-
-				CString  m_Exchange = st_tmpData.m_exchange;
-				CString  m_international = st_tmpData.m_international;
-				CString  m_sector = st_tmpData.m_sector;
-				CString  m_industry = st_tmpData.m_industry;
-				double   m_rmp = st_tmpData.m_rmp;
-				double   m_QtyMulti = st_tmpData.m_QtyMulti;
-				CString  m_page = st_tmpData.m_page;
-				CString  m_categary = st_tmpData.m_categary;
-				double   m_rm = st_tmpData.m_rm;
-				double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
-				CString  m_buySell = st_tmpData.m_buySell;
-				CString  m_debitCredit = st_tmpData.m_debitCredit;
-				CString  m_currencybase = st_tmpData.m_currencybase;
-
-				double m_lpratio = st_tmpData.m_LpRatio;
-				double m_lpvolume = st_tmpData.m_LpVolume;
-				CString m_commoditygroup = st_tmpData.m_commoditygroup;
-
-
-				//m_login_symbolKey
-				CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
-				CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
-				double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
-				double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
-				m_TotalTradedTO = m_TotalTradedTO / 10000000;
-
-
-				double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
-				double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
-
-
-				CStaticClass::m_mutex_Tick.Unlock();
-				writer.StartObject();
-
-				if (jsonType == 0)
-				{
-					CString m_loginColumnKey = L"";
-					int m_columnSubs = 0;
-					CStaticClass::m_mutexcolumnSubs.Lock();
-
-					writer.Key("login");
-					string sslogin = string(CT2CA(m_login));
-					const char* stlogin = sslogin.c_str();
-					writer.String(stlogin);
-
-					m_columnSubs = 0;
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_ClientPositionRequestTimerWiseType);
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("name");
-						string ssname = string(CT2CA(m_name));
-						const char* stName = ssname.c_str();
-						writer.String(stName);
-					}
-					writer.Key("symbol");
-					string sssymbol = string(CT2CA(m_symbol));
-					const char* stsymbol = sssymbol.c_str();
-					writer.String(stsymbol);
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("previousvolume");
-						writer.Double(m_previousvolume);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("difference");
-						writer.Double(m_difference);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("volume");
-						writer.Double(m_volume);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("average");
-						writer.Double(m_average);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("lastrate");
-						writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientbalance");
-						writer.Double(m_clientbalance);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientnetamount");
-						writer.Double(m_clientnetamount);
-					}
-					CString strLogString = L"";
-					//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
-					////CStaticClass::m_logfile.LogEvent(strLogString);
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientplnet");
-						writer.Double(m_clientplnet);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companyplnet");
-						writer.Double(m_companyplnet);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerplnet");
-						writer.Double(m_brokerplnet);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerplnet");
-						writer.Double(m_subbrokerplnet);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("maxallotedqty");
-						writer.Double(m_maxallotedqty);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("totaltradedlot");
-						writer.Double(m_TotalTradedLot);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("totaltradedto");
-						writer.Double(m_TotalTradedTO);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("company");
-						string sscompany = string(CT2CA(m_Company));
-						const char* stcompany = sscompany.c_str();
-						writer.String(stcompany);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbroker");
-						string sssubbroker = string(CT2CA(m_subbroker));
-						const char* stsubbroker = sssubbroker.c_str();
-						writer.String(stsubbroker);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("broker");
-						string ssbroker = string(CT2CA(m_broker));
-						const char* stbroker = ssbroker.c_str();
-						writer.String(stbroker);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("extravolume");
-						writer.Double(m_extravolume);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("freemargin");
-						writer.Double(m_freemargin);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companyvolume");
-						writer.Double(m_companyvolume);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokervolume");
-						writer.Double(m_brokervolume);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokervolume");
-						writer.Double(m_subbrokervolume);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientbrokerage");
-						writer.Double(m_clientbrokerage);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerbrokerage");
-						writer.Double(m_brokerbrokerage);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerbrokerage");
-						writer.Double(m_subbrokerbrokerage);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companybrokerage");
-						writer.Double(m_companybrokerage);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientexposure");
-						writer.Double(m_clientexposure);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("Companyexposure");
-						writer.Double(m_Companyexposure);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerexposure");
-						writer.Double(m_brokerexposure);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerexposure");
-						writer.Double(m_subbrokerexposure);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientfloatingpl");
-						writer.Double(m_clientfloatingpl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companyfloatingpl");
-						writer.Double(m_companyfloatingpl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerfloatingpl");
-						writer.Double(m_brokerfloatingpl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerfloatingpl");
-						writer.Double(m_subbrokerfloatingpl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientbalancepl");
-						writer.Double(m_clientbalancepl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companybalancepl");
-						writer.Double(m_companybalancepl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerbalancepl");
-						writer.Double(m_brokerbalancepl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerbalancepl");
-						writer.Double(m_subbrokerbalancepl);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientpatti");
-						writer.Double(m_clientpatti);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companypatti");
-						writer.Double(m_companypatti);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerpatti");
-						writer.Double(m_brokerpatti);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerpatti");
-						writer.Double(m_subbrokerpatti);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companybrokeragerate");
-						writer.Double(m_companybrokeragerate);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokerbrokeragerate");
-						writer.Double(m_brokerbrokeragerate);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokerbrokeragerate");
-						writer.Double(m_subbrokerbrokeragerate);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientbrokeragerate");
-						writer.Double(m_clientbrokeragerate);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("clientgrossamount");
-						writer.Double(m_clientgrossamount);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("brokergrossamount");
-						writer.Double(m_brokergrossamount);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("subbrokergrossamount");
-						writer.Double(m_subbrokergrossamount);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("companygrossamount");
-						writer.Double(m_companygrossamount);
-					}
-
-					int m_TotalNo_Of_StopBuy = 0;
-					int m_TotalNo_Of_Cancelled_StopBuy = 0;
-					int m_TotalNo_Of_Passed_StopBuy = 0;
-					int m_TotalNo_Of_Pending_StopBuy = 0;
-
-					int m_TotalNo_Of_StopSell = 0;
-					int m_TotalNo_Of_Cancelled_StopSell = 0;
-					int m_TotalNo_Of_Passed_StopSell = 0;
-					int m_TotalNo_Of_Pending_StopSell = 0;
-
-					int m_TotalNo_Of_BuyLimit = 0;
-					int m_TotalNo_Of_Cancelled_BuyLimit = 0;
-					int m_TotalNo_Of_Passed_BuyLimit = 0;
-					int m_TotalNo_Of_Pending_BuyLimit = 0;
-
-					int m_TotalNo_Of_SellLimit = 0;
-					int m_TotalNo_Of_Cancelled_SellLimit = 0;
-					int m_TotalNo_Of_Passed_SellLimit = 0;
-					int m_TotalNo_Of_Pending_SellLimit = 0;
-
-
-
-					int m_TotalNo_Of_MarketDeal = 0;
-					int m_TotalNo_Of_LimitDeal = 0;
-					int m_TotalNo_Of_StopLimitDeal = 0;
-
-
-
-
-					CString strloginSymbolKey = L"";
-					//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
-					strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);
-					st_OrderCount m_stOrderCount = {};
-					CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-					m_TotalNo_Of_StopBuy = m_stOrderCount.m_TotalOrder;
-					m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCount.m_TotalCancelledOrder;
-					m_TotalNo_Of_Passed_StopBuy = m_stOrderCount.m_TotalExecutedOrder;
-					m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
-
-					m_stOrderCount = {};
-					strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
-					CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-					m_TotalNo_Of_StopSell = m_stOrderCount.m_TotalOrder;
-					m_TotalNo_Of_Cancelled_StopSell = m_stOrderCount.m_TotalCancelledOrder;
-					m_TotalNo_Of_Passed_StopSell = m_stOrderCount.m_TotalExecutedOrder;
-					m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
-
-					m_stOrderCount = {};
-					strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
-					CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-					m_TotalNo_Of_BuyLimit = m_stOrderCount.m_TotalOrder;
-					m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCount.m_TotalCancelledOrder;
-					m_TotalNo_Of_Passed_BuyLimit = m_stOrderCount.m_TotalExecutedOrder;
-					m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
-
-					m_stOrderCount = {};
-					strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
-					CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-					m_TotalNo_Of_SellLimit = m_stOrderCount.m_TotalOrder;
-					m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCount.m_TotalCancelledOrder;
-					m_TotalNo_Of_Passed_SellLimit = m_stOrderCount.m_TotalExecutedOrder;
-					m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
-
-
-					int totalMarketBuyDeal = 0;
-					int totalMarketSellDeal = 0;
-					m_stOrderCount = {};
-					strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
-					CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-					totalMarketBuyDeal = m_stOrderCount.m_TotalOrder;
-
-
-					m_stOrderCount = {};
-					strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
-					CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCount);
-					totalMarketSellDeal = m_stOrderCount.m_TotalOrder;
-
-
-					m_TotalNo_Of_MarketDeal = totalMarketBuyDeal + totalMarketSellDeal;
-					m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit + m_TotalNo_Of_BuyLimit;
-					m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy + m_TotalNo_Of_StopSell;
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_StopBuy");
-						writer.Int(m_TotalNo_Of_StopBuy);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Cancelled_StopBuy");
-						writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Passed_StopBuy");
-						writer.Int(m_TotalNo_Of_Passed_StopBuy);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Pending_StopBuy");
-						writer.Int(m_TotalNo_Of_Pending_StopBuy);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_StopSell");
-						writer.Int(m_TotalNo_Of_StopSell);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Cancelled_StopSell");
-						writer.Int(m_TotalNo_Of_Cancelled_StopSell);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Passed_StopSell");
-						writer.Int(m_TotalNo_Of_Passed_StopSell);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Pending_StopSell");
-						writer.Int(m_TotalNo_Of_Pending_StopSell);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_BuyLimit");
-						writer.Int(m_TotalNo_Of_BuyLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Cancelled_BuyLimit");
-						writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Passed_BuyLimit");
-						writer.Int(m_TotalNo_Of_Passed_BuyLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Pending_BuyLimit");
-						writer.Int(m_TotalNo_Of_Pending_BuyLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_SellLimit");
-						writer.Int(m_TotalNo_Of_SellLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Cancelled_SellLimit");
-						writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Passed_SellLimit");
-						writer.Int(m_TotalNo_Of_Passed_SellLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_Pending_SellLimit");
-						writer.Int(m_TotalNo_Of_Pending_SellLimit);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_MarketDeal");
-						writer.Int(m_TotalNo_Of_MarketDeal);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_LimitDeal");
-						writer.Int(m_TotalNo_Of_LimitDeal);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalNo_Of_StopLimitDeal");
-						writer.Int(m_TotalNo_Of_StopLimitDeal);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalTradedLot_Buy");
-						writer.Double(m_TotalTradedLot_Buy);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("TotalTradedLot_Sell");
-						writer.Double(m_TotalTradedLot_Sell);
-					}
-
-					CString  strLoginSymbolGroup = L"";
-					strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
-					CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
-					CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
-					double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
-					double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
-					double m_badtradePer = 0;
-					if (m_badtrade != 0)
-					{
-						m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
-					}
-					double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
-					double m_badTradeIPCper = 0;
-					if (m_badtradeIgnorePosition != 0)
-					{
-						m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("badtradeper");
-						writer.Double(m_badtradePer);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("badtradeipcper");
-						writer.Double(m_badTradeIPCper);
-					}
-
-					int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("totaltradeipc");
-						writer.Double(m_totaltradeipc);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("totaltrade");
-						writer.Double(m_TotalTrade);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("badtradeipc");
-						writer.Double(m_badtradeIgnorePosition);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("badtrade");
-						writer.Double(m_badtrade);
-					}
-
-
-					/*CString strLogVal = L"";
-					strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
-					//CStaticClass::m_logfile.LogEvent(strLogVal);*/
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("buysell");
-						/*string ssbuySell = string(CT2CA(m_buySell));
-						const char* strbuySell = ssbuySell.c_str();*/
-						if (m_volume < 0)
-						{
-							writer.String("Sell");
-						}
-						else
-						{
-							writer.String("Buy");
-						}
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("debitcredit");
-						/*string ssdebitCredit = string(CT2CA(m_debitCredit));
-						const char* strdebitCredit = ssdebitCredit.c_str();*/
-						if (m_clientplnet < 0)
-						{
-							writer.String("Debit");
-						}
-						else
-						{
-							writer.String("Credit");
-						}
-
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("exchange");
-						string ssexchange = string(CT2CA(m_Exchange));
-						const char* strexchange = ssexchange.c_str();
-						writer.String(strexchange);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("international");
-						string ssinternational = string(CT2CA(m_international));
-						const char* strinternational = ssinternational.c_str();
-						writer.String(strinternational);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("sector");
-						string sssector = string(CT2CA(m_sector));
-						const char* strsector = sssector.c_str();
-						writer.String(strsector);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("industry");
-						string ssindustry = string(CT2CA(m_industry));
-						const char* strindustry = ssindustry.c_str();
-						writer.String(strindustry);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("page");
-						string sspage = string(CT2CA(m_page));
-						const char* strpage = sspage.c_str();
-						writer.String(strpage);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("categary");
-						string sscategary = string(CT2CA(m_categary));
-						const char* strcategary = sscategary.c_str();
-						writer.String(strcategary);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("rm");
-						writer.Double(m_rm);
-					}
-
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpratio", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1)
-					{
-						writer.Key("lpratio");
-						writer.Double(m_lpratio);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lpvolume", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1)
-					{
-						writer.Key("lpvolume");
-						writer.Double(m_lpvolume);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1)
-					{
-						writer.Key("commoditygroup");
-						string sscommoditygroup = string(CT2CA(m_commoditygroup));
-						const char* strcommoditygroup = sscommoditygroup.c_str();
-						writer.String(strcommoditygroup);
-					}
-
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("qtyaftermulti");
-						writer.Double(m_qtyAfterMulti);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("rmp");
-						writer.Double(m_rmp);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("qtymulti");
-						writer.Double(m_QtyMulti);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("currencybase");
-						string sscurrencybase = string(CT2CA(m_currencybase));
-						const char* strcurrencybase = sscurrencybase.c_str();
-						writer.String(strcurrencybase);
-					}
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						writer.Key("creditLimit");
-						writer.Double(m_CreditLimit);
-					}
-
-					CStaticClass::stConfig m_stConfig = {};
-					CString loginSymbolKey = L"";
-					CStaticClass::m_mutex_LimitConfig.Lock();
-					CString SymbolGroup = L"";
-					if (m_symbol.GetLength() >= 5)
-					{
-						SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
-					}
-					else
-					{
-						SymbolGroup = m_symbol;
-					}
-					int limitValue = 0;
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
-						m_stConfig = {};
-						CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-						limitValue = m_stConfig.Limit;
-						writer.Key("BuyPositionLimit");
-						writer.Int(limitValue);
-					}
-
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
-						m_stConfig = {};
-						CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-						limitValue = m_stConfig.Limit;
-						writer.Key("SellPositionLimit");
-						writer.Int(limitValue);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
-						m_stConfig = {};
-						CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-						limitValue = m_stConfig.Limit;
-						writer.Key("AllSymbolBuyPositionLimit");
-						writer.Int(limitValue);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
-						m_stConfig = {};
-						CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-						limitValue = m_stConfig.Limit;
-						writer.Key("AllSymbolSellPositionLimit");
-						writer.Int(limitValue);
-					}
-
-					m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise", m_ClientPositionRequestTimerWiseType);
-					m_columnSubs = 0;
-					m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-					if (m_columnSubs == 1 )
-					{
-						loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
-						m_stConfig = {};
-						CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-						limitValue = m_stConfig.Limit;
-						writer.Key("AllPositionLimitLoginwise");
-						writer.Int(limitValue);
-					}
-					CStaticClass::m_mutex_LimitConfig.Unlock();
-					CStaticClass::m_mutexcolumnSubs.Unlock();
-
-				}
-				else
-				{
-					writer.Key("login");
-					string sslogin = string(CT2CA(m_login));
-					const char* stlogin = sslogin.c_str();
-					writer.String(stlogin);
-					writer.Key("symbol");
-					string sssymbol = string(CT2CA(m_symbol));
-					const char* stsymbol = sssymbol.c_str();
-					writer.String(stsymbol);
-					writer.Key("previousvolume");
-					writer.Double(m_previousvolume);
-					writer.Key("difference");
-					writer.Double(m_difference);
-					writer.Key("volume");
-					writer.Double(m_volume);
-				}
-				writer.EndObject();
-
-
-				if (dataSendingFlag == 1)
-				{
-					string strforsend = "";
-					str_FinalJsonUpdate = s.GetString();
-					int dataSize = str_FinalJsonUpdate.GetLength();
-
-					//if (dataSize >= 1500)
-					if (dataSize >= 1500000)
-					{
-						writer.EndArray();
-						writer.EndObject();
-
-						str_FinalJsonUpdate = s.GetString();
-						////CStaticClass::m_logfile.LogEvent(L"Test");
-						//CStaticClass::m_logfile.LogEvent(str_FinalJsonUpdate);
-						strforsend = CT2A(str_FinalJsonUpdate.GetString());
-						SendDataToClient(client, strforsend, strkey, m_activeClient);
-
-						s.Clear();
-						writer.Flush();
-
-						writer.Reset(s);
-
-						writer.StartObject();
-						writer.Key("type");
-						
-							writer.String("CLIENT_POSITION_TIMERWISE");
-						
-						writer.Key("insert");
-						writer.StartArray();
-
-
-
-						dataSendingFlag = 0;
-					}
-				}
-
-			}
-
-			if (dataSendingFlag == 1)
-			{
-				writer.EndArray();
-				writer.EndObject();
-				string strforsend = "";
-				str_FinalJsonUpdate = s.GetString();
-				strforsend = CT2A(str_FinalJsonUpdate.GetString());
-				SendDataToClient(client, strforsend, strkey, m_activeClient);
-				dataSendingFlag = 0;
-			}
-
+				sendClientPosition_Insert(client, m_activeClient, strUserID, strkey, L"FETCH_CLIENT_POSITIONS_TIMERWISE_START", L"CLIENT_POSITIONS_TIMERWISE",  &mapNetPositionClientWise_ThreadWise);
+				
 			}	
+			m_mutex_ClientList.Lock();
+				st_Check.m_fetch_client_position_timerwise = 0;
+				m_ClientContext.SetAt(strkey, st_Check);
+			m_mutex_ClientList.Unlock();
 		}
 		//End Of Calculating Data For Client Netposition
-
-
-
-
-
-
-
-
-
-
-
 
 		///////////Sending Netposition Data First Time
 		if (st_Check.m_ClientWiseNetPositionStart_FirstTime==1)
 		{
-			CMap<CString, LPCTSTR, int, int&> m_subscribedcolumn_Local;
-			int  totalColumns = st_Check.m_clientrequests_List.Total();
-			for (int ci = 0; ci < totalColumns; ci++)
-			{
-				CString  m_ColumnsData = L"";
-				m_ColumnsData = st_Check.m_clientrequests_List[ci];
-				if (m_ColumnsData.Find(L":FETCH_CLIENT_POSITIONS:") >= 0)
-				{
-					int activate = 1;
-					m_subscribedcolumn_Local.SetAt(m_ColumnsData, activate);
-				}
-				//CStaticClass::m_logfile.LogEvent(m_ColumnsData);
-			}
-			////CStaticClass::m_logfile.LogEvent(L"L26");						
-			//Getting PreNetQty				
-				CString returnval=L"";
-				HRESULT hr=NULL ;
-				CCommand<CAccessor<CNetpositionPreQtyTable>> data_table;								
-				if(!SUCCEEDED(hr))
-				{
-					return ;
-				}
-				CString   strCommand=L"";
-				strCommand.Format(L"orika_GetClientPreviousNetQty '%I64u';",st_Check.m_netPositionTime);	
-				
-				//CStaticClass::m_mutex_order.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"Orderlock_66");
-				CSession m_tempSession;
-				m_tempSession.Open(CStaticClass::connection);
-				hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
-				if(FAILED(hr))
-				{
-					m_tempSession.Close();
-					//CStaticClass::m_mutex_order.Unlock();					
-					////CStaticClass::m_logfile.LogEvent(L"UL13");
-				}
-				int i=0;	
-				CString m_login=L"";	
-				CString m_symbol=L"";
-				double m_volume=0;
-	
-				CString tmpstr=L"";
-				int row_count=0;
-				//hr=data_table.MoveNext();
-
-				struct stPrevolume
-				{
-					wchar_t m_login[30];
-					wchar_t m_symbol[32];
-					double m_volume;
-				};
-				CMap<CString, LPCTSTR,stPrevolume,stPrevolume&> preVolumeMap;
-				
-				m_mutex_ClientList.Lock();
-				m_ClientContext.Lookup(strkey, st_Check);
-				st_Check.m_preQtyLoginSymbolWise.Clear();
-
-				int m_dashboard_SplitData = 0;
-				while(hr=data_table.MoveNext()==S_OK)
-				{		
-					m_login=data_table.m_login;	
-					m_symbol=data_table.m_symbol;
-					m_volume=data_table.m_volume;	   					
-
-					stPrevolume m_stTempPreqty={};
-					CMTStr::Copy(m_stTempPreqty.m_login,m_login);
-					CMTStr::Copy(m_stTempPreqty.m_symbol ,m_symbol);
-					m_stTempPreqty.m_volume=m_volume;
-
-					CString m_login_symbolKey=L"";
-					m_login_symbolKey.Format(L"%s:%s",m_login,m_symbol);
-					preVolumeMap.SetAt(m_login_symbolKey,m_stTempPreqty);
-
-					CStaticClass::stPrevolumeClientWise m_prestCS = {};
-					CMTStr::Copy(m_prestCS.m_login, m_login);
-					CMTStr::Copy(m_prestCS.m_symbol, m_symbol);
-					m_prestCS.m_volume = m_volume;
-					st_Check.m_preQtyLoginSymbolWise.Add(&m_prestCS);					
-				}
-				//For Update Pre Qty in m_ClientContext
-				
+			//int  totalColumns = st_Check.m_clientrequests_List.Total();
+			
+			sendClientPosition_Insert(client, m_activeClient, strUserID, strkey, L"FETCH_CLIENT_POSITIONS", L"CLIENT_POSITION",  &mapNetPositionClientWise_ThreadWise);
+			
+			m_mutex_ClientList.Lock();
+				st_Check.m_ClientWiseNetPositionStart_FirstTime = 0;
 				st_Check.m_ClientWiseNetPositionStart = 1;
 				m_ClientContext.SetAt(strkey, st_Check);
-				m_mutex_ClientList.Unlock();
-
-				data_table.Close();
-				m_tempSession.Close();
-				//CStaticClass::m_mutex_order.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_66");
-
-				
-				
-
-			//End of Getting PreNetqty
-
-			int jsonType = 0;
-
-			POSITION pos = mapNetPositionClientWise_ThreadWise.GetStartPosition ();	
-			int total_count = mapNetPositionClientWise_ThreadWise.GetSize();
-			CString strUpdateData=L"";
-			int firstCheck=0;
-			CString str_columnJson=L"";
-			CString str_FinalJsonUpdate=L"";
-							
-				StringBuffer s;
-				Writer<StringBuffer> writer(s);
-				writer.StartObject();
-				writer.Key("type");
-				
-
-				writer.String("CLIENT_POSITION");
-				
-				
-				m_mutex_ClientList.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"1");
-				st_Check = {};
-				m_ClientContext.Lookup(strkey, st_Check);
-				st_Check.m_ClientWiseNetPositionStart_FirstTime = 0;
-				
-				
-				st_Check.m_brokerSendingStart_FirstTime_Call = 0;
-				st_Check.m_subbrokerSendingStart_FirstTime_Call = 0;
-
-				if (st_Check.m_firstTimeDataSended == 0 || st_Check.m_refreshClientPosition==1)
-				{
-					writer.Key("insert");
-				}
-				else
-				{
-					writer.Key("updatekey");
-					writer.StartArray();
-					writer.String("login");
-					writer.String("symbol");
-					writer.EndArray();
-					writer.Key("update");					
-					jsonType = 1;
-				}
-				st_Check.m_firstTimeDataSended = 1;
-				st_Check.m_refreshClientPosition = 0;
-				m_ClientContext.SetAt(strkey, st_Check);
-				m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"U1");
-				
-				writer.StartArray();
-				int dataSendingFlag=0;				
-				while (pos != NULL)
-				{
-					//////CStaticClass::m_logfile.LogEvent(L"Data 5");
-					dataSendingFlag = 1;
-
-
-					CString strKey = L"";
-					CStaticClass::st_netpositionClientWise st_tmpData = {};
-
-					CStaticClass::m_mutex_Tick.Lock();
-					mapNetPositionClientWise_ThreadWise.GetNextAssoc(pos, strKey, st_tmpData);
-					CString    m_login = st_tmpData.m_login;
-					CString    m_name = st_tmpData.m_name;
-					CString    m_symbol = st_tmpData.m_symbol;
-					double     m_volume = *st_tmpData.m_volume;
-
-					stPrevolume m_stTempPreqty = {};
-					CString m_login_symbolKey = L"";
-					m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
-					preVolumeMap.Lookup(m_login_symbolKey, m_stTempPreqty);
-					
-
-					double     m_previousvolume = m_stTempPreqty.m_volume;
-					double     m_difference = m_volume - m_previousvolume;
-					double     m_average = *st_tmpData.m_average;
-					st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
-					
-					double     m_clientbalance = *st_tmpData.m_clientbalance;
-					double     m_clientnetamount = *st_tmpData.m_clientnetamount;
-
-					double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
-					double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
-					double     m_clientnettotal = *st_tmpData.m_clientnettotal;
-					double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
-					CString    m_subbroker = st_tmpData.m_subbroker;
-					CString    m_broker = st_tmpData.m_broker;
-					
-					double     m_extravolume = *st_tmpData.m_extravolume;
-					double     m_freemargin = *st_tmpData.m_freemargin;
-					double     m_multi = *st_tmpData.m_multi;
-
-
-
-					CString     m_Company = st_tmpData.m_company;;
-					
-					double     m_companyvolume = *st_tmpData.m_companyvolume;
-					double     m_brokervolume = *st_tmpData.m_brokervolume;
-					double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
-					double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
-					double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
-
-					double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
-					double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
-					
-					
-					double     m_clientexposure = (*st_tmpData.m_clientexposure) /10000000;
-					double     m_Companyexposure = (*st_tmpData.m_companyexposure) /10000000;
-					double     m_brokerexposure = (*st_tmpData.m_brokerexposure) /10000000;
-					double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) /10000000;
-					m_clientexposure = abs(m_clientexposure);
-					m_Companyexposure = abs(m_Companyexposure);
-					m_brokerexposure = abs(m_brokerexposure);
-					m_subbrokerexposure = abs(m_subbrokerexposure);
-					
-					double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
-					double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
-					double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
-					double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
-					double     m_clientbalancepl = *st_tmpData.m_clientbalance;
-					double     m_companybalancepl = *st_tmpData.m_companybalance;
-					double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
-					double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
-					double     m_clientplnet = *st_tmpData.m_clientnetamount;
-					double     m_companyplnet = *st_tmpData.m_companyNetAmount;
-					double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
-					double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
-					double     m_clientpatti = 100;
-					double     m_companypatti = *st_tmpData.m_companyRatio;
-					double     m_brokerpatti = *st_tmpData.m_brokerRatio;
-					double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
-					double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
-					double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
-					double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
-					double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
-
-					double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
-
-					double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
-					double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
-					double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount)* m_companypatti)/100;
-
-					double     m_CreditLimit = *st_tmpData.m_creditLimit;
-
-					/*double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
-					double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
-					double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;*/
-					
-					CString  m_Exchange = st_tmpData.m_exchange;
-					CString  m_international= st_tmpData.m_international;
-					CString  m_sector= st_tmpData.m_sector;
-					CString  m_industry= st_tmpData.m_industry;
-					double   m_rmp = st_tmpData.m_rmp;
-					double   m_QtyMulti = st_tmpData.m_QtyMulti;
-					CString  m_page= st_tmpData.m_page;
-					CString  m_categary= st_tmpData.m_categary;
-					double   m_rm = st_tmpData.m_rm;	
-					double m_lpratio = st_tmpData.m_LpRatio;
-					double m_lpvolume = st_tmpData.m_LpVolume;
-					CString m_commoditygroup = st_tmpData.m_commoditygroup;
-					double   m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;					
-					CString  m_buySell= st_tmpData.m_buySell;															
-					CString  m_debitCredit= st_tmpData.m_debitCredit;					
-					CString  m_currencybase = st_tmpData.m_currencybase;
-
-
-					
-					//m_login_symbolKey
-					CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
-					CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
-					double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
-					double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
-					m_TotalTradedTO = m_TotalTradedTO / 10000000;
-
-
-					double m_TotalTradedLot_Buy = s_TLT.m_TotalBuyLot;
-					double m_TotalTradedLot_Sell = s_TLT.m_TotalSellLot;
-
-
-					CStaticClass::m_mutex_Tick.Unlock();
-					writer.StartObject();
-					
-					if (jsonType == 0)
-					{
-						CString m_loginColumnKey = L"";
-						int m_columnSubs = 0;
-						CStaticClass::m_mutexcolumnSubs.Lock();
-												
-						writer.Key("login");
-						string sslogin = string(CT2CA(m_login));
-						const char* stlogin = sslogin.c_str();
-						writer.String(stlogin);
-						
-						m_columnSubs = 0;						
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"name", m_ClientPositionRequestType);
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("name");
-							string ssname = string(CT2CA(m_name));
-							const char* stName = ssname.c_str();
-							writer.String(stName);
-						}
-						writer.Key("symbol");
-						string sssymbol = string(CT2CA(m_symbol));
-						const char* stsymbol = sssymbol.c_str();
-						writer.String(stsymbol);
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("previousvolume");
-							writer.Double(m_previousvolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("difference");
-							writer.Double(m_difference);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("volume");
-							writer.Double(m_volume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"average", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("average");
-							writer.Double(m_average);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("lastrate");
-							writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientbalance");
-							writer.Double(m_clientbalance);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientnetamount");
-							writer.Double(m_clientnetamount);
-						}
-						CString strLogString = L"";
-						//strLogString.Format(L"%s,%s,%.2lf,%.2lf,%.2lf", m_login, m_symbol, *st_tmpData.m_ClientGrossAmount, *st_tmpData.m_clientBrokarage, *st_tmpData.m_clientnetamount);
-						////CStaticClass::m_logfile.LogEvent(strLogString);
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientplnet");
-							writer.Double(m_clientplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companyplnet");
-							writer.Double(m_companyplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerplnet");
-							writer.Double(m_brokerplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerplnet");
-							writer.Double(m_subbrokerplnet);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"maxallotedqty", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("maxallotedqty");
-							writer.Double(m_maxallotedqty);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("totaltradedlot");
-							writer.Double(m_TotalTradedLot);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("totaltradedto");
-							writer.Double(m_TotalTradedTO);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"company", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("company");
-							string sscompany = string(CT2CA(m_Company));
-							const char* stcompany = sscompany.c_str();
-							writer.String(stcompany);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbroker", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbroker");
-							string sssubbroker = string(CT2CA(m_subbroker));
-							const char* stsubbroker = sssubbroker.c_str();
-							writer.String(stsubbroker);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"broker", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("broker");
-							string ssbroker = string(CT2CA(m_broker));
-							const char* stbroker = ssbroker.c_str();
-							writer.String(stbroker);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"extravolume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("extravolume");
-							writer.Double(m_extravolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"freemargin", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("freemargin");
-							writer.Double(m_freemargin);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companyvolume");
-							writer.Double(m_companyvolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokervolume");
-							writer.Double(m_brokervolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokervolume");
-							writer.Double(m_subbrokervolume);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientbrokerage");
-							writer.Double(m_clientbrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerbrokerage");
-							writer.Double(m_brokerbrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerbrokerage");
-							writer.Double(m_subbrokerbrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companybrokerage");
-							writer.Double(m_companybrokerage);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientexposure");
-							writer.Double(m_clientexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("Companyexposure");
-							writer.Double(m_Companyexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerexposure");
-							writer.Double(m_brokerexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerexposure");
-							writer.Double(m_subbrokerexposure);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientfloatingpl");
-							writer.Double(m_clientfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companyfloatingpl");
-							writer.Double(m_companyfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerfloatingpl");
-							writer.Double(m_brokerfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerfloatingpl");
-							writer.Double(m_subbrokerfloatingpl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientbalancepl");
-							writer.Double(m_clientbalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companybalancepl");
-							writer.Double(m_companybalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerbalancepl");
-							writer.Double(m_brokerbalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerbalancepl");
-							writer.Double(m_subbrokerbalancepl);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientpatti");
-							writer.Double(m_clientpatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companypatti");
-							writer.Double(m_companypatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerpatti");
-							writer.Double(m_brokerpatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerpatti");
-							writer.Double(m_subbrokerpatti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companybrokeragerate");
-							writer.Double(m_companybrokeragerate);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokerbrokeragerate");
-							writer.Double(m_brokerbrokeragerate);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokerbrokeragerate");
-							writer.Double(m_subbrokerbrokeragerate);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientbrokeragerate");
-							writer.Double(m_clientbrokeragerate);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("clientgrossamount");
-							writer.Double(m_clientgrossamount);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("brokergrossamount");
-							writer.Double(m_brokergrossamount);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("subbrokergrossamount");
-							writer.Double(m_subbrokergrossamount);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("companygrossamount");
-							writer.Double(m_companygrossamount);
-						}
-						
-						int m_TotalNo_Of_StopBuy = 0;						
-						int m_TotalNo_Of_Cancelled_StopBuy = 0;
-						int m_TotalNo_Of_Passed_StopBuy = 0;
-						int m_TotalNo_Of_Pending_StopBuy = 0;
-
-						int m_TotalNo_Of_StopSell = 0;
-						int m_TotalNo_Of_Cancelled_StopSell = 0;						
-						int m_TotalNo_Of_Passed_StopSell = 0;
-						int m_TotalNo_Of_Pending_StopSell = 0;
-
-						int m_TotalNo_Of_BuyLimit = 0;
-						int m_TotalNo_Of_Cancelled_BuyLimit = 0;
-						int m_TotalNo_Of_Passed_BuyLimit = 0;
-						int m_TotalNo_Of_Pending_BuyLimit = 0;
-
-						int m_TotalNo_Of_SellLimit = 0;
-						int m_TotalNo_Of_Cancelled_SellLimit = 0;
-						int m_TotalNo_Of_Passed_SellLimit = 0;
-						int m_TotalNo_Of_Pending_SellLimit = 0;
-
-
-
-						int m_TotalNo_Of_MarketDeal = 0;
-						int m_TotalNo_Of_LimitDeal = 0;
-						int m_TotalNo_Of_StopLimitDeal = 0;
-
-						
-
-						
-						CString strloginSymbolKey = L"";
-						//strloginSymbolKey.Format(L"%I64u:%s:%d", m_login, m_symbol, m_stOrder_Check.m_type);
-						strloginSymbolKey.Format(L"%s:%s:4", m_login, m_symbol);						
-						st_OrderCount m_stOrderCountdata = {};
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCountdata);
-						m_TotalNo_Of_StopBuy = m_stOrderCountdata.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_StopBuy = m_stOrderCountdata.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_StopBuy = m_stOrderCountdata.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_StopBuy = m_TotalNo_Of_StopBuy - m_TotalNo_Of_Cancelled_StopBuy - m_TotalNo_Of_Passed_StopBuy;
-
-						m_stOrderCountdata = {};
-						strloginSymbolKey.Format(L"%s:%s:5", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCountdata);
-						m_TotalNo_Of_StopSell = m_stOrderCountdata.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_StopSell = m_stOrderCountdata.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_StopSell = m_stOrderCountdata.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_StopSell = m_TotalNo_Of_StopSell - m_TotalNo_Of_Cancelled_StopSell - m_TotalNo_Of_Passed_StopSell;
-
-						m_stOrderCountdata = {};
-						strloginSymbolKey.Format(L"%s:%s:2", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCountdata);
-						m_TotalNo_Of_BuyLimit = m_stOrderCountdata.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_BuyLimit = m_stOrderCountdata.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_BuyLimit = m_stOrderCountdata.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_BuyLimit = m_TotalNo_Of_BuyLimit - m_TotalNo_Of_Cancelled_BuyLimit - m_TotalNo_Of_Passed_BuyLimit;
-
-						m_stOrderCountdata = {};
-						strloginSymbolKey.Format(L"%s:%s:3", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCountdata);
-						m_TotalNo_Of_SellLimit = m_stOrderCountdata.m_TotalOrder;
-						m_TotalNo_Of_Cancelled_SellLimit = m_stOrderCountdata.m_TotalCancelledOrder;
-						m_TotalNo_Of_Passed_SellLimit = m_stOrderCountdata.m_TotalExecutedOrder;
-						m_TotalNo_Of_Pending_SellLimit = m_TotalNo_Of_SellLimit - m_TotalNo_Of_Cancelled_SellLimit - m_TotalNo_Of_Passed_SellLimit;
-						
-						int totalMarketBuyDeal = 0;
-						int totalMarketSellDeal = 0;
-						m_stOrderCountdata = {};
-						strloginSymbolKey.Format(L"%s:%s:0", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCountdata);
-						totalMarketBuyDeal = m_stOrderCountdata.m_TotalOrder;
-
-
-						m_stOrderCountdata = {};
-						strloginSymbolKey.Format(L"%s:%s:1", m_login, m_symbol);
-						CStaticClass::m_OrderCountMap.Lookup(strloginSymbolKey, m_stOrderCountdata);
-						totalMarketSellDeal = m_stOrderCountdata.m_TotalOrder;
-
-
-						m_TotalNo_Of_MarketDeal = totalMarketBuyDeal+ totalMarketSellDeal;
-						m_TotalNo_Of_LimitDeal = m_TotalNo_Of_SellLimit+ m_TotalNo_Of_BuyLimit;
-						m_TotalNo_Of_StopLimitDeal = m_TotalNo_Of_StopBuy+ m_TotalNo_Of_StopSell;
-
-
-
-
-
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopBuy", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_StopBuy");
-							writer.Int(m_TotalNo_Of_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopBuy", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Cancelled_StopBuy");
-							writer.Int(m_TotalNo_Of_Cancelled_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopBuy", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Passed_StopBuy");
-							writer.Int(m_TotalNo_Of_Passed_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopBuy", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Pending_StopBuy");
-							writer.Int(m_TotalNo_Of_Pending_StopBuy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopSell", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_StopSell");
-							writer.Int(m_TotalNo_Of_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_StopSell", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Cancelled_StopSell");
-							writer.Int(m_TotalNo_Of_Cancelled_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_StopSell", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Passed_StopSell");
-							writer.Int(m_TotalNo_Of_Passed_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_StopSell", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Pending_StopSell");
-							writer.Int(m_TotalNo_Of_Pending_StopSell);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_BuyLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_BuyLimit");
-							writer.Int(m_TotalNo_Of_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_BuyLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Cancelled_BuyLimit");
-							writer.Int(m_TotalNo_Of_Cancelled_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_BuyLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Passed_BuyLimit");
-							writer.Int(m_TotalNo_Of_Passed_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_BuyLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Pending_BuyLimit");
-							writer.Int(m_TotalNo_Of_Pending_BuyLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_SellLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_SellLimit");
-							writer.Int(m_TotalNo_Of_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Cancelled_SellLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Cancelled_SellLimit");
-							writer.Int(m_TotalNo_Of_Cancelled_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Passed_SellLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Passed_SellLimit");
-							writer.Int(m_TotalNo_Of_Passed_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_Pending_SellLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_Pending_SellLimit");
-							writer.Int(m_TotalNo_Of_Pending_SellLimit);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_MarketDeal", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_MarketDeal");
-							writer.Int(m_TotalNo_Of_MarketDeal);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_LimitDeal", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_LimitDeal");
-							writer.Int(m_TotalNo_Of_LimitDeal);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalNo_Of_StopLimitDeal", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalNo_Of_StopLimitDeal");
-							writer.Int(m_TotalNo_Of_StopLimitDeal);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Buy", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalTradedLot_Buy");
-							writer.Double(m_TotalTradedLot_Buy);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"TotalTradedLot_Sell", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("TotalTradedLot_Sell");
-							writer.Double(m_TotalTradedLot_Sell);
-						}
-
-						CString  strLoginSymbolGroup = L"";
-						strLoginSymbolGroup.Format(L"%s:%s", m_login, m_symbol);
-						CStaticClass::st_BadTradeGoodTrade m_st_BadTradeGoodTrade = {};
-						CStaticClass::m_BadTradeGoodTrade.Lookup(strLoginSymbolGroup, m_st_BadTradeGoodTrade);
-						double m_badtrade = m_st_BadTradeGoodTrade.m_BadTrade;
-						double m_TotalTrade = m_st_BadTradeGoodTrade.m_TotalTrade;
-						double m_badtradePer = 0;
-						if (m_badtrade != 0)
-						{
-							m_badtradePer = (m_badtrade / m_TotalTrade) * 100;
-						}
-						double m_badtradeIgnorePosition = m_st_BadTradeGoodTrade.m_badTradeIgnoringPosition;
-						double m_badTradeIPCper = 0; 
-						if (m_badtradeIgnorePosition != 0)
-						{
-							m_badTradeIPCper = (m_badtradeIgnorePosition / m_TotalTrade) * 100;
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeper", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("badtradeper");
-							writer.Double(m_badtradePer);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipcper", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("badtradeipcper");
-							writer.Double(m_badTradeIPCper);
-						}
-
-						int m_totaltradeipc = m_st_BadTradeGoodTrade.m_TradeIgnoringPosition;
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradeipc", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("totaltradeipc");
-							writer.Double(m_totaltradeipc);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltrade", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("totaltrade");
-							writer.Double(m_TotalTrade);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtradeipc", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("badtradeipc");
-							writer.Double(m_badtradeIgnorePosition);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"badtrade", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("badtrade");
-							writer.Double(m_badtrade);
-						}
-
-
-						/*CString strLogVal = L"";
-						strLogVal.Format(L"Login:%s Amount:%.2lf Debit/Credit:%s Volume:%.2lf GE:%.4lf", m_login, m_clientplnet, m_debitCredit, m_volume, m_clientexposure);
-						//CStaticClass::m_logfile.LogEvent(strLogVal);*/
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"buysell", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("buysell");
-							/*string ssbuySeleeeeeeeeeeeeel = string(CT2CA(m_buySell));
-							const char* strbuySell = ssbuySell.c_str();*/
-							if (m_volume < 0)
-							{
-								writer.String("Sell");
-							}
-							else
-							{
-								writer.String("Buy");
-							}
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"debitcredit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("debitcredit");
-							/*string ssdebitCredit = string(CT2CA(m_debitCredit));
-							const char* strdebitCredit = ssdebitCredit.c_str();*/
-							if (m_clientplnet < 0)
-							{
-								writer.String("Debit");
-							}
-							else
-							{
-								writer.String("Credit");
-							}
-
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"exchange", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("exchange");
-							string ssexchange = string(CT2CA(m_Exchange));
-							const char* strexchange = ssexchange.c_str();
-							writer.String(strexchange);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"international", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("international");
-							string ssinternational = string(CT2CA(m_international));
-							const char* strinternational = ssinternational.c_str();
-							writer.String(strinternational);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sector", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("sector");
-							string sssector = string(CT2CA(m_sector));
-							const char* strsector = sssector.c_str();
-							writer.String(strsector);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"industry", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("industry");
-							string ssindustry = string(CT2CA(m_industry));
-							const char* strindustry = ssindustry.c_str();
-							writer.String(strindustry);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"page", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("page");
-							string sspage = string(CT2CA(m_page));
-							const char* strpage = sspage.c_str();
-							writer.String(strpage);
-						}
-						
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"categary", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("categary");
-							string sscategary = string(CT2CA(m_categary));
-							const char* strcategary = sscategary.c_str();
-							writer.String(strcategary);
-						}
-						
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("rm");
-							writer.Double(m_rm);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:",strUserID, L"lpratio", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("lpratio");
-							writer.Double(m_lpratio);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:",strUserID, L"lpvolume", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("lpvolume");
-							writer.Double(m_lpvolume);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"commoditygroup", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1)
-						{
-							writer.Key("commoditygroup");
-							string sscommoditygroup = string(CT2CA(m_commoditygroup));
-							const char* strcommoditygroup = sscommoditygroup.c_str();
-							writer.String(strcommoditygroup);
-						}
-
-
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("qtyaftermulti");
-							writer.Double(m_qtyAfterMulti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rmp", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("rmp");
-							writer.Double(m_rmp);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtymulti", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("qtymulti");
-							writer.Double(m_QtyMulti);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"currencybase", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("currencybase");
-							string sscurrencybase = string(CT2CA(m_currencybase));
-							const char* strcurrencybase = sscurrencybase.c_str();
-							writer.String(strcurrencybase);
-						}
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"creditLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							writer.Key("creditLimit");
-							writer.Double(m_CreditLimit);
-						}
-
-						CStaticClass::stConfig m_stConfig = {};												
-						CString loginSymbolKey = L"";						
-						CStaticClass::m_mutex_LimitConfig.Lock();
-						CString SymbolGroup = L"";
-						if (m_symbol.GetLength() >= 5)
-						{
-							SymbolGroup = m_symbol.Mid(0, m_symbol.GetLength() - 3);
-						}
-						else
-						{
-							SymbolGroup = m_symbol;
-						}
-						int limitValue = 0;
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"BuyPositionLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							loginSymbolKey.Format(L"%s:%s:1", m_login, SymbolGroup);
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("BuyPositionLimit");
-							writer.Int(limitValue);
-						}
-							
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"SellPositionLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							loginSymbolKey.Format(L"%s:%s:2", m_login, SymbolGroup);
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("SellPositionLimit");
-							writer.Int(limitValue);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolBuyPositionLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							loginSymbolKey.Format(L"%s:%s:3", m_login, L"SHARE");
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("AllSymbolBuyPositionLimit");
-							writer.Int(limitValue);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllSymbolSellPositionLimit", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							loginSymbolKey.Format(L"%s:%s:4", m_login, L"SHARE");
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("AllSymbolSellPositionLimit");
-							writer.Int(limitValue);
-						}
-
-						m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"AllPositionLimitLoginwise", m_ClientPositionRequestType);
-						m_columnSubs = 0;
-						m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-						if (m_columnSubs == 1 )
-						{
-							loginSymbolKey.Format(L"%s:%s:5", m_login, L"SHARE");
-							m_stConfig = {};
-							CStaticClass::LimitConfig.Lookup(loginSymbolKey, m_stConfig);
-							limitValue = m_stConfig.Limit;
-							writer.Key("AllPositionLimitLoginwise");
-							writer.Int(limitValue);
-						}
-						CStaticClass::m_mutex_LimitConfig.Unlock();
-
-
-
-
-
-						CStaticClass::m_mutexcolumnSubs.Unlock();
-
-
-					}
-					else
-					{		
-						writer.Key("login");
-						string sslogin = string(CT2CA(m_login));
-						const char* stlogin = sslogin.c_str();
-						writer.String(stlogin);						
-						writer.Key("symbol");
-						string sssymbol = string(CT2CA(m_symbol));
-						const char* stsymbol = sssymbol.c_str();
-						writer.String(stsymbol);
-						writer.Key("previousvolume");
-						writer.Double(m_previousvolume);
-						writer.Key("difference");
-						writer.Double(m_difference);
-						writer.Key("volume");
-						writer.Double(m_volume);						
-					}
-					writer.EndObject();							
-
-
-					if (dataSendingFlag == 1)
-					{
-						string strforsend = "";
-						str_FinalJsonUpdate = s.GetString();
-						int dataSize = str_FinalJsonUpdate.GetLength();
-						
-						//if (dataSize >= 1500)
-						if (dataSize >= 1500000)
-						{
-							writer.EndArray();
-							writer.EndObject();
-						
-							str_FinalJsonUpdate = s.GetString();
-							////CStaticClass::m_logfile.LogEvent(L"Test");
-							//CStaticClass::m_logfile.LogEvent(str_FinalJsonUpdate);
-							strforsend = CT2A(str_FinalJsonUpdate.GetString());
-							SendDataToClient(client, strforsend, strkey, m_activeClient);
-
-							s.Clear();
-							writer.Flush();
-
-							writer.Reset(s);
-
-							writer.StartObject();
-							writer.Key("type");
-							
-							writer.String("CLIENT_POSITION");
-							
-							writer.Key("insert");
-							writer.StartArray();
-							dataSendingFlag = 0;
-						}
-					}
-
-				}
-			
-				if (dataSendingFlag==1)
-				{
-					writer.EndArray();
-					writer.EndObject();
-					string strforsend="";
-					str_FinalJsonUpdate=s.GetString();
-					strforsend=CT2A(str_FinalJsonUpdate.GetString());
-					SendDataToClient(client, strforsend, strkey, m_activeClient);
-					dataSendingFlag=0;
-				}
-			
-			
+			m_mutex_ClientList.Unlock();
 		}
 		//End Of Calculating Data For Client Netposition
-
+		
 		CStaticClass::updatedTickSymbolArray tmpArray;
 
 		CStaticClass::updatedTickSymbolArray tmpArrayForSymbolPosition;
@@ -4740,11 +5951,12 @@ void CStaticClass::calculateClientWiseAllPosition()
 
 		TMTArray<st_netpositionClientWise> tmpNewpositionSymbolWise;
 		
-		////CStaticClass::m_logfile.LogEvent(L"L1");
+		////(L"L1");
 		//Sleep(500);
 		m_mutex_ClientList.Lock();
-		//CStaticClass::m_logfile.LogEvent(L"102");
-		////CStaticClass::m_logfile.LogEvent(L"L1 Locked");
+		
+		//(L"102");
+		////(L"L1 Locked");
 			st_ClientContext st_Check_Update={};
 			m_ClientContext.Lookup(strkey,st_Check_Update);	
 			
@@ -4760,10 +5972,12 @@ void CStaticClass::calculateClientWiseAllPosition()
 			st_Check_Update.m_updatedTickSymbolArray.Clear();	
 			
 			st_Check_Update.m_updatedVolumeSymbolArray.Clear();
-
+			//m_newNetPositionAdded
 			tmpNewposition.Assign(st_Check_Update.m_newNetPositionAdded);
+			//m_newNetPositionUpdated
 			tmpNewposition_Updated.Assign(st_Check_Update.m_newNetPositionUpdated);
 
+			int test_count = tmpNewposition_Updated.Total();
 			
 			int newposCount=tmpNewposition.Total();
 			for (int n=0;n<newposCount;n++)
@@ -4776,8 +5990,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 				CMTStr::Copy(st_tickSymbol.m_symbol, symbol);
 				tmpArray.Add(&st_tickSymbol);
 			}
-
-			 newposCount=tmpNewposition_Updated.Total();
+			newposCount=tmpNewposition_Updated.Total();
 			for (int n=0;n<newposCount;n++)
 			{
 				st_netpositionClientWise mtmpst={};
@@ -4807,1133 +6020,58 @@ void CStaticClass::calculateClientWiseAllPosition()
 				}
 			}
 
-
+			
 			tmpNewpositionSymbolWise.Assign(st_Check_Update.m_newNetPositionAdded);			
 			
 			st_Check_Update.m_newNetPositionAdded.Clear();
 			st_Check_Update.m_newNetPositionUpdated.Clear();
 			m_ClientContext.SetAt(strkey,st_Check_Update);	
 		m_mutex_ClientList.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"U102");
-		
+		//(L"U102");		
 		//Sending Client Wise Netposition Updated Data
 		if (st_Check.m_ClientWiseNetPositionStart==1)
 		{
 			//Sending Pre Qty
 			if(st_Check.m_getPreQtyUpdate==1)	
-			{		
+			{	
 				
-				m_mutex_ClientList.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"103");
-				st_Check = {};
+				sendClientPosition_Update(client, m_activeClient, strUserID, strkey, L"FETCH_CLIENT_POSITIONS", L"CLIENT_POSITION", &mapNetPositionClientWise_ThreadWise);
+				
+				m_mutex_ClientList.Lock();				
+					st_Check = {};
 					m_ClientContext.Lookup(strkey,st_Check);
 					st_Check.m_getPreQtyUpdate=0;					
 					m_ClientContext.SetAt(strkey,st_Check);
 				m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"U103");
-
-				//Getting PreNetQty				
-				CString returnval=L"";
-				HRESULT hr=NULL ;
-				CCommand<CAccessor<CNetpositionPreQtyTable>> data_table;								
-				if(!SUCCEEDED(hr))
-				{
-					return ;
-				}
-				CString   strCommand=L"";
-				strCommand.Format(L"orika_GetClientPreviousNetQty '%I64u';",st_Check.m_netPositionTime);	
 				
-				//CStaticClass::m_mutex_order.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"L14");
-				CSession m_tempSession;
-				m_tempSession.Open(CStaticClass::connection);
-				hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
-				if(FAILED(hr))
-				{
-					m_tempSession.Close();
-					//CStaticClass::m_mutex_order.Unlock();					
-					//CStaticClass::m_logfile.LogEvent(L"UL14");
-				}
-				int i=0;	
-				CString m_login=L"";	
-				CString m_symbol=L"";
-				double m_volume=0;
-	
-				CString tmpstr=L"";
-				int row_count=0;
-				//hr=data_table.MoveNext();
-
-				struct stPrevolume
-				{
-					wchar_t m_login[30];
-					wchar_t m_symbol[32];
-					double m_volume;
-				};
-				CMap<CString, LPCTSTR,stPrevolume,stPrevolume&> preVolumeMap;
-				
-
-				while(hr=data_table.MoveNext()==S_OK)
-				{		
-					m_login=data_table.m_login;	
-					m_symbol=data_table.m_symbol;
-					m_volume=data_table.m_volume;	   					
-
-					stPrevolume m_stTempPreqty={};
-					CMTStr::Copy(m_stTempPreqty.m_login,m_login);
-					CMTStr::Copy(m_stTempPreqty.m_symbol ,m_symbol);
-					m_stTempPreqty.m_volume=m_volume;
-
-					CString m_login_symbolKey=L"";
-					m_login_symbolKey.Format(L"%s:%s",m_login,m_symbol);
-					preVolumeMap.SetAt(m_login_symbolKey,m_stTempPreqty);
-				}
-				data_table.Close();
-				m_tempSession.Close();
-				//CStaticClass::m_mutex_order.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"UL14");
-			//End of Getting PreNetqty
-
-
-
-
-
-
-				StringBuffer s;
-				Writer<StringBuffer> writer(s);
-				writer.StartObject();
-				writer.Key("type");
-				writer.String("CLIENT_POSITION");
-				/*writer.Key("sendingtime");
-				writer.String(getcurrentTime().c_str());*/
-				writer.Key("updatekey");
-				writer.StartArray();
-				writer.String("login");
-				writer.String("symbol");
-				writer.EndArray();
-				writer.Key("update");
-				writer.StartArray();
-				int dataSendingFlag=0;
-
-				pos = mapNetPositionClientWise_ThreadWise.GetStartPosition();
-				while (pos != NULL) 
-				{
-					
-					//////CStaticClass::m_logfile.LogEvent(L"Data 5");
-
-					dataSendingFlag=1;
-
-					CString strKey=L"";
-					CStaticClass::st_netpositionClientWise st_tmpData={};
-
-					CStaticClass::m_mutex_Tick.Lock();
-					mapNetPositionClientWise_ThreadWise.GetNextAssoc(pos,strKey,st_tmpData);								
-					CString    m_login=st_tmpData.m_login;
-					CString    m_name=st_tmpData.m_name;
-					CString    m_symbol=st_tmpData.m_symbol;
-					double     m_volume=*st_tmpData.m_volume;
-
-					stPrevolume m_stTempPreqty={};
-					CString m_login_symbolKey=L"";
-					m_login_symbolKey.Format(L"%s:%s",m_login,m_symbol);
-					preVolumeMap.Lookup(m_login_symbolKey,m_stTempPreqty);
-
-					double     m_previousvolume=m_stTempPreqty.m_volume ; 
-					double     m_difference=m_volume-m_previousvolume;
-					
-					CStaticClass::m_mutex_Tick.Unlock();
-						
-					writer.StartObject();
-
-					writer.Key("login");
-					string sslogin = string(CT2CA(m_login));
-					const char* stlogin=sslogin.c_str();
-					writer.String(stlogin);
-					
-					writer.Key("symbol");				
-					string sssymbol = string(CT2CA(m_symbol));
-					const char* stsymbol=sssymbol.c_str();				
-					writer.String(stsymbol);
-					writer.Key("previousvolume");
-					writer.Double(m_previousvolume);
-					writer.Key("difference");
-					writer.Double(m_difference);																	
-					writer.EndObject();							
-				}
-			
-				if (dataSendingFlag==1)
-				{
-					writer.EndArray();
-					writer.EndObject();
-					string strforsend="";
-					CString str_FinalJsonUpdate=L"";
-					str_FinalJsonUpdate=s.GetString();
-					strforsend=CT2A(str_FinalJsonUpdate.GetString());
-					SendDataToClient(client, strforsend, strkey, m_activeClient);
-					dataSendingFlag=0;
-				}
+				//(L"U103");				
 			}
 			//End Of Sending Pre Qty
 
 			//Sending New Arrived rows for a position
-
-			int newInsertPosCount= tmpNewposition.Total();					
-			CString strUpdateData=L"";
-			int firstCheck=0;
-			CString str_columnJson=L"";
-			CString str_FinalJsonUpdate=L"";
-			StringBuffer s;
-			Writer<StringBuffer> writer(s);
-			if (newInsertPosCount > 0)
-			{				
-				writer.StartObject();
-				writer.Key("type");
-				writer.String("CLIENT_POSITION");
-				writer.Key("insert");
-				writer.StartArray();
-			}
-			for (int r=0;r<newInsertPosCount;r++)
+			if (tmpNewposition.Total() > 0)
 			{
-				//////CStaticClass::m_logfile.LogEvent(L"Data 5");
-				CString strKey = L"";
-				CStaticClass::st_netpositionClientWise st_tmpData = {};
-
-				CStaticClass::m_mutex_Tick.Lock();
-				st_tmpData = tmpNewposition[r];
-
-				CString    m_login = st_tmpData.m_login;
-				CString    m_name = st_tmpData.m_name;
-				CString    m_symbol = st_tmpData.m_symbol;
-				double     m_volume = *st_tmpData.m_volume;
-
-
-				struct stPrevolume
-				{
-					wchar_t m_login[30];
-					wchar_t m_symbol[32];
-					double m_volume;
-				};
-				CMap<CString, LPCTSTR, stPrevolume, stPrevolume&> preVolumeMap;
-
-				stPrevolume m_stTempPreqty = {};
-				CString m_login_symbolKey = L"";
-				m_login_symbolKey.Format(L"%s:%s", m_login, m_symbol);
-				preVolumeMap.Lookup(m_login_symbolKey, m_stTempPreqty);
-
-				mapNetPositionClientWise_ThreadWise.SetAt(m_login_symbolKey, st_tmpData);
-
-				double     m_previousvolume = m_stTempPreqty.m_volume;
-				double     m_difference = m_volume - m_previousvolume;
-
-				double     m_average = *st_tmpData.m_average;
-				st_TickBidAskLast     m_lastrate = *st_tmpData.m_lastrate;
-
-				double     m_clientbalance = *st_tmpData.m_clientbalance;
-				double     m_clientnetamount = *st_tmpData.m_clientnetamount;
-				double     m_clientgrosstotal = *st_tmpData.m_clientgrosstotal;
-				double     m_clientbroktotal = *st_tmpData.m_clientbroktotal;
-				double     m_clientnettotal = *st_tmpData.m_clientnettotal;
-				double     m_maxallotedqty = *st_tmpData.m_maxallotedqty;
-				CString    m_subbroker = st_tmpData.m_subbroker;
-				CString    m_broker = st_tmpData.m_broker;
-
-				double     m_extravolume = *st_tmpData.m_extravolume;
-				double     m_freemargin = *st_tmpData.m_freemargin;
-				double     m_multi = *st_tmpData.m_multi;
-
-
-
-				CString     m_Company =st_tmpData.m_company;
-				CString     m_Exchange = st_tmpData.m_exchange;
-				double     m_companyvolume = *st_tmpData.m_companyvolume;
-				double     m_brokervolume = *st_tmpData.m_brokervolume;
-				double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
-				double     m_clientbrokerage = *st_tmpData.m_clientBrokarage;
-				double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
-
-				double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
-				double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
-
-				double     m_clientexposure = (*st_tmpData.m_clientexposure) /10000000;
-				double     m_Companyexposure = (*st_tmpData.m_companyexposure) /10000000;
-				double     m_brokerexposure = (*st_tmpData.m_brokerexposure) /10000000;
-				double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) /10000000;
-
-				m_clientexposure = abs(m_clientexposure);
-				m_Companyexposure = abs(m_Companyexposure);
-				m_brokerexposure = abs(m_brokerexposure);
-				m_subbrokerexposure = abs(m_subbrokerexposure);
-
-
-				double     m_clientfloatingpl = *st_tmpData.m_clientfloatingpl;
-				double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
-				double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
-				double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
-				double     m_clientbalancepl = *st_tmpData.m_clientbalance;
-				double     m_companybalancepl = *st_tmpData.m_companybalance;
-				double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
-				double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
-				double     m_clientplnet = *st_tmpData.m_clientnetamount;
-				double     m_companyplnet = *st_tmpData.m_companyNetAmount;
-				double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
-				double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
-				double     m_clientpatti = 100;
-				double     m_companypatti = *st_tmpData.m_companyRatio;
-				double     m_brokerpatti = *st_tmpData.m_brokerRatio;
-				double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
-				double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
-				double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
-				double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
-				double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
-
-				double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
-
-				double     m_brokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_brokerpatti) / 100;
-				double     m_subbrokergrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_subbrokerpatti) / 100;
-				double     m_companygrossamount = ((*st_tmpData.m_ClientGrossAmount) * m_companypatti) / 100;
-
-
-
-				m_Exchange = st_tmpData.m_exchange;
-				CString  m_international = st_tmpData.m_international;
-				CString  m_sector = st_tmpData.m_sector;
-				CString  m_industry = st_tmpData.m_industry;
-				double  m_rmp = st_tmpData.m_rmp;
-				double m_QtyMulti = st_tmpData.m_QtyMulti;
-				CString  m_page = st_tmpData.m_page;
-				CString  m_categary = st_tmpData.m_categary;
-				double m_rm = st_tmpData.m_rm;
-				double m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
-				CString  m_buySell = st_tmpData.m_buySell;
-				CString  m_debitCredit = st_tmpData.m_debitCredit;
-				CString  m_currencybase = st_tmpData.m_currencybase;
-
-				double m_lpratio = st_tmpData.m_LpRatio;
-				double m_lpvolume = st_tmpData.m_LpVolume;
-
-				CString m_commoditygroup = st_tmpData.m_commoditygroup;
-
-				CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
-				CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
-				double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
-				double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
-				m_TotalTradedTO = m_TotalTradedTO / 10000000;
-
-
-				CStaticClass::m_mutex_Tick.Unlock();
-
-				writer.StartObject();
-
-				writer.Key("login");
-				string sslogin = string(CT2CA(m_login));
-				const char* stlogin = sslogin.c_str();
-				writer.String(stlogin);
-				writer.Key("name");
-				string ssname = string(CT2CA(m_name));
-				const char* stName = ssname.c_str();
-				writer.String(stName);
-				writer.Key("symbol");
-				string sssymbol = string(CT2CA(m_symbol));
-				const char* stsymbol = sssymbol.c_str();
-				writer.String(stsymbol);
-				writer.Key("previousvolume");
-				writer.Double(m_previousvolume);
-				writer.Key("difference");
-				writer.Double(m_difference);
-				writer.Key("volume");
-				writer.Double(m_volume);
-				writer.Key("average");
-				writer.Double(m_average);
-				writer.Key("lastrate");				
-				writer.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
-				writer.Key("clientbalance");
-				writer.Double(m_clientbalance);
-				writer.Key("clientnetamount");
-				writer.Double(m_clientnetamount);
-				writer.Key("maxallotedqty");
-				writer.Double(m_maxallotedqty);
-				writer.Key("company");
-				string sscompany = string(CT2CA(m_Company));
-				const char* stcompany = sscompany.c_str();
-				writer.String(stcompany);
-				writer.Key("subbroker");
-				string sssubbroker = string(CT2CA(m_subbroker));
-				const char* stsubbroker = sssubbroker.c_str();
-				writer.String(stsubbroker);
-				writer.Key("broker");
-				string ssbroker = string(CT2CA(m_broker));
-				const char* stbroker = ssbroker.c_str();
-				writer.String(stbroker);
-
-				writer.Key("extravolume");
-				writer.Double(m_extravolume);
-				writer.Key("freemargin");
-				writer.Double(m_freemargin);
-
-
-
-
-				writer.Key("totaltradedlot");
-				writer.Double(m_TotalTradedLot);
-				writer.Key("totaltradedto");
-				writer.Double(m_TotalTradedTO);
-
-
-
-
-				writer.Key("companyvolume");
-				writer.Double(m_companyvolume);
-				writer.Key("brokervolume");
-				writer.Double(m_brokervolume);
-				writer.Key("subbrokervolume");
-				writer.Double(m_subbrokervolume);
-				writer.Key("clientbrokerage");
-				writer.Double(m_clientbrokerage);
-				writer.Key("brokerbrokerage");
-				writer.Double(m_brokerbrokerage);
-				writer.Key("subbrokerbrokerage");
-				writer.Double(m_subbrokerbrokerage);
-				writer.Key("companybrokerage");
-				writer.Double(m_companybrokerage);
-				writer.Key("clientexposure");
-				writer.Double(m_clientexposure);
-				writer.Key("Companyexposure");
-				writer.Double(m_Companyexposure);
-				writer.Key("brokerexposure");
-				writer.Double(m_brokerexposure);
-				writer.Key("subbrokerexposure");
-				writer.Double(m_subbrokerexposure);
-				writer.Key("clientfloatingpl");
-				writer.Double(m_clientfloatingpl);
-				writer.Key("companyfloatingpl");
-				writer.Double(m_companyfloatingpl);
-				writer.Key("brokerfloatingpl");
-				writer.Double(m_brokerfloatingpl);
-				writer.Key("subbrokerfloatingpl");
-				writer.Double(m_subbrokerfloatingpl);
-				writer.Key("clientbalancepl");
-				writer.Double(m_clientbalancepl);
-				writer.Key("companybalancepl");
-				writer.Double(m_companybalancepl);
-				writer.Key("brokerbalancepl");
-				writer.Double(m_brokerbalancepl);
-				writer.Key("subbrokerbalancepl");
-				writer.Double(m_subbrokerbalancepl);
-				writer.Key("clientplnet");
-				writer.Double(m_clientplnet);
-				writer.Key("companyplnet");
-				writer.Double(m_companyplnet);
-				writer.Key("brokerplnet");
-				writer.Double(m_brokerplnet);
-				writer.Key("subbrokerplnet");
-				writer.Double(m_subbrokerplnet);
-				writer.Key("clientpatti");
-				writer.Double(m_clientpatti);
-				writer.Key("companypatti");
-				writer.Double(m_companypatti);
-				writer.Key("brokerpatti");
-				writer.Double(m_brokerpatti);
-				writer.Key("subbrokerpatti");
-				writer.Double(m_subbrokerpatti);
-				writer.Key("companybrokeragerate");
-				writer.Double(m_companybrokeragerate);
-				writer.Key("brokerbrokeragerate");
-				writer.Double(m_brokerbrokeragerate);
-				writer.Key("subbrokerbrokeragerate");
-				writer.Double(m_subbrokerbrokeragerate);
-				writer.Key("clientbrokeragerate");
-				writer.Double(m_clientbrokeragerate);
-
-
-
-				writer.Key("clientgrossamount");
-				writer.Double(m_clientgrossamount);
-				writer.Key("brokergrossamount");
-				writer.Double(m_brokergrossamount);
-				writer.Key("subbrokergrossamount");
-				writer.Double(m_subbrokergrossamount);
-				writer.Key("companygrossamount");
-				writer.Double(m_companygrossamount);
-
-
-
-				writer.Key("exchange");
-				string ssexchange = string(CT2CA(m_Exchange));
-				const char* strexchange = ssexchange.c_str();
-				writer.String(strexchange);
-
-				writer.Key("international");
-				string ssinternational = string(CT2CA(m_international));
-				const char* strinternational = ssinternational.c_str();
-				writer.String(strinternational);
-
-
-				writer.Key("sector");
-				string sssector = string(CT2CA(m_sector));
-				const char* strsector = sssector.c_str();
-				writer.String(strsector);
-
-
-				writer.Key("industry");
-				string ssindustry = string(CT2CA(m_industry));
-				const char* strindustry = ssindustry.c_str();
-				writer.String(strindustry);
-
-
-				writer.Key("buysell");
-				/*string ssbuySell = string(CT2CA(m_buySell));
-				const char* strbuySell = ssbuySell.c_str();*/
-				if (m_volume < 0)
-				{
-					writer.String("Sell");
-				}
-				else
-				{
-					writer.String("Buy");
-				}
-
-				writer.Key("debitcredit");
-				/*string ssdebitCredit = string(CT2CA(m_debitCredit));
-				const char* strdebitCredit = ssdebitCredit.c_str();*/
-				if (m_clientplnet < 0)
-				{
-					writer.String("Debit");
-				}
-				else
-				{
-					writer.String("Credit");
-				}
-
-
-				writer.Key("page");
-				string sspage = string(CT2CA(m_page));
-				const char* strpage = sspage.c_str();
-				writer.String(strpage);
-
-
-				writer.Key("categary");
-				string sscategary = string(CT2CA(m_categary));
-				const char* strcategary = sscategary.c_str();
-				writer.String(strcategary);
-
-
-				writer.Key("rm");
-				writer.Double(m_rm);
-				writer.Key("qtyaftermulti");
-				writer.Double(m_qtyAfterMulti);
-				writer.Key("rmp");
-				writer.Double(m_rmp);
-				writer.Key("qtymulti");
-				writer.Double(m_QtyMulti);
-
-
-				writer.Key("lpratio");
-				writer.Double(m_lpratio);
-
-				writer.Key("lpvolume");
-				writer.Double(m_lpvolume);
-
-				writer.Key("commoditygroup");
-				string sscommoditygroup = string(CT2CA(m_commoditygroup));
-				const char* strcommoditygroup = sscommoditygroup.c_str();
-				writer.String(strcommoditygroup);
-
-
-				writer.Key("currencybase");
-				string sscurrencybase = string(CT2CA(m_currencybase));
-				const char* strcurrencybase = sscurrencybase.c_str();
-				writer.String(strcurrencybase);
-
-				writer.EndObject();			
+				
+				sendClientPosition_NewInsert(client, m_activeClient, strUserID, strkey, L"FETCH_CLIENT_POSITIONS", L"CLIENT_POSITION", &mapNetPositionClientWise_ThreadWise, &tmpNewposition);
+				tmpNewposition.Clear();
+				
 			}
-			tmpNewposition.Clear();
-			if (newInsertPosCount>0)
-			{
-				writer.EndArray();
-				writer.EndObject();
-				string strforsend = "";
-				str_FinalJsonUpdate = s.GetString();
-				strforsend = CT2A(str_FinalJsonUpdate.GetString());
-				SendDataToClient(client, strforsend, strkey, m_activeClient);
-			}
-			
 			//End of Sending New Arrived rows for a position
 
 
-
-
-
-
-
-			//Sending Updated Message For New Arrival Deal
-			int newUpdatePosCount= tmpNewposition_Updated.Total();					
-			if (newUpdatePosCount>0)
+			//Sending Updated Message For New Arrival Deal			
+			if (tmpNewposition_Updated.Total() > 0)
 			{
-				CMap<CString, LPCTSTR, int, int> m_subscribedcolumn_Local;
-				int  totalColumns = st_Check.m_clientrequests_List.Total();
-				for (int ci = 0; ci < totalColumns; ci++)
-				{
-					CString  m_ColumnsData = L"";
-					m_ColumnsData = st_Check.m_clientrequests_List[ci];
-					if (m_ColumnsData.Find(L":FETCH_CLIENT_POSITIONS:") >= 0)
-					{
-						m_subscribedcolumn_Local.SetAt(m_ColumnsData, 1);
-					}
-				}
-
-			StringBuffer s_update;
-			Writer<StringBuffer> writer_update(s_update);
-			writer_update.StartObject();
-			writer_update.Key("type");
-			writer_update.String("CLIENT_POSITION");
-			/*writer_update.Key("sendingtime");
-			writer_update.String(getcurrentTime().c_str());*/
-
-
-			writer_update.Key("updatekey");
-			writer_update.StartArray();
-			writer_update.String("login");
-			writer_update.String("symbol");
-			writer_update.EndArray();
-			writer_update.Key("update");
-			writer_update.StartArray();
-			for (int r=0;r<newUpdatePosCount;r++) 
-			{
-				//////CStaticClass::m_logfile.LogEvent(L"Data 5");
-				CString strKey=L"";
-				CStaticClass::st_netpositionClientWise st_tmpData={};
-
-				CStaticClass::m_mutex_Tick.Lock();
-				st_tmpData=tmpNewposition_Updated[r];
-
-				CString    m_login=st_tmpData.m_login;
-				CString    m_name=st_tmpData.m_name;
-				CString    m_symbol=st_tmpData.m_symbol;
-				double     m_volume=*st_tmpData.m_volume;
-
-
 				
-
-				CStaticClass::stPrevolumeClientWise m_stTempPreqty={};
-				CString m_login_symbolKey=L"";
-				m_login_symbolKey.Format(L"%s:%s",m_login,m_symbol);
-				
-				m_mutex_ClientList.Lock();				
-				st_Check = {};
-				m_ClientContext.Lookup(strkey, st_Check);
-				m_mutex_ClientList.Unlock();
-
-				int PreDataCount = st_Check.m_preQtyLoginSymbolWise.Total();
-				for (int ki = 0; ki < PreDataCount; ki++)
-				{
-					m_stTempPreqty = {};
-					m_stTempPreqty = st_Check.m_preQtyLoginSymbolWise[ki];
-					CString StrtmpLogin = m_stTempPreqty.m_login;
-					CString StrtmpSymbol = m_stTempPreqty.m_symbol;
-					if (StrtmpLogin == m_login && StrtmpSymbol == m_symbol)
-					{
-						break;
-					}
-				}
-
-				double     m_previousvolume=m_stTempPreqty.m_volume ; 
-				double     m_difference=m_volume-m_previousvolume;
-				double     m_average=*st_tmpData.m_average;
-				st_TickBidAskLast     m_lastrate=*st_tmpData.m_lastrate;
-				double     m_clientfloatingpl=*st_tmpData.m_clientfloatingpl;
-				double     m_clientbalance=*st_tmpData.m_clientbalance;
-				double     m_clientnetamount=*st_tmpData.m_clientnetamount;
-				double     m_clientgrosstotal=*st_tmpData.m_clientgrosstotal;
-				double     m_clientbroktotal=*st_tmpData.m_clientbroktotal;
-				double     m_clientnettotal=*st_tmpData.m_clientnettotal;
-				double     m_maxallotedqty=*st_tmpData.m_maxallotedqty;
-				CString    m_subbroker=st_tmpData.m_subbroker;
-				CString    m_broker=st_tmpData.m_broker;
-				
-				double     m_extravolume=*st_tmpData.m_extravolume;
-				double     m_freemargin=*st_tmpData.m_freemargin;
-				double     m_multi=*st_tmpData.m_multi;
-
-
-
-
-				CString     m_Company = st_tmpData.m_company;
-				CString     m_Exchange =st_tmpData.m_exchange;
-				double     m_companyvolume = *st_tmpData.m_companyvolume;
-				double     m_brokervolume = *st_tmpData.m_brokervolume;
-				double     m_subbrokervolume = *st_tmpData.m_subbrokervolume;
-				double     m_clientbrokerage = *st_tmpData.m_clientbroktotal;
-				double     m_brokerbrokerage = *st_tmpData.m_brokerBrokarage;
-				double     m_subbrokerbrokerage = *st_tmpData.m_subbrokerBrokarage;
-				double     m_companybrokerage = *st_tmpData.m_companyBrokarage;
-				
-				double     m_clientexposure = (*st_tmpData.m_clientexposure) /10000000;
-				double     m_Companyexposure = (*st_tmpData.m_companyexposure)/10000000;
-				double     m_brokerexposure = (*st_tmpData.m_brokerexposure) /10000000;
-				double     m_subbrokerexposure = (*st_tmpData.m_subbrokerexposure) /10000000;
-
-				m_clientexposure = abs(m_clientexposure);
-				m_Companyexposure = abs(m_Companyexposure);
-				m_brokerexposure = abs(m_brokerexposure);
-				m_subbrokerexposure = abs(m_subbrokerexposure);
-				
-				
-				double     m_companyfloatingpl = *st_tmpData.m_companyfloatingpl;
-				double     m_brokerfloatingpl = *st_tmpData.m_brokerfloatingpl;
-				double     m_subbrokerfloatingpl = *st_tmpData.m_subbrokerfloatingpl;
-				double     m_clientbalancepl = *st_tmpData.m_clientbalance;
-				double     m_companybalancepl = *st_tmpData.m_companybalance;
-				double     m_brokerbalancepl = *st_tmpData.m_brokerbalance;
-				double     m_subbrokerbalancepl = *st_tmpData.m_subbrokerbalance;
-				double     m_clientplnet = *st_tmpData.m_clientnetamount;
-				double     m_companyplnet = *st_tmpData.m_companyNetAmount;
-				double     m_brokerplnet = *st_tmpData.m_brokerNetAmount;
-				double     m_subbrokerplnet = *st_tmpData.m_subbrokerNetAmount;
-				double     m_clientpatti = 100;
-				double     m_companypatti = *st_tmpData.m_companyRatio;
-				double     m_brokerpatti = *st_tmpData.m_brokerRatio;
-				double     m_subbrokerpatti = *st_tmpData.m_subbrokerRatio;
-				double     m_companybrokeragerate = *st_tmpData.m_companyBrokRate;
-				double     m_brokerbrokeragerate = *st_tmpData.m_brokerBrokRate;
-				double     m_subbrokerbrokeragerate = *st_tmpData.m_subBrokerBrokRate;
-				double     m_clientbrokeragerate = *st_tmpData.m_clientBrokRate;
-
-				double     m_clientgrossamount = *st_tmpData.m_ClientGrossAmount;
-				double     m_brokergrossamount = *st_tmpData.m_BrokerGrossAmount;
-				double     m_subbrokergrossamount = *st_tmpData.m_SubBrokerGrossAmount;
-				double     m_companygrossamount = *st_tmpData.m_CompanyGrossAmount;
-
-
-
-
-				double m_rm = st_tmpData.m_rm;
-				double m_qtyAfterMulti = st_tmpData.m_qtyAfterMulti;
-
-				CStaticClass::st_TotalTradedLotAndTOT s_TLT = {};
-				CStaticClass::m_TotalLotAndTOT.Lookup(m_login_symbolKey, s_TLT);
-				double m_TotalTradedLot = s_TLT.m_TotalTradedLot;
-				double m_TotalTradedTO = s_TLT.m_TotalTradedTO;
-				m_TotalTradedTO = m_TotalTradedTO / 10000000;
-
-
-				CStaticClass::m_mutex_Tick.Unlock();
-						
-				SYSTEMTIME	time;
-				::GetLocalTime(&time);
-				CString strLocalTime;
-				strLocalTime.Format(L"%04d/%02d/%02d %02d:%02d:%02d:%03d",time.wYear, time.wMonth, time.wDay,time.wHour, time.wMinute, time.wSecond, time.wMilliseconds);
-
-								
-				string sslogin = string(CT2CA(m_login));
-				const char* stlogin=sslogin.c_str();
-				string sssymbo = string(CT2CA(m_symbol));
-				const char* stsymbol=sssymbo.c_str();;
-				string ssLocalTime = string(CT2CA(strLocalTime));
-				const char* stlocalTime=ssLocalTime.c_str();
-				writer_update.StartObject();
-				CString m_loginColumnKey = L"";
-				int m_columnSubs = 0;
-				CStaticClass::m_mutexcolumnSubs.Lock();
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"lastrate", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("lastrate");
-					writer_update.Double(m_volume < 0 ? m_lastrate.m_ask : m_lastrate.m_bid);
-				}
-				writer_update.Key("login");
-				writer_update.String(stlogin);
-				writer_update.Key("symbol");
-				writer_update.String(stsymbol);
-
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{					
-					writer_update.Key("clientfloatingpl");
-					writer_update.Double(m_clientfloatingpl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalance", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientbalance");
-					writer_update.Double(m_clientbalance);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientnetamount", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientnetamount");
-					writer_update.Double(m_clientnetamount);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientexposure");
-					writer_update.Double(m_clientexposure);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"sendingtime", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("sendingtime");
-					writer_update.String(stlocalTime);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"volume", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("volume");
-					writer_update.Double(m_volume);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("difference");
-					writer_update.Double(m_difference);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyvolume", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companyvolume");
-					writer_update.Double(m_companyvolume);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokervolume", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokervolume");
-					writer_update.Double(m_brokervolume);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokervolume", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokervolume");
-					writer_update.Double(m_subbrokervolume);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokerage", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientbrokerage");
-					writer_update.Double(m_clientbrokerage);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokerage", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerbrokerage");
-					writer_update.Double(m_brokerbrokerage);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokerage", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerbrokerage");
-					writer_update.Double(m_subbrokerbrokerage);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokerage", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companybrokerage");
-					writer_update.Double(m_companybrokerage);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientexposure", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientexposure");
-					writer_update.Double(m_clientexposure);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"Companyexposure", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("Companyexposure");
-					writer_update.Double(m_Companyexposure);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerexposure", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerexposure");
-					writer_update.Double(m_brokerexposure);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerexposure", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerexposure");
-					writer_update.Double(m_subbrokerexposure);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientfloatingpl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientfloatingpl");
-					writer_update.Double(m_clientfloatingpl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyfloatingpl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companyfloatingpl");
-					writer_update.Double(m_companyfloatingpl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerfloatingpl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerfloatingpl");
-					writer_update.Double(m_brokerfloatingpl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerfloatingpl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerfloatingpl");
-					writer_update.Double(m_subbrokerfloatingpl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbalancepl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientbalancepl");
-					writer_update.Double(m_clientbalancepl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybalancepl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companybalancepl");
-					writer_update.Double(m_companybalancepl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbalancepl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerbalancepl");
-					writer_update.Double(m_brokerbalancepl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbalancepl", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerbalancepl");
-					writer_update.Double(m_subbrokerbalancepl);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientplnet", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientplnet");
-					writer_update.Double(m_clientplnet);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companyplnet", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companyplnet");
-					writer_update.Double(m_companyplnet);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerplnet", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerplnet");
-					writer_update.Double(m_brokerplnet);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerplnet", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerplnet");
-					writer_update.Double(m_subbrokerplnet);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientpatti", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientpatti");
-					writer_update.Double(m_clientpatti);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companypatti", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companypatti");
-					writer_update.Double(m_companypatti);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerpatti", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerpatti");
-					writer_update.Double(m_brokerpatti);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerpatti", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerpatti");
-					writer_update.Double(m_subbrokerpatti);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companybrokeragerate", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companybrokeragerate");
-					writer_update.Double(m_companybrokeragerate);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokerbrokeragerate", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokerbrokeragerate");
-					writer_update.Double(m_brokerbrokeragerate);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokerbrokeragerate", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokerbrokeragerate");
-					writer_update.Double(m_subbrokerbrokeragerate);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientbrokeragerate", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientbrokeragerate");
-					writer_update.Double(m_clientbrokeragerate);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedlot", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("totaltradedlot");
-					writer_update.Double(m_TotalTradedLot);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"totaltradedto", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("totaltradedto");
-					writer_update.Double(m_TotalTradedTO);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"rm", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("rm");
-					writer_update.Double(m_rm);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"qtyaftermulti", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("qtyaftermulti");
-					writer_update.Double(m_qtyAfterMulti);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"clientgrossamount", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("clientgrossamount");
-					writer_update.Double(m_clientgrossamount);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"brokergrossamount", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("brokergrossamount");
-					writer_update.Double(m_brokergrossamount);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"subbrokergrossamount", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("subbrokergrossamount");
-					writer_update.Double(m_subbrokergrossamount);
-				}
-				m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"companygrossamount", m_ClientPositionRequestType);
-				m_columnSubs = 0;
-				m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
-				if (m_columnSubs == 1)
-				{
-					writer_update.Key("companygrossamount");
-					writer_update.Double(m_companygrossamount);
-				}
-				CStaticClass::m_mutexcolumnSubs.Unlock();
-				writer_update.EndObject();
-				//maplocalClientSendedLTP.SetAt(LoginSymbolKey,m_lastrate);										
-			}			
+				sendClientPosition_NewUpdate(client, m_activeClient, strUserID, strkey, L"FETCH_CLIENT_POSITIONS", L"CLIENT_POSITION", &mapNetPositionClientWise_ThreadWise, &tmpNewposition_Updated);
 				tmpNewposition_Updated.Clear();
-				writer_update.EndArray();
-				writer_update.EndObject();
 				
-				string strforsend="";
-				str_FinalJsonUpdate=s_update.GetString();
-				strforsend=CT2A(str_FinalJsonUpdate.GetString());
-				SendDataToClient(client, strforsend, strkey, m_activeClient);
 			}
 			//End Sending Updated Message For New Arrival Deal
 
-
-
+			
 			/// Sending Update Message When Tick Has Been Changes<summary>			
-			int rowsCount=tmpArray.Total();
- 
+			int rowsCount=tmpArray.Total(); 
 			StringBuffer sN;
 			Writer<StringBuffer> writerN(sN);
 			writerN.StartObject();
@@ -5949,7 +6087,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 			writerN.Key("update");
 			writerN.StartArray();
 			int dataSendingFlag=0;
-			//m_logfile.LogEvent(L"Start");
+			
 			int m_DataCount = 0;
 			CMap<CString, LPCTSTR, int, int> m_subscribedcolumn_Local;
 						
@@ -6119,7 +6257,12 @@ void CStaticClass::calculateClientWiseAllPosition()
 								writerN.Key("login");
 								writerN.String(stlogin);
 								writerN.Key("symbol");
-								writerN.String(stsymbol);																								
+								writerN.String(stsymbol);	
+
+								writerN.Key("name");
+								string ssName = string(CT2CA(m_name));
+								const char* stName = ssName.c_str();
+								writerN.String(stName);
 								
 
 
@@ -6133,6 +6276,20 @@ void CStaticClass::calculateClientWiseAllPosition()
 									writerN.Key("volume");
 									writerN.Double(m_volume);
 								}
+
+
+								m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"previousvolume", m_ClientPositionRequestType);
+								m_columnSubs = 0;
+								m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
+								if (m_columnSubs == 1)
+								{
+									writerN.Key("previousvolume");
+									writerN.Double(m_previousvolume);
+								}
+
+
+
+
 								m_loginColumnKey.Format(L"%s:%s:%s:", strUserID, L"difference", m_ClientPositionRequestType);
 								m_columnSubs = 0;
 								m_subscribedcolumn_Local.Lookup(m_loginColumnKey, m_columnSubs);
@@ -6459,17 +6616,20 @@ void CStaticClass::calculateClientWiseAllPosition()
 		}
 		writerN.EndArray();
 		writerN.EndObject();
+		
+		CString str_FinalJsonUpdate = L"";
 		if (dataSendingFlag==1)
 		{
 			string strforsend="";
 			str_FinalJsonUpdate=sN.GetString();
 			strforsend=CT2A(str_FinalJsonUpdate.GetString());
 			SendDataToClient(client, strforsend, strkey, m_activeClient);
+			CString strlog = L"";
+			
 			dataSendingFlag=0;
 		}
-		//m_logfile.LogEvent(L"End");
+		
 		}
-
 		///
 		/// </summary>End Of Sending Client Wise NetPosition  Updated Data
 		
@@ -6478,7 +6638,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 		{
 			
 			m_mutex_ClientList.Lock();
-			////CStaticClass::m_logfile.LogEvent(L"104");
+			////(L"104");
 				st_Check = {};
 				m_ClientContext.Lookup(strkey,st_Check);
 				st_Check.m_FETCH_EXISTING_COMMENT_CHANGE_DATA_FirstTime=0;
@@ -6486,7 +6646,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 				int m_activeClient = st_Check.m_activeClient;
 				m_ClientContext.SetAt(strkey,st_Check);
 			m_mutex_ClientList.Unlock();
-			////CStaticClass::m_logfile.LogEvent(L"U104");
+			////(L"U104");
 
 			CString str_FinalJsonUpdate=CStaticClass::m_sqldata.generateJsonCommentChangeData();
 			string strforsend="";
@@ -6494,12 +6654,12 @@ void CStaticClass::calculateClientWiseAllPosition()
 			SendDataToClient(client, strforsend, strkey, m_activeClient);
 		}
 		//End First Time Comment Change
-
+		
 		//Start Sending Updated Data for Comment Change
 		if (st_Check.m_FETCH_EXISTING_COMMENT_CHANGE_DATA_start==1)
 		{			
 			m_mutex_ClientList.Lock();
-			////CStaticClass::m_logfile.LogEvent(L"105");
+			////(L"105");
 				st_Check = {};
 				m_ClientContext.Lookup(strkey,st_Check);										
 					TMTArray<st_commentChange>	m_commentarray_update;
@@ -6516,7 +6676,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 					st_Check.m_subbrokerSendingStart_FirstTime_Call = 0;
 				m_ClientContext.SetAt(strkey,st_Check);
 			m_mutex_ClientList.Unlock();
-			////CStaticClass::m_logfile.LogEvent(L"U105");
+			////(L"U105");
 
 			int updateCount=m_commentarray_update.Total();
 			StringBuffer s;
@@ -6679,13 +6839,13 @@ void CStaticClass::calculateClientWiseAllPosition()
 		m_mutex_ClientList.Lock();
 		int m_ordersendingStatus = st_Check.m_FETCH_ORDER_DATA_FirstTime;
 		m_mutex_ClientList.Unlock();
-
+		
 		if (m_ordersendingStatus ==1)
 		{
-			////CStaticClass::m_logfile.LogEvent(L"L14");
+			////(L"L14");
 			
 			m_mutex_ClientList.Lock();
-			////CStaticClass::m_logfile.LogEvent(L"106");
+			////(L"106");
 				st_Check = {};
 				m_ClientContext.Lookup(strkey,st_Check);
 				st_Check.m_FETCH_ORDER_DATA_FirstTime=0;
@@ -6694,19 +6854,18 @@ void CStaticClass::calculateClientWiseAllPosition()
 				st_Check.m_subbrokerSendingStart_FirstTime_Call = 0;
 				m_ClientContext.SetAt(strkey,st_Check);
 			m_mutex_ClientList.Unlock();
-			////CStaticClass::m_logfile.LogEvent(L"U106");
-
-			CString strjson=CStaticClass::m_sqldata.getOrderData(strkey);
+			////(L"U106");
+			/*CString strjson=CStaticClass::m_sqldata.getOrderData(strkey);
 			string strforsend=CT2A(strjson.GetString());			
-			SendDataToClient(client, strforsend, strkey, m_activeClient);
+			SendDataToClient(client, strforsend, strkey, m_activeClient);*/
 				
 		}
 		//Sending Updated Order 
 		if (st_Check.m_FETCH_ORDER_DATA_start==1)
 		{
-			////CStaticClass::m_logfile.LogEvent(L"L15");
+			////(L"L15");
 			m_mutex_ClientList.Lock();
-			////CStaticClass::m_logfile.LogEvent(L"107");
+			////(L"107");
 			st_Check = {};
 				m_ClientContext.Lookup(strkey,st_Check);
 					st_Check.m_FETCH_ORDER_DATA_FirstTime=0;
@@ -6727,7 +6886,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 					st_Check.m_orderarray_ForEdit.Clear();
 
 				m_ClientContext.SetAt(strkey,st_Check);
-				////CStaticClass::m_logfile.LogEvent(L"U107");
+				////(L"U107");
 			m_mutex_ClientList.Unlock();
 
 
@@ -6740,7 +6899,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 				st=m_orderarray_insert[i];
 
 				CString m_login=st.m_login;
-				int m_time =st.m_time;
+				int m_time =st.m_time - 19800;
 
 				CString m_strTime=L"";		
 				CString m_tmp_date=L"";
@@ -6835,7 +6994,7 @@ void CStaticClass::calculateClientWiseAllPosition()
 				st=m_orderarray_update[i];
 
 				CString m_login=st.m_login;
-				int m_time =st.m_time;
+				int m_time =st.m_time - 19800;
 
 				CString m_strTime=L"";		
 				CString m_tmp_date=L"";
@@ -6919,11 +7078,8 @@ void CStaticClass::calculateClientWiseAllPosition()
 				strforsend=CT2A(str_FinalJsonUpdate.GetString());
 				SendDataToClient(client, strforsend, strkey, m_activeClient);
 		}
-
-
 			//Sending Updated Delete Order
-			int insertRowsCount_delete=m_orderarray_delete.Total();
-			
+			int insertRowsCount_delete=m_orderarray_delete.Total();			
 			for(int i=0;i<insertRowsCount_delete;i++)
 			{
 				int orderkey=0;
@@ -6946,12 +7102,8 @@ void CStaticClass::calculateClientWiseAllPosition()
 					str_FinalJsonUpdate.Format(L"{\"type\":\"ORDER_DATA\",\"deletekey\":[\"order\"],\"delete\":[%s]}",strtmpdata);	
 					string strforsend="";
 					strforsend=CT2A(str_FinalJsonUpdate.GetString());
-					SendDataToClient(client, strforsend, strkey, m_activeClient);
-					
-				
+					SendDataToClient(client, strforsend, strkey, m_activeClient);									
 		     }
-
-
 			//Sending Updated Update Order
 			int tRowsCountOrderarray_ForEdit=orderarray_ForEdit.Total();
 			StringBuffer s;
@@ -6973,33 +7125,162 @@ void CStaticClass::calculateClientWiseAllPosition()
 				int orderkey=0;
 				CStaticClass::st_order_ForUpdate st_ForUpdate={};
 				st_ForUpdate=orderarray_ForEdit[i];
+				INT64    m_order = st_ForUpdate.m_order;
+				int      m_select = st_ForUpdate.m_select;
+				int      m_select_update = st_ForUpdate.m_select_update;
 
-				INT64    m_order=st_ForUpdate.m_order;					
-				int      m_select=st_ForUpdate.m_select ;
-				int      m_select_update=st_ForUpdate.m_select_update ;
+				CString  m_selecttype = st_ForUpdate.m_selecttype;
+				int      m_selecttype_update = st_ForUpdate.m_selecttype_update;
+				CString  m_subtype = st_ForUpdate.m_subtype;
+				int      m_subtype_update = st_ForUpdate.m_subtype_update;
+				INT64    m_contraorder = st_ForUpdate.m_contraorder;
+				int      m_contraorder_updtae = st_ForUpdate.m_contraorder_updtae;
+				INT64    m_tradeexecutetime = st_ForUpdate.m_tradeexecutetime;
+				int		 m_tradeexecutetime_update = st_ForUpdate.m_tradeexecutetime_update;
+				CString  m_ourcomment = st_ForUpdate.m_ourcomment;
+				int		 m_ourcomment_update = st_ForUpdate.m_ourcomment_update;
 
 
-				CString  m_selecttype=st_ForUpdate.m_selecttype;
-				int      m_selecttype_update=st_ForUpdate.m_selecttype_update;
-				CString  m_subtype=st_ForUpdate.m_subtype;
-				int      m_subtype_update=st_ForUpdate.m_subtype_update;
-				INT64    m_contraorder=st_ForUpdate.m_contraorder ;
-				int      m_contraorder_updtae=st_ForUpdate.m_contraorder_updtae;
-				INT64    m_tradeexecutetime=st_ForUpdate.m_tradeexecutetime ;
-				int		 m_tradeexecutetime_update=st_ForUpdate.m_tradeexecutetime_update;
-				CString  m_ourcomment=st_ForUpdate.m_ourcomment;		
-				int		 m_ourcomment_update=st_ForUpdate.m_ourcomment_update;
+
+
+				CStaticClass::m_mutex_order.Lock();				
+					CStaticClass::st_order st = {};
+					CStaticClass::m_Orika_orderHastable.Lookup(m_order, st);
+				CStaticClass::m_mutex_order.Unlock();
+
+				CString m_login = st.m_login;
+			int m_time = st.m_time- 19800;
+
+			CString m_strTime = L"";
+			CString m_tmp_date = L"";
+			CMTStr256 str_time;
+			SMTFormat::FormatDateTime(str_time, m_time, true, true);
+			m_strTime = str_time.Str();
+
+
+			int m_deal = st.m_deal;
+			//int m_order = st.m_order;
+			CString m_symbol = st.m_symbol;
+			int m_type = st.m_type;
+			CString strtype = L"";
+			if (m_type == 2)
+			{
+				strtype = L"Buy Limit";
+			}
+			else if (m_type == 3)
+			{
+				strtype = L"Sell Limit";
+			}
+			else if (m_type == 4)
+			{
+				strtype = L"Buy Stop";
+			}
+			else if (m_type == 5)
+			{
+				strtype = L"Sell Stop";
+			}
+			else if (m_type == 6)
+			{
+				strtype = L"Buy Stop";
+			}
+			else if (m_type == 7)
+			{
+				strtype = L"Sell Stop Limit";
+			}
+			double m_volume = st.m_volume;
+			double m_price = st.m_price;
+			CString m_comment = st.m_comment;
+			CString m_status = st.m_status;
+			//int m_select = st.m_select;
+			CString strselect = L"";
+			if (m_select == 0)
+			{
+				strselect = "false";
+			}
+			else
+			{
+				strselect = "true";
+			}
+
+			//CString m_selecttype = st.m_selecttype;
+			//CString m_subtype = st.m_subtype;
+			//int m_contraorder = st.m_contraorder;
+			//int m_tradeexecutetime = st.m_tradeexecutetime;
+			//CString m_ourcomment = st.m_ourcomment;
+			int m_orderstate = st.m_orderstate;
+
+			CString strtmpdata = L"";
+
+
+			CString str_orderstate = L"";
+			if (m_orderstate == 1001)
+			{
+				str_orderstate = L"NEW";
+			}
+			if (m_orderstate == 1002)
+			{
+				str_orderstate = L"UPDATE";
+			}
+			if (m_orderstate == 1003 || m_orderstate == 1005)
+			{
+				str_orderstate = L"DELETE";
+			}
+
 
 
 
 				
-				
-		
-				
 
+												
 				writer.StartObject();								
+
+
+
+
+
 				writer.Key("order");
 				writer.Int64(m_order);
+
+
+				writer.Key("login");
+				string sslogin = string(CT2CA(m_login));
+				const char* stlogin = sslogin.c_str();
+				writer.String(stlogin);
+				writer.Key("time");
+				/*string ssTime = string(CT2CA(m_strTime));
+				const char* stTime = ssTime.c_str();*/
+				writer.Int(m_time);
+				writer.Key("deal");
+				writer.Int64(m_deal);
+				
+				writer.Key("symbol");
+				string ssSymbol = string(CT2CA(m_symbol));
+				const char* stSymbol = ssSymbol.c_str();
+				writer.String(stSymbol);
+				writer.Key("type");
+				string sstype = string(CT2CA(strtype));
+				const char* sttype = sstype.c_str();
+				writer.String(sttype);
+				writer.Key("volume");
+				writer.Double(m_volume);
+				writer.Key("price");
+				writer.Double(m_price);
+				writer.Key("comment");
+				string sscomment = string(CT2CA(m_comment));
+				const char* stcomment = sscomment.c_str();
+				writer.String(stcomment);
+				writer.Key("status");
+				string ssstatus = string(CT2CA(m_status));
+				const char* ststatus = ssstatus.c_str();
+				writer.String(ststatus);												
+				writer.Key("orderstate");
+				string ssorderstate = string(CT2CA(str_orderstate));
+				const char* storderstate = ssorderstate.c_str();
+				writer.String(storderstate);
+
+
+
+
 				if (m_select_update==1)
 				{
 					const char* strSelect="";
@@ -7014,37 +7295,40 @@ void CStaticClass::calculateClientWiseAllPosition()
 					writer.Key("select");
 					writer.String(strSelect);
 				}
-				if (m_selecttype_update==1)
-				{
+				/*if (m_selecttype_update==1)
+				{*/
 					string strstatustype = string(CT2CA(m_selecttype));
 					const char* ststatustype=strstatustype.c_str();
 					writer.Key("statustype");
 					writer.String(ststatustype);		
-				}
-				if (m_subtype_update==1)
-				{
+				//}
+				/*if (m_subtype_update==1)
+				{*/
 					string strsubtype = string(CT2CA(m_subtype));
 					const char* stsubtype=strsubtype.c_str();
 					writer.Key("subtype");
 					writer.String(stsubtype);	
-				}
-				if (m_contraorder_updtae==1)
-				{
+				//}
+				/*if (m_contraorder_updtae==1)
+				{*/
 					writer.Key("contraorder");
 					writer.Int64(m_contraorder);	
-				}
-				if(m_tradeexecutetime_update==1)
-				{
+				//}
+				/*if(m_tradeexecutetime_update==1)
+				{*/
 					writer.Key("tradeexecutetime");
 					writer.Int64(m_tradeexecutetime);	
-				}
-				if (m_ourcomment_update==1)
-				{
+				//}
+				/*if (m_ourcomment_update==1)
+				{*/
 					string strourcomment = string(CT2CA(m_ourcomment));
 					const char* stourcomment=strourcomment.c_str();
 					writer.Key("ourcomment");
 					writer.String(stourcomment);					
-				}
+				//}
+
+
+
 				writer.EndObject();				
 			}
 			if (tRowsCountOrderarray_ForEdit>0)
@@ -7065,10 +7349,13 @@ void CStaticClass::calculateClientWiseAllPosition()
 		
 
 		
-		////CStaticClass::m_logfile.LogEvent(L"Data Start Processing End ");
+		////(L"Data Start Processing End ");
 			
 		//Sleep(1);
+		
+		
 	}
+
 	
 	CStaticClass::m_mutex_ClientList.Lock();
 	CStaticClass::st_ClientContext st_Check = {};
@@ -7102,7 +7389,7 @@ CStaticClass::CStaticClass()
 
 void CStaticClass::initializePointerArray()
 {
-	for (int i=0;i<20000;i++)
+	for (int i=0;i<35000;i++)
 	{
 		//lastrateArray[i]=(double *)malloc(sizeof(double)); 
 		lastrateArray[i] = (CStaticClass::st_TickBidAskLast*)malloc(sizeof(CStaticClass::st_TickBidAskLast));
@@ -7477,7 +7764,7 @@ void CStaticClass::loadClientwisenetpositionData()
 			CStaticClass::lastrateArrayMaxindex = CStaticClass::lastrateArrayMaxindex + 1;
 			/*CString strlog=L"";
 			strlog.Format(L"Symbol:%s Max TickData Index %d",m_symbol,CStaticClass::lastrateArrayMaxindex);
-			////CStaticClass::m_logfile.LogEvent(strlog);*/
+			////(strlog);*/
 		}
 		CStaticClass::lastrateArray[lastRateArrayIndex]->m_bid = 0;
 		CStaticClass::lastrateArray[lastRateArrayIndex]->m_ask = 0;
@@ -7744,14 +8031,14 @@ void CStaticClass::loadClientwisenetpositionData()
 		{
 			/*CString strLogVal = L"";
 			strLogVal.Format(L"Amount:%.2lf Debit/Credit:%s", *stnetpos.m_clientnetamount, L"Debit");
-			//CStaticClass::m_logfile.LogEvent(strLogVal);*/
+			//(strLogVal);*/
 			CMTStr::Copy(stnetpos.m_debitCredit, L"Debit");
 		}
 		else
 		{
 			/*CString strLogVal = L"";
 			strLogVal.Format(L"Amount:%.2lf Debit/Credit:%s", *stnetpos.m_clientnetamount, L"Credit");
-			//CStaticClass::m_logfile.LogEvent(strLogVal);*/
+			//(strLogVal);*/
 			CMTStr::Copy(stnetpos.m_debitCredit, L"Credit");
 		}
 
@@ -7801,7 +8088,8 @@ CStaticClass::st_LoginWiseGrossTotal CStaticClass::GettingGrossTotalfromDatabase
 	strCommand.Format(L"select t1.[login],TotalBalance,TotalBrokerage from  (select [login],sum(isnull(clientBalance,0) ) as 'TotalBalance' from Orika_BalanceTableAccounting where [login]='" + loginName + "'  group by [login] )t1 left outer join  (select [login],sum(isnull(clientBrokTotal,0) )as 'TotalBrokerage' from Orika_dealtableAccounting where [login]='" + loginName + "'  group by [login] )t2 on t1.login=t2.login ");	
 	
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"L15");
+	//(L"L15");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
@@ -7809,7 +8097,8 @@ CStaticClass::st_LoginWiseGrossTotal CStaticClass::GettingGrossTotalfromDatabase
 	{
 		m_tempSession.Close();
 		//CStaticClass::m_mutex_order.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"UL15");
+		//(L"UL15");
+		CStaticClass::m_SqlLock.Unlock();
 		return tmpST;
 	}
 	int i=0;
@@ -7821,8 +8110,9 @@ CStaticClass::st_LoginWiseGrossTotal CStaticClass::GettingGrossTotalfromDatabase
 		tmpST.m_brokerageTotal=data_table.m_totalGrossBrokerage;
 	}
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"UL15");
+	//(L"UL15");
 	return tmpST;
 }
 
@@ -7994,15 +8284,17 @@ void CStaticClass::Sql_Updateorika_dealtableaccounting(st_Orika_dealtableAccount
 	}
 	strCommand.Format(L" Exec proc_UpdateDealTableAccounting '%s',%d,%d,%d,'%s',%.5lf,%d,%d,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%d,'%s','%s',%.5lf,%d,%d,%d,%d,%d,%d",m_login,m_deal,m_order,m_time,m_symbol,m_multiplyer,m_action,m_volume,m_price,m_clientBrokTotal,m_subBrokerBrokTotal,m_brokerBrokTotal,m_extraGroupBrokTotal,m_comBalancebrokTotal,m_brokerVolume,m_subBrokerVolume,m_extraGroupVolume,m_companyVolume,m_clientLots,m_subBrokerLots,m_brokerLots,m_extraGroupLots,m_companyLots,m_duplicate,m_ExternalID,m_Comment, m_position, m_priceGoUp, m_priceGoDown, m_positionCreated, m_BadTrade, m_BadTradeIgnorePosition, m_TradeIgnorePosition);
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_67");
+	//(L"Orderlock_67");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_67");
+	//(L"U_Orderlock_67");
 }
 
 
@@ -8035,15 +8327,15 @@ void CStaticClass::Sql_Insertorika_positionEntryAccounting(st_orika_positionEntr
 	CString   strCommand=L"";	
 	strCommand.Format(L"insert into orika_positionEntryAccounting (deal,[order],[login],symbol,[time],entryAction,entryVolume,entryPrice,currentPrice,highPrice,lowPrice,subBrokerEntryVolume,brokerEntryVolume,extraGroupEntryVolume,companyEntryVolume,multiplyer) values (%d,%d,'%s','%s',%d,%d,%d,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf)",m_deal,m_order ,m_login,m_symbol,m_time,m_entryAction,m_entryVolume,m_entryPrice,m_currentPrice,m_highPrice,m_lowPrice,m_subBrokerEntryVolume,m_brokerEntryVolume,m_extraGroupEntryVolume,m_companyEntryVolume,m_multiplyer);		
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"L17");
-	CSession m_tempSession;
-	m_tempSession.Open(CStaticClass::connection);
-	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);
-	
-	UpdateCommand.Close();
-	m_tempSession.Close();
-	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"UL17");
+	//(L"L17");
+	CStaticClass::m_SqlLock.Lock();
+		CSession m_tempSession;
+		m_tempSession.Open(CStaticClass::connection);
+		hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);	
+		UpdateCommand.Close();
+		m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
+	//(L"UL17");
 }
 void CStaticClass::Sql_UpdateOrika_order(st_order ot)
 {
@@ -8084,14 +8376,16 @@ void CStaticClass::Sql_UpdateOrika_order(st_order ot)
 	}	
 	
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_63");
+	//(L"Orderlock_63");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);	
 	UpdateCommand.Close();
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_63");
+	//(L"U_Orderlock_63");
 }
 
 void CStaticClass::Sql_UpdateOrika_BalanceTableAccounting(st_Orika_BalanceTableAccounting dt)
@@ -8130,15 +8424,17 @@ void CStaticClass::Sql_UpdateOrika_BalanceTableAccounting(st_Orika_BalanceTableA
 	strCommand.Format(L"insert into Orika_BalanceTableAccounting([login],symbol,entryDeal,entryTime,entryOrder,entryAction,entryVolume,entryPrice,exitDeal,exitTime,exitOrder,exitAction,exitVolume,exitPrice,plPointLoss,plPointProfit,multiplyer,clientBalance,subBrokerBalance,brokerBalance,extraGroupBalance,companyBalance)values('%s','%s',%d,%d,%d,%d,%d,%.5lf,%d,%d,%d,%d,%d,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf)",m_login,m_symbol,m_entryDeal,m_entryTime,m_entryOrder,m_entryAction,m_entryVolume,m_entryPrice,m_exitDeal,m_exitTime,m_exitOrder,m_exitAction,m_exitVolume,m_exitPrice,m_plPointLoss,m_plPointProfit,m_multiplyer,m_clientBalance,m_subBrokerBalance,m_brokerBalance,m_extraGroupBalance,m_companyBalance);		
 	
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_64");
+	//(L"Orderlock_64");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_64");
+	//(L"U_Orderlock_64");
 }
 
 
@@ -8173,15 +8469,17 @@ void CStaticClass::Sql_Updateorika_PositionAverageAccounting(st_orika_PositionAv
 	strCommand.Format(L"if (select count(*) from orika_PositionAverageAccounting where  login='%s' and  symbol='%s')=0 begin  insert into orika_PositionAverageAccounting([login],symbol,[Action],Volume,subBrokerVolume,brokerVolume,extraGroupVolume,companyVolume,WAvgPrice,currentPrice,multiplyer,floatingProfit,subBrokerfloatingProfit,brokerfloatingProfit,extraGroupfloatingProfit,companyfloatingProfit)values('%s','%s',%d,%d,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf,%.5lf)  end else begin   update  orika_PositionAverageAccounting   set [Action]=%d,Volume=%d,subBrokerVolume=%.5lf,brokerVolume=%.5lf,extraGroupVolume=%.5lf,companyVolume=%.5lf,WAvgPrice=%.5lf where [login]='%s' and  symbol='%s'       end ",m_login,m_symbol,m_login,m_symbol,m_Action,m_Volume,m_subBrokerVolume,m_brokerVolume,m_extraGroupVolume,m_companyVolume,m_WAvgPrice,m_currentPrice,m_multiplyer,m_floatingProfit,m_subBrokerfloatingProfit,m_brokerfloatingProfit,m_extraGroupfloatingProfit,m_companyfloatingProfit,m_Action,m_Volume,m_subBrokerVolume,m_brokerVolume,m_extraGroupVolume,m_companyVolume,m_WAvgPrice ,m_login,m_symbol);		
 	
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"Orderlock_65");
+	//(L"Orderlock_65");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"U_Orderlock_65");
+	//(L"U_Orderlock_65");
 }
 
 
@@ -8465,15 +8763,17 @@ void CStaticClass::Sql_Deleteorika_positionEntryAccounting(st_orika_positionEntr
 	strCommand.Format(L"delete from  orika_positionEntryAccounting  where deal=%d and login='%s'",m_deal,m_login);	
 	
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"L21");
+	//(L"L21");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"LU21");
+	//(L"LU21");
 }
 
 
@@ -8505,15 +8805,17 @@ void CStaticClass::Sql_Updateorika_positionEntryAccounting(st_orika_positionEntr
 	strCommand.Format(L"Update orika_positionEntryAccounting set  entryVolume='%d',subBrokerEntryVolume='%.5lf',brokerEntryVolume='%.5lf',extraGroupEntryVolume='%.5lf',companyEntryVolume='%.5lf' where deal='%d' and login='%s'",m_entryVolume,m_subBrokerEntryVolume,m_brokerEntryVolume,m_extraGroupEntryVolume,m_companyEntryVolume,m_deal,m_login);		
 	
 	//CStaticClass::m_mutex_order.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"L22");
+	//(L"L22");
+	CStaticClass::m_SqlLock.Lock();
 	CSession m_tempSession;
 	m_tempSession.Open(CStaticClass::connection);
 	hr=UpdateCommand.Open(m_tempSession,(LPCTSTR)strCommand);
 	
 	UpdateCommand.Close();
 	m_tempSession.Close();
+	CStaticClass::m_SqlLock.Unlock();
 	//CStaticClass::m_mutex_order.Unlock();
-	//CStaticClass::m_logfile.LogEvent(L"UL22");
+	//(L"UL22");
 }
 
 
@@ -8771,7 +9073,7 @@ void CStaticClass::sendNeworderToClient(st_order st)
 		CString strFinalJson=L"";
 		CString m_login=st.m_login;
 		int m_time =st.m_time;
-
+		m_time = m_time - 19800;
 		CString m_strTime=L"";		
 		CString m_tmp_date=L"";
 		CMTStr256 str_time;
@@ -8855,9 +9157,9 @@ void CStaticClass::sendNeworderToClient(st_order st)
 		CString StrPrintLino=L"";	
 		
 		CStaticClass::m_mutex_ClientList.Lock();		
-		//CStaticClass::m_logfile.LogEvent(L"11");
+		//(L"11");
 		//StrPrintLino.Format(L"m_mutex_ClientList Locked(%d)",__LINE__);
-		//////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+		//////(StrPrintLino);
 
 
 		POSITION pos = CStaticClass::m_ClientList_forOrder.GetStartPosition ();		
@@ -8876,9 +9178,9 @@ void CStaticClass::sendNeworderToClient(st_order st)
 			///End of Sending order data to client
 		}
 		CStaticClass::m_mutex_ClientList.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"U11");
+		//(L"U11");
 		//StrPrintLino.Format(L"m_mutex_ClientList UN Locked(%d)",__LINE__);
-		//////CStaticClass::m_logfile.LogEvent(StrPrintLino);
+		//////(StrPrintLino);
 }
 
 CString  CStaticClass::CalculateLPData(CString m_login, CString m_symbolGroup, double m_LpVolume, double m_CompanyVolume)
@@ -9122,7 +9424,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 
 
 	CStaticClass::st_netpositionClientWise  st_pac={};
-	////CStaticClass::m_logfile.LogEvent(L"m_mutex_Tick_2 Locked");
+	////(L"m_mutex_Tick_2 Locked");
 	CStaticClass::m_mutex_Tick.Lock();
 	
 
@@ -9239,12 +9541,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 			m_CalculatedBrokerage=m_oldBrokerage+m_newbrolerage;
 
 			double m_clientBrokerageDifferance=m_CalculatedBrokerage;
-			*st_pac.m_clientBrokarage=m_CalculatedBrokerage;
-
-
-
-			
-
+			*st_pac.m_clientBrokarage=m_CalculatedBrokerage;			
 
 			*st_pac.m_subbrokerBrokarage = *st_pac.m_subbrokerBrokarage+st.m_subBrokerBrokTotal;
 			*st_pac.m_brokerBrokarage = *st_pac.m_brokerBrokarage+st.m_brokerBrokTotal;
@@ -9360,7 +9657,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 
 			//strLogFile.Format(L"clientvolume:%.2lf  SubBrokerVolume:%.2lf    BrokerVolume:%.2lf   CompanyVolume:%.2lf", m_clientvolume, m_SubBrokerVolume, m_BrokerVolume, m_CompanyVolume);
 
-			////CStaticClass::m_logfile.LogEvent(strLogFile);
+			////(strLogFile);
 
 
 			*st_pac.m_subbrokerNetAmount=(m_SubBrokerGrossAmount*m_subbrokerRatio/100)-*st_pac.m_subbrokerBrokarage;
@@ -9419,8 +9716,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 			{
 				CString strlogstr = L"";
 				double preval = *LpVolumeTotal[lpvolumetotalIndex];
-				strlogstr.Format(L"Previous Value %.2lf", preval);
-				m_logfile.LogEvent(strlogstr);
+				strlogstr.Format(L"Previous Value %.2lf", preval);				
 			}*/
 
 			int lpvolumetotalIndex = -1;
@@ -9469,8 +9765,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 			{
 				CString strlogstr = L"";
 				double Total = *LpVolumeTotal[lpvolumetotalIndex];
-				strlogstr.Format(L"New Value %.2lf Total Value %.2lf", nowLpVolume, Total);
-				m_logfile.LogEvent(strlogstr);
+				strlogstr.Format(L"New Value %.2lf Total Value %.2lf", nowLpVolume, Total);				
 
 			}*/
 			int check = 0;
@@ -9503,7 +9798,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 
 			
 			CStaticClass::m_mutex_ClientList.Lock();
-			//CStaticClass::m_logfile.LogEvent(L"L18");
+			//(L"L18");
 			POSITION pos = CStaticClass::m_ClientContext.GetStartPosition ();		
 			while (pos != NULL) 
 			{
@@ -9514,13 +9809,13 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 				{
 					if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), strlogin) != m_st.m_logins.end())
 					{
-						m_st.m_newNetPositionUpdated.Add(&st_pac);
+						m_st.m_newNetPositionUpdated.Add(&st_pac);							
 					}
 				}									
 				CStaticClass::m_ClientContext.SetAt(strclientkey,m_st);
 			}
 			CStaticClass::m_mutex_ClientList.Unlock();
-			//CStaticClass::m_logfile.LogEvent(L"_U18");
+			//(L"_U18");
 
 		}
 		//Adding New Position 
@@ -9746,7 +10041,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 				CStaticClass::lastrateArray[lastRateArrayIndex]->m_last = 0;
 				/*CString strlog=L"";
 				strlog.Format(L"Symbol:%s Max TickData Index %d",m_symbol,CStaticClass::lastrateArrayMaxindex);
-				////CStaticClass::m_logfile.LogEvent(strlog);*/
+				////(strlog);*/
 			}			
 			*stnetpos.m_multi=m_stSymbol.m_multiplayer;
 
@@ -10073,13 +10368,26 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 			}
 
 
-											
+			st_netpositionClientWise stnetpos_Check = {};
+			mapNetPositionClientWise.Lookup(ClientSymbolKey, stnetpos_Check);
 			mapNetPositionClientWise.SetAt(ClientSymbolKey,stnetpos);
 
-			////CStaticClass::m_logfile.LogEvent(L"L19");
+			int m_DataNotExist = 0;
+			CString m_loginFound = stnetpos_Check.m_login;
+			m_loginFound = m_loginFound.Trim();
+			if (m_loginFound != L"")
+			{
+				m_DataNotExist = 1;
+			}
+			////(L"L19");
 			CStaticClass::m_mutex_ClientList.Lock();
-			//CStaticClass::m_logfile.LogEvent(L"12");
+			//(L"12");
 			POSITION pos = CStaticClass::m_ClientContext.GetStartPosition ();		
+
+			int m_totalData=CStaticClass::m_ClientContext.GetCount();
+
+
+
 			while (pos != NULL) 
 			{
 				CString strclientkey=L"";		
@@ -10090,13 +10398,17 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 					//Check Problem
 					if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), m_login) != m_st.m_logins.end())
 					{
-						m_st.m_newNetPositionAdded.Add(&stnetpos);
+						/*if (m_DataNotExist == 1)
+						{*/
+
+							m_st.m_newNetPositionAdded.Add(&stnetpos);
+						
 					}
 				}									
 				CStaticClass::m_ClientContext.SetAt(strclientkey,m_st);
 			}
 			CStaticClass::m_mutex_ClientList.Unlock();
-			//CStaticClass::m_logfile.LogEvent(L"U12");
+			//(L"U12");
 
 
 
@@ -10109,7 +10421,7 @@ void CStaticClass::addNewDealToDealData(st_Orika_dealtableAccounting st)
 
 void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSate, CString clientkey)
 {
-	//CStaticClass::m_logfile.LogEvent(L"Enter sendNewTradeToClientFromDeal");
+	//(L"Enter sendNewTradeToClientFromDeal");
 	CString strFinalJson = L"";
 
 	UINT64 m_intLogin = m_deal->Login();
@@ -10137,6 +10449,11 @@ void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSa
 	double m_volume = m_deal->Volume();
 	m_volume = m_volume / 10000;
 	CString m_strTypeFordealing = L"";
+
+	double m_price = m_deal->Price();
+	
+	
+
 
 	CStaticClass::m_mutex_order.Lock();
 	CStaticClass::st_order st_order = {};
@@ -10179,7 +10496,7 @@ void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSa
 		strtype = L"sell";
 		
 	}
-	double m_price = m_deal->Price();
+	
 	//CString m_comment = m_deal->Comment();
 	
 
@@ -10238,13 +10555,13 @@ void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSa
 
 	if (clientkey == "")
 	{
-		CStaticClass::m_logfile.LogEvent(L"m_ClientList_forDeal_locked");
+		
 		m_mutex_dealingClientList.Lock();
 		POSITION pos = CStaticClass::m_ClientList_forDeal.GetStartPosition();
 
 		while (pos != NULL)
 		{
-			//////CStaticClass::m_logfile.LogEvent(L"Sending Deal Data");
+			//////(L"Sending Deal Data");
 			CString strclientkey = L"";
 			SSL_session* client = NULL;
 			CStaticClass::m_ClientList_forDeal.GetNextAssoc(pos, strclientkey, client);
@@ -10313,6 +10630,7 @@ void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSa
 
 		}
 		m_mutex_dealingClientList.Unlock();
+		
 	}
 	else
 	{
@@ -10374,9 +10692,7 @@ void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSa
 				writer.Flush();
 				SendDataToClient(m_st.m_clientConnection, strforsend, clientkey, m_st.m_activeClient);						
 			}		
-	}	
-	//CStaticClass::m_logfile.LogEvent(L"m_ClientList_forDeal_Unlocked");
-	//CStaticClass::m_logfile.LogEvent(L"Exit sendNewTradeToClientFromDeal");
+	}			
 }
 
 
@@ -10384,7 +10700,7 @@ void CStaticClass::sendNewTradeToClientFromDeal(const IMTDeal* m_deal,int dealSa
 
 void CStaticClass::sendorderdealingToClient(const IMTOrder* m_order, int dealSate, CString clientkey)
 {
-	//CStaticClass::m_logfile.LogEvent(L"Enter sendorderdealingToClient");
+	//(L"Enter sendorderdealingToClient");
 	CString strFinalJson = L"";
 
 	UINT64 m_intLogin = m_order->Login();
@@ -10480,9 +10796,9 @@ void CStaticClass::sendorderdealingToClient(const IMTOrder* m_order, int dealSat
 	
 
 
-	////CStaticClass::m_logfile.LogEvent(L"L20");
+	////(L"L20");
 	CStaticClass::m_mutex_dealingClientList.Lock();
-	//CStaticClass::m_logfile.LogEvent(L"13");
+	//(L"13");
 
 	if (clientkey == "")
 	{
@@ -10491,7 +10807,7 @@ void CStaticClass::sendorderdealingToClient(const IMTOrder* m_order, int dealSat
 		POSITION pos = CStaticClass::m_ClientList_forDeal.GetStartPosition();
 		while (pos != NULL)
 		{
-			//////CStaticClass::m_logfile.LogEvent(L"Sending Deal Data");
+			//////(L"Sending Deal Data");
 			CString strclientkey = L"";
 			SSL_session* client = NULL;
 			CStaticClass::m_ClientList_forDeal.GetNextAssoc(pos, strclientkey, client);
@@ -10624,17 +10940,262 @@ void CStaticClass::sendorderdealingToClient(const IMTOrder* m_order, int dealSat
 		
 	}
 	CStaticClass::m_mutex_dealingClientList.Unlock();	
-	//CStaticClass::m_logfile.LogEvent(L"Exit sendorderdealingToClient");
+	//(L"Exit sendorderdealingToClient");
 }
 
 
+
+void CStaticClass::sendlogClient(const IMTOrder* m_order, int dealSate, CString clientkey)
+{
+	//(L"Enter sendorderdealingToClient");
+	CString strFinalJson = L"";
+
+	UINT64 m_intLogin = m_order->Login();
+
+	CString m_login = L"";
+	m_login.Format(L"%I64u", m_intLogin);
+	int m_time = m_order->TimeSetup();
+
+
+	CString m_strTime = L"";
+	CString m_tmp_date = L"";
+	CMTStr256 str_time;
+	SMTFormat::FormatDateTime(str_time, m_time, true, true);
+	m_strTime = str_time.Str();
+
+	CString m_symbol = m_order->Symbol();
+
+	int m_orderno = m_order->Order();
+
+	int m_type = m_order->Type();
+	CString m_strTypeFordealing = L"";
+	if (m_type == 0)
+	{
+		m_strTypeFordealing = L"Order Buy Market";
+	}
+	else if (m_type == 1)
+	{
+		m_strTypeFordealing = L"Order Sell Market";
+	}
+	else if (m_type == 2)
+	{
+		m_strTypeFordealing = L"Order Buy Limit";
+	}
+	else if (m_type == 3)
+	{
+		m_strTypeFordealing = L"Order Sell Limit";
+	}
+	else if (m_type == 4)
+	{
+		m_strTypeFordealing = L"Order Buy Stop";
+	}
+	else if (m_type == 5)
+	{
+		m_strTypeFordealing = L"Order Sell Stop";
+	}
+	CString strtype = L"";
+	double m_volume = m_order->VolumeInitial();
+	m_volume = m_volume / 10000;
+	if (m_type == 0 || m_type == 2 || m_type == 4)
+	{
+		strtype = L"buy";
+	}
+	else if (m_type == 1 || m_type == 3 || m_type == 5)
+	{
+		strtype = L"sell";
+		//m_volume = -m_volume;
+	}
+
+	double m_amount = 0;
+	CString m_comment = m_order->Comment();
+
+
+
+
+
+	double m_price = m_order->PriceOrder();
+	//CString m_comment = m_deal->Comment();
+
+
+	int m_dealReason = 0;
+
+	CString OrderDesc = m_ordertypedesc[m_type];
+
+
+	CString strtmpdata = L"";
+	CString m_reason = L"";
+	if (dealSate == 1)
+	{
+		//m_strTypeFordealing = L"Order Placed";
+		m_reason.Format(L"'%s' #%d %s %.2lf %s at %.4lf", m_login, m_orderno, OrderDesc, m_volume, m_symbol, m_price);
+	}
+	else if (dealSate == 2)
+	{
+		m_strTypeFordealing = L"Order Modify";
+		m_reason.Format(L"'%s' #%d %s %.2lf %s at %.4lf", m_login, m_orderno, OrderDesc, m_volume, m_symbol, m_price);
+	}
+	else if (dealSate == 3)
+	{
+		m_strTypeFordealing = L"Order Deleted";
+		m_reason.Format(L"'%s' #%d %s %.2lf %s at %.4lf", m_login, m_orderno, OrderDesc, m_volume, m_symbol, m_price);
+	}
+
+
+
+
+	////(L"L20");
+	CStaticClass::m_mutex_dealingClientList.Lock();
+	//(L"13");
+
+	if (clientkey == "")
+	{
+		int CountforTest = CStaticClass::m_ClientList_forDeal.GetCount();
+
+		POSITION pos = CStaticClass::m_ClientList_forDeal.GetStartPosition();
+		while (pos != NULL)
+		{
+			//////(L"Sending Deal Data");
+			CString strclientkey = L"";
+			SSL_session* client = NULL;
+			CStaticClass::m_ClientList_forDeal.GetNextAssoc(pos, strclientkey, client);
+
+			CString strloginuser = client->key;
+			strloginuser = strloginuser.Mid(0, strloginuser.Find(L":"));
+			CStaticClass::st_ClientContext m_st = {};
+			CStaticClass::m_mutex_ClientList.Lock();
+			CStaticClass::m_ClientContext.Lookup(strclientkey, m_st);
+			CStaticClass::m_mutex_ClientList.Unlock();
+			if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), m_login) != m_st.m_logins.end())
+			{
+				StringBuffer s;
+				Writer<StringBuffer> writer(s);
+				writer.StartObject();
+				writer.Key("type");
+				writer.String("DEALING_DATA");
+
+
+
+				writer.Key("id");
+				m_dealing_ID = m_dealing_ID + 1;
+				writer.Int(m_dealing_ID);
+
+				writer.Key("time");
+				writer.Int(m_time);
+				writer.Key("login");
+				string strlogin = string(CT2CA(m_login));
+				const char* stlogin = strlogin.c_str();
+				writer.String(stlogin);
+				writer.Key("symbol");
+				string strsymbol = string(CT2CA(m_symbol));
+				const char* stsymbol = strsymbol.c_str();
+				writer.String(stsymbol);
+
+				writer.Key("buysell");
+				string stype = string(CT2CA(strtype));
+				const char* m_strtype = stype.c_str();
+				writer.String(m_strtype);
+
+				writer.Key("volume");
+				writer.Double(m_volume);
+				writer.Key("price");
+				writer.Double(m_price);
+				writer.Key("reason");
+				string strreason = string(CT2CA(m_reason));
+				const char* streason = strreason.c_str();
+				writer.String(streason);
+				writer.Key("dealingtype");
+				string sttype = string(CT2CA(m_strTypeFordealing));
+				const char* sstype = sttype.c_str();
+				writer.String(sstype);
+
+				writer.EndObject();
+				CString strData = L"";
+				strData = s.GetString();
+				string strforsend = "";
+				strforsend = CT2A(strData.GetString());
+				s.Flush();
+				s.Clear();
+				writer.Flush();
+				SendDataToClient(m_st.m_clientConnection, strforsend, strclientkey, m_st.m_activeClient);
+
+			}
+
+		}
+	}
+	else
+	{
+
+		CStaticClass::st_ClientContext m_st = {};
+		CStaticClass::m_mutex_ClientList.Lock();
+		CStaticClass::m_ClientContext.Lookup(clientkey, m_st);
+		CStaticClass::m_mutex_ClientList.Unlock();
+		if (std::find(m_st.m_logins.begin(), m_st.m_logins.end(), m_login) != m_st.m_logins.end())
+		{
+
+			StringBuffer s;
+			Writer<StringBuffer> writer(s);
+			writer.StartObject();
+			writer.Key("type");
+			writer.String("DEALING_DATA");
+
+
+
+			writer.Key("id");
+			m_dealing_ID = m_dealing_ID + 1;
+			writer.Int(m_dealing_ID);
+
+			writer.Key("time");
+			writer.Int(m_time);
+			writer.Key("login");
+			string strlogin = string(CT2CA(m_login));
+			const char* stlogin = strlogin.c_str();
+			writer.String(stlogin);
+			writer.Key("symbol");
+			string strsymbol = string(CT2CA(m_symbol));
+			const char* stsymbol = strsymbol.c_str();
+			writer.String(stsymbol);
+
+			writer.Key("buysell");
+			string stype = string(CT2CA(strtype));
+			const char* m_strtype = stype.c_str();
+			writer.String(m_strtype);
+
+			writer.Key("volume");
+			writer.Double(m_volume);
+			writer.Key("price");
+			writer.Double(m_price);
+			writer.Key("reason");
+			string strreason = string(CT2CA(m_reason));
+			const char* streason = strreason.c_str();
+			writer.String(streason);
+			writer.Key("dealingtype");
+			string sttype = string(CT2CA(m_strTypeFordealing));
+			const char* sstype = sttype.c_str();
+			writer.String(sstype);
+
+			writer.EndObject();
+			CString strData = L"";
+			strData = s.GetString();
+			string strforsend = "";
+			strforsend = CT2A(strData.GetString());
+			s.Flush();
+			s.Clear();
+			writer.Flush();
+			SendDataToClient(m_st.m_clientConnection, strforsend, clientkey, m_st.m_activeClient);
+		}
+
+
+	}
+	CStaticClass::m_mutex_dealingClientList.Unlock();
+	//(L"Exit sendorderdealingToClient");
+}
 
 
 
 
 void CStaticClass::sendNewTradeToClient(const IMTDeal* st)
 {
-	//CStaticClass::m_logfile.LogEvent(L"Enter sendNewTradeToClient");
+	//(L"Enter sendNewTradeToClient");
 		CString strFinalJson=L"";
 
 		UINT64 m_intLogin = st->Login();
@@ -10643,7 +11204,7 @@ void CStaticClass::sendNewTradeToClient(const IMTDeal* st)
 		m_login.Format(L"%I64u", m_intLogin);
 		int m_time =st->Time();
 
-
+		m_time = m_time - 19800;
 		CString m_strTime=L"";		
 		CString m_tmp_date=L"";
 		CMTStr256 str_time;
@@ -10719,15 +11280,15 @@ void CStaticClass::sendNewTradeToClient(const IMTDeal* st)
 		
 
 
-		////CStaticClass::m_logfile.LogEvent(L"L20");
+		////(L"L20");
 			
 		CStaticClass::m_mutex_dealingClientList.Lock();
-		//CStaticClass::m_logfile.LogEvent(L"13");
+		//(L"13");
 		POSITION pos = CStaticClass::m_ClientList_forDeal.GetStartPosition ();		
 
 		while (pos != NULL) 
 		{
-			//////CStaticClass::m_logfile.LogEvent(L"Sending Deal Data");
+			//////(L"Sending Deal Data");
 			CString strclientkey=L"";		
 			SSL_session* client=NULL;
 			CStaticClass::m_ClientList_forDeal.GetNextAssoc(pos, strclientkey,client);
@@ -10793,7 +11354,7 @@ void CStaticClass::sendNewTradeToClient(const IMTDeal* st)
 			}
 		}
 		CStaticClass::m_mutex_dealingClientList.Unlock();
-		//CStaticClass::m_logfile.LogEvent(L"Exit sendNewTradeToClient");
+		//(L"Exit sendNewTradeToClient");
 }
 
 
@@ -10820,7 +11381,7 @@ CString CStaticClass::sysOnlyDateToStringFormat(SYSTEMTIME st)
 
 void CStaticClass::sendDataToAllClient(string msg)
 {	
-	////CStaticClass::m_logfile.LogEvent(L"Enter sendDataToAllClient");
+	////(L"Enter sendDataToAllClient");
 	ClientContext m_ClientContext_Local;
 
 		CStaticClass::m_mutex_ClientList.Lock();
@@ -10850,18 +11411,18 @@ void CStaticClass::sendDataToAllClient(string msg)
 			m_ClientContext_Local.GetNextAssoc(pos_tmp, strclientkey, m_st);
 			SSL_session* client = NULL;
 			client = m_st.m_clientConnection;
-			//CStaticClass::m_logfile.LogEvent(L"Going To Send Data To Client");
+			//(L"Going To Send Data To Client");
 			SendDataToClient(client, msg, strclientkey, m_st.m_activeClient);
-			//CStaticClass::m_logfile.LogEvent(L"Data Has Been Sent To Client");
+			//(L"Data Has Been Sent To Client");
 		}
 
-		////CStaticClass::m_logfile.LogEvent(L"Exit sendDataToAllClient");
+		////(L"Exit sendDataToAllClient");
 }
 
 
 void CStaticClass::sendDataToAll_Other_Client(string msg,CString m_ignorekey)
 {
-	////CStaticClass::m_logfile.LogEvent(L"Enter sendDataToAllClient");
+	////(L"Enter sendDataToAllClient");
 	ClientContext m_ClientContext_Local;
 
 	CStaticClass::m_mutex_ClientList.Lock();
@@ -10894,12 +11455,12 @@ void CStaticClass::sendDataToAll_Other_Client(string msg,CString m_ignorekey)
 		m_ClientContext_Local.GetNextAssoc(pos_tmp, strclientkey, m_st);
 		SSL_session* client = NULL;
 		client = m_st.m_clientConnection;
-		//CStaticClass::m_logfile.LogEvent(L"Going To Send Data To Client");
+		//(L"Going To Send Data To Client");
 		SendDataToClient(client, msg, strclientkey, m_st.m_activeClient);
-		//CStaticClass::m_logfile.LogEvent(L"Data Has Been Sent To Client");
+		//(L"Data Has Been Sent To Client");
 	}
 
-	////CStaticClass::m_logfile.LogEvent(L"Exit sendDataToAllClient");
+	////(L"Exit sendDataToAllClient");
 }
 
 
@@ -10908,7 +11469,7 @@ void CStaticClass::sendDataToAll_Other_Client(string msg,CString m_ignorekey)
 
 void CStaticClass::sendTickToAllClient(CString m_symbol,string msg)
 {
-	////CStaticClass::m_logfile.LogEvent(L"Enter sendDataToAllClient");
+	////(L"Enter sendDataToAllClient");
 	ClientContext m_ClientContext_Local;
 	CStaticClass::m_mutex_ClientList.Lock();
 	POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
@@ -10944,17 +11505,17 @@ void CStaticClass::sendTickToAllClient(CString m_symbol,string msg)
 		m_ClientContext_Local.GetNextAssoc(pos_tmp, strclientkey, m_st);
 		SSL_session* client = NULL;
 		client = m_st.m_clientConnection;
-		//CStaticClass::m_logfile.LogEvent(L"Going To Send Data To Client");
+		//(L"Going To Send Data To Client");
 		SendDataToClient(client, msg, strclientkey, m_st.m_activeClient);
-		//CStaticClass::m_logfile.LogEvent(L"Data Has Been Sent To Client");
+		//(L"Data Has Been Sent To Client");
 	}
 
-	////CStaticClass::m_logfile.LogEvent(L"Exit sendDataToAllClient");
+	////(L"Exit sendDataToAllClient");
 }
 
 void CStaticClass::sendDataToAllClient_LPData(string msg)
 {
-	////CStaticClass::m_logfile.LogEvent(L"Enter sendDataToAllClient");
+	////(L"Enter sendDataToAllClient");
 	ClientContext m_ClientContext_Local;
 	CStaticClass::m_mutex_ClientList.Lock();
 	POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
@@ -10977,18 +11538,18 @@ void CStaticClass::sendDataToAllClient_LPData(string msg)
 		m_ClientContext_Local.GetNextAssoc(pos_tmp, strclientkey, m_st);
 		SSL_session* client = NULL;
 		client = m_st.m_clientConnection;
-		////CStaticClass::m_logfile.LogEvent(L"Going To Send Data To Client");
+		////(L"Going To Send Data To Client");
 		SendDataToClient(client, msg, strclientkey, m_st.m_activeClient);
-		////CStaticClass::m_logfile.LogEvent(L"Data Has Been Sent To Client");
+		////(L"Data Has Been Sent To Client");
 	}
-	////CStaticClass::m_logfile.LogEvent(L"Exit sendDataToAllClient");
+	////(L"Exit sendDataToAllClient");
 }
 
 
 
 void CStaticClass::sendDataToAllAPIClient_LPData(string msg)
 {
-	//CStaticClass::m_logfile.LogEvent(L"Enter sendDataToAllClient");
+	//(L"Enter sendDataToAllClient");
 	ClientContext m_ClientContext_Local;
 	CStaticClass::m_mutex_ClientList.Lock();
 	POSITION pos = CStaticClass::m_ClientContext.GetStartPosition();
@@ -11011,11 +11572,11 @@ void CStaticClass::sendDataToAllAPIClient_LPData(string msg)
 		m_ClientContext_Local.GetNextAssoc(pos_tmp, strclientkey, m_st);
 		SSL_session* client = NULL;
 		client = m_st.m_clientConnection;
-		////CStaticClass::m_logfile.LogEvent(L"Going To Send Data To Client");
+		////(L"Going To Send Data To Client");
 		SendDataToClient(client, msg, strclientkey, m_st.m_activeClient);
-		////CStaticClass::m_logfile.LogEvent(L"Data Has Been Sent To Client");
+		////(L"Data Has Been Sent To Client");
 	}
-	//CStaticClass::m_logfile.LogEvent(L"Exit sendDataToAllClient");
+	//(L"Exit sendDataToAllClient");
 }
 
 
@@ -11026,9 +11587,9 @@ void CStaticClass::sendHeartBeattoAllClient()
 	while(CStaticClass::heartBeatStart==1)
 	{
 		
-		//////CStaticClass::m_logfile.LogEvent(L"L21");
+		//////(L"L21");
 		CStaticClass::m_mutex_ClientList.Lock();
-		////CStaticClass::m_logfile.LogEvent(L"14");
+		////(L"14");
 		
 		POSITION pos = CStaticClass::m_ClientContext.GetStartPosition ();
 		
@@ -11045,10 +11606,10 @@ void CStaticClass::sendHeartBeattoAllClient()
 				{
 					
 					string strforsend="{\"type\":\"HEART_BEAT\",\"data\":\"ok\"}";
-					////CStaticClass::m_logfile.LogEvent(L"HB Sending Start");
+					////(L"HB Sending Start");
 					CStaticClass::m_ClientContext.GetNextAssoc(pos, strclientkey,m_st);
 					SendDataToClient(client, strforsend, strclientkey, m_st.m_activeClient);
-					////CStaticClass::m_logfile.LogEvent(L"HB Sending End");
+					////(L"HB Sending End");
 					m_st.m_lastDataSended=CurrentTime;
 					CStaticClass::m_ClientContext.SetAt(strclientkey,m_st);
 				}
@@ -11057,9 +11618,9 @@ void CStaticClass::sendHeartBeattoAllClient()
 		}
 		
 		CStaticClass::m_mutex_ClientList.Unlock();
-		////CStaticClass::m_logfile.LogEvent(L"U14");
+		////(L"U14");
 		Sleep(20);
-		//////CStaticClass::m_logfile.LogEvent(L"_U21");
+		//////(L"_U21");
 	}
 	
 }
@@ -11117,6 +11678,82 @@ void CStaticClass::sendUpdatedTick()
 	}
 
 }
+void CStaticClass::comparePosition()
+{
+	
+	while (CStaticClass::startComparePosition == 1)
+	{
+		m_mtmanager.getPositionFromMT();		
+
+		CMap<CString, LPCTSTR, CStaticClass::st_netpositionClientWise, CStaticClass::st_netpositionClientWise&>  mapNetPositionClientWise_Temp;
+		m_mutex_Tick.Lock();
+		POSITION pos = mapNetPositionClientWise.GetStartPosition();
+		while (pos != NULL)
+		{
+			st_netpositionClientWise m_stMain = {};
+			CString loginSymbolKey = L"";
+			mapNetPositionClientWise.GetNextAssoc(pos, loginSymbolKey, m_stMain);						
+			mapNetPositionClientWise_Temp.SetAt(loginSymbolKey, m_stMain);
+		}
+		m_mutex_Tick.Unlock();
+		POSITION pos_P = CStaticClass::m_ClientSymbolPosition_MT.GetStartPosition();
+		while (pos_P != NULL)
+		{
+			CString login_symbol = L"";
+			double m_volume = 0;
+			CStaticClass::m_ClientSymbolPosition_MT.GetNextAssoc(pos_P, login_symbol, m_volume);
+			m_volume = m_volume / 10000;
+			st_netpositionClientWise m_stMain = {};
+			mapNetPositionClientWise_Temp.Lookup(login_symbol, m_stMain);
+			double m_volume_Orika = *m_stMain.m_volume;
+			if (m_volume_Orika!= m_volume)
+			{
+				m_mismatch_position.SetAt(login_symbol, m_volume_Orika);
+			}
+		}
+		for (int i = 0; i <= 5; i++)
+		{
+			Re_comparePosition();
+			Sleep(1000);
+		}
+
+		POSITION pos_P_final = CStaticClass::m_mismatch_position.GetStartPosition();
+		while (pos_P_final != NULL)
+		{
+			CString login_symbol = L"";
+			double m_volume = 0;
+			CStaticClass::m_mismatch_position.GetNextAssoc(pos_P_final, login_symbol, m_volume);
+		}
+		Sleep(300000);
+	}
+
+}
+
+void CStaticClass::Re_comparePosition()
+{	
+	POSITION pos_P = CStaticClass::m_mismatch_position.GetStartPosition();
+	while (pos_P != NULL)
+	{
+		CString login_symbol = L"";
+		double m_volume = 0;
+		CStaticClass::m_mismatch_position.GetNextAssoc(pos_P, login_symbol, m_volume);
+		CString m_login = login_symbol.Mid(0, login_symbol.Find(L":") - 1);
+		CString m_symbol= login_symbol.Mid(login_symbol.Find(L":") + 1,(login_symbol.GetLength()-(login_symbol.Find(L":") + 1)));
+		UINT64 m_ulogin = _wtoi64(m_symbol);
+		double m_mt_position=m_mtmanager.getPositionFromMTClientWise(m_ulogin, m_symbol);
+		m_mt_position = m_mt_position / 10000;
+		m_mutex_Tick.Lock();				
+			st_netpositionClientWise m_stMain = {};			
+			mapNetPositionClientWise.Lookup (login_symbol, m_stMain);
+			double m_orika_position = *m_stMain.m_volume;
+		m_mutex_Tick.Unlock();
+		if (m_orika_position == m_mt_position)
+		{
+			mapNetPositionClientWise.RemoveKey(login_symbol);
+		}
+	}	
+}
+
 
 
 
@@ -11168,7 +11805,7 @@ void CStaticClass::GettingTickDataFromManager()
 				CStaticClass::st_updatedTickSymbol m_tmpst = {};
 				CMTStr::Copy(m_tmpst.m_symbol, m_symbol);
 				CStaticClass::m_mutex_ClientList.Lock();
-				//CStaticClass::m_logfile.LogEvent(L"T17");
+				//(L"T17");
 				POSITION posClient = CStaticClass::m_ClientContext.GetStartPosition();
 				while (posClient != NULL)
 				{
@@ -11192,7 +11829,6 @@ void CStaticClass::GettingTickDataFromManager()
 
 					if (indexKey < 0)
 					{
-
 						m_stClient.m_TickSymbolListForSymbolPosition.Add(&m_tmpst);
 						m_stClient.m_updatedTickSymbolArray.Add(&m_tmpst);
 					}
@@ -11205,10 +11841,8 @@ void CStaticClass::GettingTickDataFromManager()
 					CStaticClass::m_ClientContext.SetAt(strclientkey, m_stClient);
 				}
 				CStaticClass::m_mutex_ClientList.Unlock();
-				//CStaticClass::m_logfile.LogEvent(L"UT17");
+				//(L"UT17");
 			}
-
-
 		}
 		Sleep(1);
 	}
@@ -11242,7 +11876,7 @@ void CStaticClass::DataCalNetPositionclientwiseFromTickData()
 
 				
 
-				//////CStaticClass::m_logfile.LogEvent(loginAndSymbolKey);
+				//////(loginAndSymbolKey);
 
 				CStaticClass::st_netpositionClientWise  st_pac={};
 				CStaticClass::mapNetPositionClientWise.Lookup(loginAndSymbolKey,st_pac);
@@ -11365,7 +11999,7 @@ void CStaticClass::DataCalNetPositionclientwiseFromTickData()
 		}			
 		CStaticClass::UpdatedsymbolLastTickArrayIndex.RemoveAll();
 		CStaticClass::m_mutex_Tick.Unlock();
-		//////CStaticClass::m_logfile.LogEvent(L"End Calculation");
+		//////(L"End Calculation");
 		Sleep(1);
 	}
 }
@@ -11374,7 +12008,7 @@ void CStaticClass::UpdateOrderStatus(CString m_Symbol,double low,double heigh)
 {
 	CString strLog = L"";
 	strLog.Format(L"Going To Update Order Status For Symbol %s Current Heigh:%.2lf Low:%.2lf", m_Symbol, heigh,low);
-	//CStaticClass::m_logfile.LogEvent(strLog);
+	//(strLog);
 	POSITION pos = CStaticClass::m_Orika_orderHastable.GetStartPosition();
 	StringBuffer s;
 	Writer<StringBuffer> writer(s);	
@@ -11411,10 +12045,10 @@ void CStaticClass::UpdateOrderStatus(CString m_Symbol,double low,double heigh)
 
 
 				strLog.Format(L"Order %d Found For Change Status PBNPS Order Price:%.4lf low:%.4lf", m_orderno, orderPrice, low);
-				//CStaticClass::m_logfile.LogEvent(strLog);
+				//(strLog);
 				CStaticClass::m_mtmanager.UpdateOrderINMT(m_order, L"ExternalID", m_OrderStatus);
 				strLog.Format(L"Status Update");
-				//CStaticClass::m_logfile.LogEvent(strLog);
+				//(strLog);
 			}
 			CStaticClass::m_Orika_orderHastable.SetAt(m_order, st);
 			writer.StartObject();
@@ -11425,11 +12059,11 @@ void CStaticClass::UpdateOrderStatus(CString m_Symbol,double low,double heigh)
 			writer.Key("statustype");
 			writer.String(ststatustype);			
 			writer.EndObject();
-			//CStaticClass::m_logfile.LogEvent(L"Test02");
+			//(L"Test02");
 		}
 		if (m_Symbol == m_orderSymbol && (orderState == 1001 || orderState == 1002) && heigh != 0 && (orderType == 3 || orderType == 4 || orderType == 7))
 		{
-			//CStaticClass::m_logfile.LogEvent(L"Test03");
+			//(L"Test03");
 			if (orderPrice <= heigh)
 			{
 				m_OrderStatus = L"PBNPS";
@@ -11439,19 +12073,157 @@ void CStaticClass::UpdateOrderStatus(CString m_Symbol,double low,double heigh)
 				CMTStr::Copy(st.m_status, m_OrderStatus);
 
 				strLog.Format(L"Order %d Found For Change Status PBNPS Order Price:%.4lf Heigh:%.4lf", m_orderno, orderPrice, heigh);
-				//CStaticClass::m_logfile.LogEvent(strLog);
+				//(strLog);
 				CStaticClass::m_mtmanager.UpdateOrderINMT(m_order,L"ExternalID", m_OrderStatus);
 				strLog.Format(L"Status Update");
-				//CStaticClass::m_logfile.LogEvent(strLog);
+				//(strLog);
 			}
 			CStaticClass::m_Orika_orderHastable.SetAt(m_order, st);
+
+
+			CString m_login = st.m_login;
+			int m_time = st.m_time- 19800;
+
+			CString m_strTime = L"";
+			CString m_tmp_date = L"";
+			CMTStr256 str_time;
+			SMTFormat::FormatDateTime(str_time, m_time, true, true);
+			m_strTime = str_time.Str();
+
+
+			int m_deal = st.m_deal;
+			int m_order = st.m_order;
+			CString m_symbol = st.m_symbol;
+			int m_type = st.m_type;
+			CString strtype = L"";
+			if (m_type == 2)
+			{
+				strtype = L"Buy Limit";
+			}
+			else if (m_type == 3)
+			{
+				strtype = L"Sell Limit";
+			}
+			else if (m_type == 4)
+			{
+				strtype = L"Buy Stop";
+			}
+			else if (m_type == 5)
+			{
+				strtype = L"Sell Stop";
+			}
+			else if (m_type == 6)
+			{
+				strtype = L"Buy Stop";
+			}
+			else if (m_type == 7)
+			{
+				strtype = L"Sell Stop Limit";
+			}
+			double m_volume = st.m_volume;
+			double m_price = st.m_price;
+			CString m_comment = st.m_comment;
+			CString m_status = st.m_status;
+			int m_select = st.m_select;
+			CString strselect = L"";
+			if (m_select == 0)
+			{
+				strselect = "false";
+			}
+			else
+			{
+				strselect = "true";
+			}
+
+			CString m_selecttype = st.m_selecttype;
+			CString m_subtype = st.m_subtype;
+			int m_contraorder = st.m_contraorder;
+			int m_tradeexecutetime = st.m_tradeexecutetime;
+			CString m_ourcomment = st.m_ourcomment;
+			int m_orderstate = st.m_orderstate;
+
+			CString strtmpdata = L"";
+
+
+			CString str_orderstate = L"";
+			if (m_orderstate == 1001)
+			{
+				str_orderstate = L"NEW";
+			}
+			if (m_orderstate == 1002)
+			{
+				str_orderstate = L"UPDATE";
+			}
+			if (m_orderstate == 1003 || m_orderstate == 1005)
+			{
+				str_orderstate = L"DELETE";
+			}
+
 			writer.StartObject();
-			writer.Key("order");
+			/*writer.Key("order");
 			writer.Int64(m_order);
 			string strstatustype = string(CT2CA(m_OrderStatus));
 			const char* ststatustype = strstatustype.c_str();
 			writer.Key("statustype");
-			writer.String(ststatustype);
+			writer.String(ststatustype);*/			
+				writer.StartObject();
+				writer.Key("login");
+				string sslogin = string(CT2CA(m_login));
+				const char* stlogin = sslogin.c_str();
+				writer.String(stlogin);
+				writer.Key("time");
+				/*string ssTime = string(CT2CA(m_strTime));
+				const char* stTime = ssTime.c_str();*/
+				writer.Int(m_time);
+				writer.Key("deal");
+				writer.Int64(m_deal);
+				writer.Key("order");
+				writer.Int64(m_order);
+				writer.Key("symbol");
+				string ssSymbol = string(CT2CA(m_symbol));
+				const char* stSymbol = ssSymbol.c_str();
+				writer.String(stSymbol);
+				writer.Key("type");
+				string sstype = string(CT2CA(strtype));
+				const char* sttype = sstype.c_str();
+				writer.String(sttype);
+				writer.Key("volume");
+				writer.Double(m_volume);
+				writer.Key("price");
+				writer.Double(m_price);
+				writer.Key("comment");
+				string sscomment = string(CT2CA(m_comment));
+				const char* stcomment = sscomment.c_str();
+				writer.String(stcomment);
+				writer.Key("status");
+				string ssstatus = string(CT2CA(m_status));
+				const char* ststatus = ssstatus.c_str();
+				writer.String(ststatus);
+				writer.Key("select");
+				string ssselect = string(CT2CA(strselect));
+				const char* stselect = ssselect.c_str();
+				writer.String(stselect);
+				writer.Key("statustype");
+				string ssselecttype = string(CT2CA(m_selecttype));
+				const char* stselecttype = ssselecttype.c_str();
+				writer.String(stselecttype);				
+				writer.Key("subtype");
+				string sssubtype = string(CT2CA(m_subtype));
+				const char* stsubtype = sssubtype.c_str();
+				writer.String(stsubtype);
+				writer.Key("contraorder");
+				writer.Int(m_contraorder);
+				writer.Key("tradeexecutetime");
+				writer.Int(m_tradeexecutetime);
+				writer.Key("ourcomment");
+				string ssourcomment = string(CT2CA(m_ourcomment));
+				const char* stourcomment = ssourcomment.c_str();
+				writer.String(stourcomment);
+				writer.Key("orderstate");
+				string ssorderstate = string(CT2CA(str_orderstate));
+				const char* storderstate = ssorderstate.c_str();
+				writer.String(storderstate);
+				writer.EndObject();			
 			writer.EndObject();			
 		}
 	}	
@@ -11461,9 +12233,9 @@ void CStaticClass::UpdateOrderStatus(CString m_Symbol,double low,double heigh)
 	strData = s.GetString();
 	string strforsend = "";
 	strforsend = CT2A(strData.GetString());
-	//CStaticClass::m_logfile.LogEvent(L"Test05");
+	//(L"Test05");
 	sendDataToAllClient(strforsend);
-	//CStaticClass::m_logfile.LogEvent(L"Test06");
+	//(L"Test06");
 	s.Clear();
 	s.Flush();
 }
