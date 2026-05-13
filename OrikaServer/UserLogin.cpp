@@ -19,42 +19,51 @@ CUserLogin::~CUserLogin()
 
 bool CUserLogin::validateSerialno(CString loginuser,CString hdno)
 {
-	CString rval=L"";
-	HRESULT hr=NULL ;
-	CCommand<CAccessor<CTableHDno>> data_table;								
-	if(!SUCCEEDED(hr))
-	{
-		return false ;
-	}
-	CString   strCommand=L"";	
-	strCommand=L"";	
-	strCommand.Format(L"select userlogin,HDno from orika_userLoginHDkeyMapping where userlogin='%s' and (HDno='%s' or HDno='*' );",loginuser,hdno);  
-	
+	// I10: previous code did `HRESULT hr=NULL; if(!SUCCEEDED(hr)) return false;`
+	// which was a dead guard (SUCCEEDED(0) is true). Initialise hr to E_FAIL
+	// and remove the dead branch. MoveNext loop's precedence was also wrong
+	// (assigned bool to hr instead of HRESULT); now parenthesised correctly.
+	// SQL access wrapped in try/catch because ATL CSession::Open throws on
+	// failure when the CDataSource is not open (audit I9 chain).
+	HRESULT hr = E_FAIL;
+	CString strCommand;
+	strCommand.Format(L"select userlogin,HDno from orika_userLoginHDkeyMapping where userlogin='%s' and (HDno='%s' or HDno='*' );", loginuser, hdno);
+
+	int m_sl_validated = 0;
 	CSession m_tempSession;
-	////(L"L12");
-	m_tempSession.Open(CStaticClass::connection);
-	hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
-	if(FAILED(hr))
-	{				
+	try
+	{
+		m_tempSession.Open(CStaticClass::connection);
+		CCommand<CAccessor<CTableHDno>> data_table;
+		hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
+		if (FAILED(hr))
+		{
+			m_tempSession.Close();
+			return false;
+		}
+		while ((hr = data_table.MoveNext()) == S_OK)
+		{
+			m_sl_validated = 1;
+		}
+		m_tempSession.Close();
+	}
+	catch (CException* e)
+	{
+		TCHAR errMsg[512] = {0};
+		e->GetErrorMessage(errMsg, _countof(errMsg));
+		CString line;
+		line.Format(L"validateSerialno: SQL exception: %s", errMsg);
+		CStaticClass::m_logfile.LogEvent(line);
+		e->Delete();
 		return false;
 	}
-	CString m_password=L"" ;
-	CString m_name=L"" ;
-	int m_sl_validated = 0;
-	while(hr=data_table.MoveNext()==S_OK)
-	{			
-		m_sl_validated = 1;
-		////(L"UL12");			
+	catch (...)
+	{
+		CStaticClass::m_logfile.LogEvent(L"validateSerialno: unknown SQL exception (likely CDataSource not open)");
+		return false;
 	}
 
-	m_tempSession.Close();
-	if (m_sl_validated == 1)
-	{
-		return true;		
-	}
-	////(L"UL12");
-	
-	return false;
+	return (m_sl_validated == 1);
 }
 
 int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
@@ -89,39 +98,50 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 
 
 
-					CString rval=L"";
-					HRESULT hr=NULL ;
-					CCommand<CAccessor<CTableLoginPassword>> data_table;								
-					if(!SUCCEEDED(hr))
-					{
-						return 1 ;
-					}
-					CString   strCommand=L"";	
-					strCommand=L"";	
-					strCommand.Format(L"select pwd,name from orika_userlogin where UserLogin='%s';",struser);
-					
+					// I10: see validateSerialno for rationale - dead SUCCEEDED guard
+					// removed, hr initialised to E_FAIL, MoveNext precedence fixed,
+					// SQL access wrapped in try/catch.
+					HRESULT hr = E_FAIL;
+					CString strCommand;
+					strCommand.Format(L"select pwd,name from orika_userlogin where UserLogin='%s';", struser);
+
+					CString m_password;
+					CString m_name;
 					CSession m_tempSession;
-					////(L"L11");
-					m_tempSession.Open(CStaticClass::connection);
-					hr=data_table.Open(m_tempSession,(LPCTSTR)strCommand);
-					if(FAILED(hr))
+					try
 					{
-						
-						////(L"UL11");
+						m_tempSession.Open(CStaticClass::connection);
+						CCommand<CAccessor<CTableLoginPassword>> data_table;
+						hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
+						if (FAILED(hr))
+						{
+							m_tempSession.Close();
+							return 1;
+						}
+						while ((hr = data_table.MoveNext()) == S_OK)
+						{
+							m_password = data_table.m_password;
+							m_name = data_table.m_name;
+						}
+						m_tempSession.Close();
+					}
+					catch (CException* e)
+					{
+						TCHAR errMsg[512] = {0};
+						e->GetErrorMessage(errMsg, _countof(errMsg));
+						CString line;
+						line.Format(L"userValideate(login): SQL exception: %s", errMsg);
+						CStaticClass::m_logfile.LogEvent(line);
+						e->Delete();
 						return 1;
 					}
-					CString m_password=L"" ;
-					CString m_name=L"" ;
-					while(hr=data_table.MoveNext()==S_OK)
-					{			
-						m_password=data_table.m_password ;
-						m_name=data_table.m_name;
+					catch (...)
+					{
+						CStaticClass::m_logfile.LogEvent(L"userValideate(login): unknown SQL exception");
+						return 1;
 					}
-					m_tempSession.Close();
-					
-					////(L"UL11");
 
-					if (m_password==strpwd)
+					if (m_password == strpwd)
 					{
 						return 0;
 					}
@@ -148,35 +168,48 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 				{
 					return 3;
 				}
-				CString rval = L"";
-				HRESULT hr = NULL;
-				CCommand<CAccessor<CTableLoginPassword>> data_table;
-				if (!SUCCEEDED(hr))
-				{
-					return 1;
-				}
-				CString   strCommand = L"";
-				strCommand = L"";
+				// I10: see validateSerialno for rationale - dead SUCCEEDED guard
+				// removed, hr initialised to E_FAIL, MoveNext precedence fixed,
+				// SQL access wrapped in try/catch.
+				HRESULT hr = E_FAIL;
+				CString strCommand;
 				strCommand.Format(L"select pwd,name from orika_userlogin where UserLogin='%s' and apilogin=1;", struser);
 
+				CString m_password;
+				CString m_name;
 				CSession m_tempSession;
-				////(L"L11");
-				m_tempSession.Open(CStaticClass::connection);
-				hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
-				if (FAILED(hr))
-				{										
+				try
+				{
+					m_tempSession.Open(CStaticClass::connection);
+					CCommand<CAccessor<CTableLoginPassword>> data_table;
+					hr = data_table.Open(m_tempSession, (LPCTSTR)strCommand);
+					if (FAILED(hr))
+					{
+						m_tempSession.Close();
+						return 1;
+					}
+					while ((hr = data_table.MoveNext()) == S_OK)
+					{
+						m_password = data_table.m_password;
+						m_name = data_table.m_name;
+					}
+					m_tempSession.Close();
+				}
+				catch (CException* e)
+				{
+					TCHAR errMsg[512] = {0};
+					e->GetErrorMessage(errMsg, _countof(errMsg));
+					CString line;
+					line.Format(L"userValideate(api): SQL exception: %s", errMsg);
+					CStaticClass::m_logfile.LogEvent(line);
+					e->Delete();
 					return 1;
 				}
-				CString m_password = L"";
-				CString m_name = L"";
-				while (hr = data_table.MoveNext() == S_OK)
+				catch (...)
 				{
-					m_password = data_table.m_password;
-					m_name = data_table.m_name;
+					CStaticClass::m_logfile.LogEvent(L"userValideate(api): unknown SQL exception");
+					return 1;
 				}
-				m_tempSession.Close();
-				
-				////(L"UL11");
 
 				if (m_password == strpwd)
 				{
