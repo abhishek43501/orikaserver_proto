@@ -2403,47 +2403,58 @@ bool CManager::Initialize()
    CString  message;
 //--- check
    //if(parent==NULL)return(false);
-//--- parent window   
-//--- initialize factory  
+//--- parent window
+//--- initialize factory
+   // I11: every early-return below now calls m_factory.Shutdown() (which is
+   // guarded internally by `if(m_hmodule)` and is safe to call even on failed
+   // Initialize). Previously three paths leaked the loaded MT5 DLL handle.
+   // The Format() messages are also now logged - previously they were
+   // computed and thrown away.
    if((res=m_factory.Initialize(L"MT5\\Manager\\API\\"))!=MT_RET_OK)
      {
-      message.Format(L"Dealer: loading manager API failed (%u)",res);
-      
+      message.Format(L"CManager::Initialize: m_factory.Initialize failed (%u)",res);
+      CStaticClass::m_logfile.LogEvent(message);
+      m_factory.Shutdown();
       return(false);
      }
 
-   
+
 //--- check Manager API version
    if((res=m_factory.Version(version))!=MT_RET_OK)
      {
-      message.Format(L"Dealer: getting version failed (%u)",res);
-      
+      message.Format(L"CManager::Initialize: m_factory.Version failed (%u)",res);
+      CStaticClass::m_logfile.LogEvent(message);
+      m_factory.Shutdown();
       return(false);
      }
    if(version!=MTManagerAPIVersion)
      {
-      message.Format(L"Dealer: wrong Manager API version, version %u required",MTManagerAPIVersion);
-      
+      message.Format(L"CManager::Initialize: wrong MT5 Manager API version (got %u, expected %u)",version,MTManagerAPIVersion);
+      CStaticClass::m_logfile.LogEvent(message);
+      m_factory.Shutdown();
       return(false);
      }
 //--- create manager interface
    if((res=m_factory.CreateManager(MTManagerAPIVersion,&m_manager))!=MT_RET_OK)
      {
-      message.Format(L"Dealer: creating manager interface failed (%u)",res);
-      
+      message.Format(L"CManager::Initialize: CreateManager failed (%u)",res);
+      CStaticClass::m_logfile.LogEvent(message);
+      m_factory.Shutdown();
       return(false);
      }
 
    if((res=m_factory.CreateAdmin(MTManagerAPIVersion,&m_admin))!=MT_RET_OK)
      {
+      message.Format(L"CManager::Initialize: CreateAdmin failed (%u)",res);
+      CStaticClass::m_logfile.LogEvent(message);
+      // Release the manager we just created before shutting down the factory.
+      if (m_manager) { m_manager->Release(); m_manager = NULL; }
       m_factory.Shutdown();
-      message.Format(L"Creating manager interface failed (%u)",res);
-      
       return(false);
-     }	 	
+     }
 //--- done
 
-   
+
    return(true);
   }
 
