@@ -157,14 +157,37 @@ void ssl_init()
 	const SSL_METHOD* meth = TLS_server_method();
 	ssl_ctx = SSL_CTX_new(meth);
 
-	if (!SSL_CTX_load_verify_locations(ssl_ctx, "gd_bundle.crt", NULL)) 
+	// I4: SSL_CTX_new can return NULL on OOM, OPENSSL_init_ssl failure, or
+	// libssl/libcrypto DLL version mismatch. The next OpenSSL calls would
+	// dereference ssl_ctx and crash the process with no log entry.
+	if (ssl_ctx == nullptr)
+	{
+		CStaticClass::m_logfile.LogEvent(L"ssl_init: SSL_CTX_new(TLS_server_method) returned NULL - TLS disabled");
+		// Drain whatever OpenSSL put on the error queue.
+		unsigned long e;
+		char buf[256];
+		while ((e = ERR_get_error()) != 0) {
+			ERR_error_string_n(e, buf, sizeof(buf));
+			CString errMsg(buf);
+			CString line;
+			line.Format(L"ssl_init: OpenSSL: %s", (LPCWSTR)errMsg);
+			CStaticClass::m_logfile.LogEvent(line);
+		}
+		// Process continues without TLS. The listener will be created but
+		// SSL handshakes will fail (and be logged) instead of taking down
+		// the whole server.
+		InitializeCriticalSection(&lock_connect_ex);
+		return;
+	}
+
+	if (!SSL_CTX_load_verify_locations(ssl_ctx, "gd_bundle.crt", NULL))
 	{
 		BIO* bio = BIO_new_file("error_log.txt", "w");
 		ERR_print_errors(bio);
 		BIO_free(bio);
 	}
 	//SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
-	 
+
 	SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE, nullptr);
 	//SSL_set_verify()
 	//SSL_CTX_load_verify_locations(ssl_ctx, "C:\\SllCertificate\\21-04-2025\\certificate.crt", NULL);
@@ -191,6 +214,12 @@ void ssl_set_ctx_cert_and_key(X509* cert, EVP_PKEY* pkey)
 {
 	/*SSL_CTX_use_certificate(ssl_ctx, cert);
 	SSL_CTX_use_PrivateKey(ssl_ctx, pkey);*/
+	// I4: complement to ssl_init's NULL check - if SSL_CTX_new failed earlier,
+	// ssl_ctx is NULL and SSL_CTX_use_certificate_file would crash.
+	if (ssl_ctx == nullptr) {
+		CStaticClass::m_logfile.LogEvent(L"ssl_set_ctx_cert_and_key: ssl_ctx is NULL (ssl_init failed) - skipping cert/key load");
+		return;
+	}
 	// I2: replaced exit(3)/(4)/(5) with logged early-returns. /SUBSYSTEM:WINDOWS
 	// has detached stderr so ERR_print_errors_fp wrote to nothing, and exit()
 	// bypassed MFC cleanup. The process now stays alive; any later SSL operation
