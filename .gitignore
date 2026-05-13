@@ -43,6 +43,16 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Project-specific build/dep dirs that don't match the patterns above
+OrikaServer/x32/
+OrikaServer/x64_Lib/
+OrikaServer/x64_Debug_Lib/
+OrikaServer/Dependencies_Debug_64/
+OrikeEXE/
+
+# Claude Code session state (never commit)
+.claude/
+
 # ===== Visual Studio / MSBuild user state ===================================
 .vs/
 *.suo
