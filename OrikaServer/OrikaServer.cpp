@@ -81,8 +81,19 @@ BOOL COrikaServerApp::InitInstance()
 	}
 	else if (nResponse == -1)
 	{
+		// D3: TRACE only fires in debug builds with a debugger attached.
+		// For Release builds, the operator saw a process that briefly
+		// appeared and vanished with no visible message. Surface the
+		// failure with an actual dialog so the cause is diagnosable.
 		TRACE(traceAppMsg, 0, "Warning: dialog creation failed, so application is terminating unexpectedly.\n");
 		TRACE(traceAppMsg, 0, "Warning: if you are using MFC controls on the dialog, you cannot #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS.\n");
+		AfxMessageBox(L"Dialog creation failed (DoModal returned -1).\r\n\r\n"
+			L"Common causes:\r\n"
+			L"  - IDD_ORIKASERVER_DIALOG resource template missing/corrupted\r\n"
+			L"  - DDX_Control binding to a control ID not in the template\r\n"
+			L"  - MFC theme manager / control container init failure\r\n\r\n"
+			L"The application is terminating.",
+			MB_ICONERROR | MB_OK);
 	}
 
 	// Delete the shell manager created above.

@@ -10,6 +10,13 @@
 #include "..\ClientSocket\ClientSocket.h"
 #include "SocketServer.h"
 #include "SocketServer/IOCPServer.h"
+#include <shlwapi.h>
+
+// D5: PathRemoveFileSpec lives in shlwapi.dll. Previously the link worked
+// transitively via afxcontrolbars; this pragma makes the dependency explicit
+// so future include reorderings or _AFX_NO_OLE_SUPPORT toggles don't break it.
+#pragma comment(lib, "shlwapi.lib")
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -263,10 +270,10 @@ BOOL COrikaServerDlg::OnInitDialog()
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL)
 	{
-		BOOL bNameValid;
 		CString strAboutMenu;
-		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
-		ASSERT(bNameValid);
+		// D7: VERIFY (not ASSERT) so the LoadString call still runs in
+		// Release - ASSERT is compiled out under NDEBUG.
+		VERIFY(strAboutMenu.LoadString(IDS_ABOUTBOX));
 		if (!strAboutMenu.IsEmpty())
 		{
 			pSysMenu->AppendMenu(MF_SEPARATOR);
@@ -281,7 +288,7 @@ BOOL COrikaServerDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	CString exePath;
-	TCHAR buffer[MAX_PATH];
+	TCHAR buffer[MAX_PATH] = {};	// D5: zero-init so a length==0 GetModuleFileName doesn't leave garbage
 	DWORD length = GetModuleFileName(nullptr, buffer, MAX_PATH);
 	if (length != 0)
 	{
@@ -295,6 +302,14 @@ BOOL COrikaServerDlg::OnInitDialog()
 	{
 		CStaticClass::APIFolderPath = exePath + L"\\Page\\";
 	}
+
+	// D11: explicitly disable Stop at startup instead of relying on the
+	// dialog template's WS_DISABLED style. If a future resource-editor
+	// regenerate drops that style flag, the Stop button would be hot from
+	// launch and trigger Stop logic on an un-started server.
+	m_btnstart.EnableWindow(TRUE);
+	m_btnstop.EnableWindow(FALSE);
+	m_btnexit.EnableWindow(TRUE);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -349,9 +364,19 @@ HCURSOR COrikaServerDlg::OnQueryDragIcon()
 }
 
 void COrikaServerDlg::OnBnClickedStart()
-{		
-	InitializeCriticalSection(&CStaticClass::m_cs_Thread);
-	InitializeConditionVariable(&CStaticClass::m_cv_Thread);
+{
+	// I14: only initialise the thread-sync primitives on the first Start
+	// click. Re-Initializing a CRITICAL_SECTION over itself is undefined
+	// behaviour - on subsequent Start clicks (after Stop), this previously
+	// silently leaked the old debug-info handle and could destabilise any
+	// thread that was holding the old CS at that moment.
+	static bool s_threadSyncInited = false;
+	if (!s_threadSyncInited)
+	{
+		InitializeCriticalSection(&CStaticClass::m_cs_Thread);
+		InitializeConditionVariable(&CStaticClass::m_cv_Thread);
+		s_threadSyncInited = true;
+	}
 
 	m_btnstart.EnableWindow(false);
 	m_btnstop.EnableWindow(true);
@@ -548,20 +573,28 @@ void COrikaServerDlg::OnBnClickedStart()
 
 void COrikaServerDlg::OnCancel()
 {
-	CStaticClass::MSMQReaderStartStop=0;
-	//m_WebsocketServer.StopServer();
+	// D4: call the base implementation so Esc actually closes the dialog.
+	// Without the base call, pressing Esc just flipped the MSMQ flag and
+	// the dialog stayed open with no UI feedback.
+	CStaticClass::MSMQReaderStartStop = 0;
+	CDialogEx::OnCancel();
 }
 
 
 void COrikaServerDlg::OnOK()
 {
-	
+	// D4: intentional no-op - swallow Enter so accidental presses don't
+	// close the dialog mid-trading-session. The base implementation would
+	// close the dialog like Esc does.
 }
 
 
 void COrikaServerDlg::OnClose()
 {
-	
+	// D4: call the base so the X-button / Alt+F4 actually closes the
+	// window. Previously the override swallowed the message and the
+	// dialog couldn't be closed via the title bar.
+	CDialogEx::OnClose();
 }
 
 void COrikaServerDlg::OnBnClickedExit()
