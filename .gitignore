@@ -96,6 +96,11 @@ OrikeEXE/
 Makefile
 makefile
 
+# Exception: audit reports and ReadMe are project documentation
+!*AUDIT*.txt
+!ReadMe.txt
+!Readonly.txt
+
 
 # ===== Visual Studio / MSBuild user state ===================================
 .vs/

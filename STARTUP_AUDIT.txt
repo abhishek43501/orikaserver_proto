@@ -1,0 +1,771 @@
+================================================================================
+ORIKASERVER STARTUP-FAILURE CODE AUDIT
+================================================================================
+
+Date:       2026-05-13
+Symptom:    OrikaServer.exe launches, appears briefly in tasklist, then exits
+            silently. No error_log.txt written, no Windows Event Log entry, no
+            crash dump on disk, no new D:\logs\<date>.log file.
+Method:     3 parallel review agents across MFC startup path, init/factory/
+            connection code, and recently-committed audit fixes.
+Auditor:    Claude (Opus 4.7, 1M context).
+
+--------------------------------------------------------------------------------
+TOP SUSPECTS FOR THE SILENT-EXIT SYMPTOM (ranked by likelihood)
+--------------------------------------------------------------------------------
+
+These are the findings that best match "process briefly appears in tasklist then
+disappears with zero logs anywhere":
+
+  #1  D1 - StackReserveSize=500 GB in Debug|x64 vcxproj. PE loader rejects this
+          and terminates the process before any C++ code runs. (Only affects
+          Debug|x64; Release|x64 has 100 MB which is excessive but bootable.)
+
+  #2  A2 - OpenSSL link/runtime version mismatch. Project links against import
+          libs that resolve to libssl-1_1-x64.dll while x64/Release/ ships
+          libssl-3-x64.dll. OS loader can't find the imported DLL, kills the
+          process before WinMain. Verify with `dumpbin /dependents
+          x64\Release\OrikaServer.exe`.
+
+  #3  I1 - `FILE _iob[] = { *stdin, *stdout, *stderr };` static initializer in
+          openssl_iocp.cpp:12-16 dereferences stream globals at C++ static-init
+          time. If the linked OpenSSL/MT5 import libraries expect a different
+          UCRT than the one currently linked, stdin/stdout/stderr may be NULL
+          and dereferencing them faults before WinMain.
+
+  #4  D2 / A1 - Debug|x64 config flipped to Release-flavour: defines NDEBUG
+          (not _DEBUG), links the release CRT (MultiThreadedDLL, not
+          MultiThreadedDebugDLL). MFC chooses mfc140u.dll vs mfc140ud.dll based
+          on _DEBUG; mismatched CRT/MFC pairs cause STATUS_DLL_NOT_FOUND silent
+          exit on machines missing the matching redistributable.
+
+  #5  I2 / A3 - `exit(3) / exit(4) / exit(5)` in `ssl_set_ctx_cert_and_key` when
+          Certificate.pem or key.pem can't be loaded from CWD. ERR_print_errors_fp
+          writes to stderr which is detached for /SUBSYSTEM:WINDOWS. Reachable
+          AFTER the user clicks Start, especially because CLogFile::CreateDirectories
+          calls _chdir("..") 20 times (audit D9 / now I3 cross-ref) and may have
+          corrupted CWD by the time cert load runs.
+
+  #6  I8 - CLogFile() default ctor leaves `m_pLogFile` uninitialised. First
+          LogEvent goes through ChangeFile -> CloseFile -> fclose(garbage). In
+          a Release-flavour Debug binary (point #4) this is a near-immediate
+          crash on the very first log line attempted from startup.
+
+  #7  I6 - LoadConfigFile stores dangling LPCSTR (from a CStringA temporary)
+          into CStaticClass::dataFeedServer / GatewayServer statics. Runs from
+          OnInitDialog. Subsequent reads dereference freed memory.
+
+--------------------------------------------------------------------------------
+SEVERITY LEGEND
+--------------------------------------------------------------------------------
+
+  CRITICAL  Plausibly causes the observed silent exit; fix before next attempt.
+  HIGH      Real bug; may or may not be the launch killer; should fix.
+  MEDIUM    Latent issue; not THE cause but worsens diagnostics or correctness.
+  LOW       Style / fragility / future-proofing.
+  INFO      Verification result (e.g., audit fix confirmed safe).
+
+================================================================================
+PART A: MFC DIALOG / STARTUP PATH (D-series)
+================================================================================
+
+ID: D1
+SEVERITY: CRITICAL
+TITLE: Debug|x64 link config sets a 500 GB main-thread stack reserve
+FILE: OrikaServer/OrikaServer.vcxproj:134
+CODE:
+  <Link>
+    <SubSystem>Windows</SubSystem>
+    ...
+    <StackReserveSize>500000000000</StackReserveSize>
+  </Link>
+WHY:
+  PE-header SizeOfStackReserve set to ~500 GB. Windows refuses to reserve that
+  much virtual memory for the main thread (or rejects the value as invalid),
+  terminating the process before WinMain runs. No error log, no event entry.
+  Exactly matches the symptom for Debug|x64 builds.
+FIX:
+  Remove the element (default 1 MB) or set:
+    <StackReserveSize>1048576</StackReserveSize>
+  Same fix needed for Release|x64 at line 194 (currently 100,000,000 ~100 MB —
+  bootable but excessive).
+
+---
+
+ID: D2
+SEVERITY: CRITICAL
+TITLE: Debug|x64 defines NDEBUG and links the Release CRT
+FILE: OrikaServer/OrikaServer.vcxproj:124
+CODE:
+  <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;UNICODE;...</PreprocessorDefinitions>
+  <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>   <!-- /MD release CRT -->
+WHY:
+  Debug|x64 ClCompile defines NDEBUG (release marker) instead of _DEBUG and
+  selects /MD instead of /MDd. MFC picks mfc140u.dll vs mfc140ud.dll based on
+  _DEBUG; mismatched runtimes cause STATUS_DLL_NOT_FOUND silent exit on
+  machines missing the matching redistributable. The Debug build is not a
+  Debug build.
+FIX:
+  <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;UNICODE;_UNICODE;...</PreprocessorDefinitions>
+  <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+
+---
+
+ID: D3
+SEVERITY: HIGH
+TITLE: COrikaServerApp::InitInstance returns FALSE without surfacing DoModal() == -1
+FILE: OrikaServer/OrikaServer.cpp:96
+CODE:
+  // Since the dialog has been closed, return FALSE so that we exit
+  return FALSE;
+WHY:
+  Returning FALSE is normal MFC-dialog-only exit. But when DoModal() returns
+  -1 (template not found, DDX failure on missing control, theme manager init
+  fail), control falls through to the TRACE-only diagnostic and InitInstance
+  returns FALSE with no user-visible error.
+FIX:
+  if (nResponse == -1) {
+      AfxMessageBox(L"Dialog creation failed. Check IDD_ORIKASERVER_DIALOG, "
+                    L"DDX bindings, theme manager.", MB_ICONERROR);
+  }
+
+---
+
+ID: D4
+SEVERITY: HIGH
+TITLE: OnOK/OnCancel/OnClose are no-op overrides — defeat normal dialog close
+FILE: OrikaServer/OrikaServerDlg.cpp:514
+CODE:
+  void COrikaServerDlg::OnCancel() { CStaticClass::MSMQReaderStartStop = 0; }
+  void COrikaServerDlg::OnOK()    {}
+  void COrikaServerDlg::OnClose() {}
+WHY:
+  Each override skips the base. Esc/Enter/X-button don't end the dialog. Makes
+  diagnosis harder (user can't naturally close). OnCancel touches a flag without
+  ending the dialog — looks like a half-finished edit.
+FIX:
+  void OnCancel() { CStaticClass::MSMQReaderStartStop = 0; CDialogEx::OnCancel(); }
+  void OnOK()     { /* document why no base call */ }
+  void OnClose()  { CDialogEx::OnClose(); }
+
+---
+
+ID: D5
+SEVERITY: MEDIUM
+TITLE: PathRemoveFileSpec used without explicit Shlwapi.lib link
+FILE: OrikaServer/OrikaServerDlg.cpp:289
+CODE:
+  TCHAR buffer[MAX_PATH];
+  DWORD length = GetModuleFileName(nullptr, buffer, MAX_PATH);
+  if (length != 0) { PathRemoveFileSpec(buffer); exePath = buffer; }
+WHY:
+  shlwapi.lib not in AdditionalDependencies. Currently links transitively via
+  afxcontrolbars. Fragile — future include reordering or _AFX_NO_OLE_SUPPORT
+  toggle drops the link. Also buffer uninitialised if length == 0.
+FIX:
+  #pragma comment(lib, "shlwapi.lib")  // in OrikaServerDlg.cpp
+  TCHAR buffer[MAX_PATH] = {};         // zero-init
+
+---
+
+ID: D6
+SEVERITY: MEDIUM
+TITLE: LoadConfigFile silently no-ops on missing/corrupt config
+FILE: OrikaServer/OrikaServerDlg.cpp:292; Manager.cpp:2150
+CODE:
+  CStaticClass::m_mtmanager.LoadConfigFile(exePath + L"\\oreka.config");
+  m_txtport.SetWindowText(CStaticClass::orikaPort);
+WHY:
+  LoadConfigFile returns void and silently skips if file is unreadable. Dialog
+  continues with hardcoded defaults (port=86, SqlServerAdd, sa creds). User has
+  no idea the config didn't load.
+FIX:
+  Change LoadConfigFile to return bool. Show AfxMessageBox on failure.
+
+---
+
+ID: D7
+SEVERITY: MEDIUM
+TITLE: ASSERT macros stripped in Release; failures become silent
+FILE: OrikaServer/OrikaServerDlg.cpp:260
+CODE:
+  ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
+  bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
+  ASSERT(bNameValid);
+WHY:
+  In Release ASSERT is ((void)0). A failed LoadString of IDS_ABOUTBOX produces
+  an empty menu silently. Side-effecting calls need VERIFY.
+FIX:
+  VERIFY(strAboutMenu.LoadString(IDS_ABOUTBOX));
+
+---
+
+ID: D8
+SEVERITY: MEDIUM
+TITLE: Static iocp::IOCPServer global runs WSAStartup at process load
+FILE: OrikaServer/OrikaServerDlg.cpp:18
+CODE:
+  static iocp::IOCPServer g_iocpServer;
+WHY:
+  Ctor runs WSAStartup, dtor runs WSACleanup at static-deinit time. Cross-TU
+  static order vs MFC theApp / cleanup order is unspecified. WSAStartup return
+  ignored. Cross-cuts with other WSA users (SocketServer.cpp's AfxSocketInit).
+FIX:
+  Move to InitInstance / ExitInstance. Heap-construct in OnInitDialog,
+  destroy in OnDestroy. Check WSAStartup return.
+
+---
+
+ID: D9
+SEVERITY: LOW
+TITLE: CLogFile::CloseFile calls DeleteCriticalSection on uninitialised CS
+FILE: OrikaServer/LogWriter/LogFile.cpp:67
+CODE:
+  void CLogFile::CloseFile() {
+      if (m_pLogFile) { fputs(...); fclose(m_pLogFile); }
+      DeleteCriticalSection(&m_cs);
+  }
+WHY:
+  m_cs only Initialize'd inside OpenFile. First LogEvent -> ChangeFile -> CloseFile
+  runs BEFORE OpenFile. DeleteCriticalSection on uninit CS is UB.
+FIX:
+  Track init state with a flag. Default-init m_pLogFile=nullptr in ctor.
+  See cross-ref to I8 for the matching uninit-pointer issue.
+
+---
+
+ID: D10
+SEVERITY: INFO
+TITLE: CR5 removal of CManager() temporary is verified safe
+FILE: OrikaServer/Manager.cpp:2399
+CODE:
+  bool CManager::Initialize() {
+      // CR5 removed: CManager(); <- was a temporary
+      MTAPIRES res = MT_RET_OK_NONE;
+      ...
+WHY:
+  Audit verification: the removed line constructed a CManager temporary with
+  m_manager=NULL, m_admin=NULL, m_login=0, m_factory default-ctored. Destructor
+  called Shutdown() -> m_factory.Shutdown() which is guarded by if(m_hmodule);
+  m_hmodule was NULL so Shutdown is a complete no-op. CR5 cannot be the
+  silent-exit cause.
+FIX:
+  None. Add comment to prevent re-adding:
+    // (Do not add `CManager();` here - it's a no-op temporary; see CR5.)
+
+---
+
+ID: D11
+SEVERITY: LOW
+TITLE: OnInitDialog does not explicitly disable Stop button
+FILE: OrikaServer/OrikaServerDlg.cpp:253
+WHY:
+  Dialog template gives BTN_STOP WS_DISABLED at creation. Works but fragile —
+  resource editor regenerate could drop it.
+FIX:
+  Add at end of OnInitDialog: m_btnstop.EnableWindow(FALSE);
+
+================================================================================
+PART B: INIT / FACTORY / CONNECTION CODE (I-series)
+================================================================================
+
+ID: I1
+SEVERITY: CRITICAL
+TITLE: _iob[] static initializer dereferences stdin/stdout/stderr at process load
+FILE: OrikaServer/server/openssl_iocp.cpp:12-16
+CODE:
+  #if _MSC_VER >= 1900
+  FILE _iob[] = { *stdin, *stdout, *stderr };
+  extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
+  #pragma comment (lib, "legacy_stdio_definitions.lib")
+  #endif
+WHY:
+  Legacy-CRT shim. Brace-list dereferences `*stdin`, `*stdout`, `*stderr` at
+  C++ static-init (before WinMain, before InitInstance). If the linked OpenSSL/
+  MT5 libs expect a different CRT than the one currently linked, stdin/stdout/
+  stderr can resolve to NULL — dereferencing NULL crashes during CRT bootstrap
+  with NO log, NO MessageBox, just "process gone in seconds".
+FIX:
+  Drop the shim and rebuild OpenSSL against the current UCRT. Or remove _iob
+  entirely — nothing in this codebase needs legacy stdio symbols.
+
+---
+
+ID: I2
+SEVERITY: CRITICAL
+TITLE: ssl_set_ctx_cert_and_key calls exit(3)/(4)/(5) on cert load failure
+FILE: OrikaServer/server/openssl_iocp.cpp:175-193
+CODE:
+  if (SSL_CTX_use_certificate_file(ssl_ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
+      ERR_print_errors_fp(stderr); exit(3);
+  }
+  if (SSL_CTX_use_PrivateKey_file(ssl_ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
+      ERR_print_errors_fp(stderr); exit(4);
+  }
+  if (!SSL_CTX_check_private_key(ssl_ctx)) { exit(5); }
+WHY:
+  exit() bypasses MFC cleanup, the logger, and any error message box.
+  ERR_print_errors_fp writes to stderr which is detached for /SUBSYSTEM:WINDOWS.
+  If Certificate.pem or key.pem missing/unreadable from CWD, process disappears
+  with no log. After S6 emptied the embedded fallback, this is the only cert
+  source.
+FIX:
+  bool ssl_set_ctx_cert_and_key() {
+      if (SSL_CTX_use_certificate_file(...) <= 0) {
+          CStaticClass::m_logfile.LogEvent(L"cert load failed");
+          return false;
+      }
+      ...
+  }
+  Caller propagates failure; UI shows error, doesn't kill process.
+
+---
+
+ID: I3
+SEVERITY: CRITICAL
+TITLE: set_cert() feeds NULL cert/pkey after S6 stripped embedded PEM
+FILE: OrikaServer/server/Server.cpp:155-178
+CODE:
+  int length = strlen(server_cert_key_pem);            // length == 0 post-S6
+  BIO *bio_cert = BIO_new_mem_buf((void*)server_cert_key_pem, length);
+  X509 *cert = PEM_read_bio_X509(bio_cert, nullptr, nullptr, nullptr); // NULL
+  EVP_PKEY *pkey = PEM_read_bio_PrivateKey(bio_cert, 0, 0, 0);         // NULL
+  ssl_set_ctx_cert_and_key(cert, pkey);                                // args ignored
+WHY:
+  Post-S6 the embedded blobs are empty strings. PEM_read_bio_X509 returns NULL.
+  X509_free(NULL) and EVP_PKEY_free(NULL) are no-ops (safe per OpenSSL docs) but
+  the function now silently degrades. Combined with I2 above, disk-loaded cert
+  failure -> exit(3) is the SOLE failure path. NOTE: per agent A6 verification,
+  ssl_set_ctx_cert_and_key already IGNORED its cert/pkey args even pre-S6 — net
+  runtime behavior is unchanged. NOT a regression; just clarifies the failure
+  surface.
+FIX:
+  Delete set_cert() entirely. Call ssl_set_ctx_cert_and_key(nullptr, nullptr)
+  directly from stratServer(). Make ssl_set_ctx_cert_and_key return bool and
+  log on failure (see I2).
+
+---
+
+ID: I4
+SEVERITY: HIGH
+TITLE: ssl_init does not check SSL_CTX_new return; subsequent calls deref NULL
+FILE: OrikaServer/server/openssl_iocp.cpp:157-168
+CODE:
+  const SSL_METHOD* meth = TLS_server_method();
+  ssl_ctx = SSL_CTX_new(meth);
+  if (!SSL_CTX_load_verify_locations(ssl_ctx, "gd_bundle.crt", NULL)) {...}
+  SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE, nullptr);
+WHY:
+  SSL_CTX_new can return NULL (OOM, OPENSSL_init_ssl fail, lib version mismatch
+  with linked libssl-3-x64.dll). Code unconditionally passes ssl_ctx to subsequent
+  OpenSSL APIs which dereference it — access violation, silent process death.
+FIX:
+  if (!ssl_ctx) {
+      CStaticClass::m_logfile.LogEvent(L"SSL_CTX_new failed");
+      ERR_print_errors_fp(stderr);
+      return;
+  }
+
+---
+
+ID: I5
+SEVERITY: HIGH
+TITLE: CManager::Initialize() return value ignored; m_manager left NULL then deref
+FILE: OrikaServer/OrikaServerDlg.cpp:367-376
+CODE:
+  CStaticClass::m_mtmanager.Initialize();           // return ignored
+  CStaticClass::m_sqldata.getSymbolMasterDataForTickSubscribe();
+  CStaticClass::m_mtmanager.login(...);             // m_manager-> deref
+  CStaticClass::m_mtmanager.LoadMTClientMaster();
+WHY:
+  Manager.cpp:2399-2447 returns false on any failure (MT5APIManager64.dll missing,
+  CreateManager fail, version mismatch). In failure cases m_manager stays NULL.
+  Next line login() does m_manager->Connect — NULL deref. With MT5\Manager\API\
+  being relative path, any deployment without that DLL kills the process.
+FIX:
+  if (!CStaticClass::m_mtmanager.Initialize()) {
+      CStaticClass::m_logfile.LogEvent(L"MT5 Manager API init failed");
+      AfxMessageBox(L"MT5 Manager API failed to load.");
+      m_btnstart.EnableWindow(true); return;
+  }
+
+---
+
+ID: I6
+SEVERITY: HIGH
+TITLE: LoadConfigFile stores dangling LPCSTR from CStringA temporary
+FILE: OrikaServer/Manager.cpp:2197-2206
+CODE:
+  if (str_key == L"dataFeedServer") {
+      CStringA cstrA(strval);
+      CStaticClass::dataFeedServer = cstrA;   // implicit operator LPCSTR()
+  }
+  if (str_key == L"GatewayServer") {
+      CStringA cstrA(strval);
+      CStaticClass::GatewayServer = cstrA;
+  }
+WHY:
+  dataFeedServer / GatewayServer are LPCSTR (raw const char*). Conversion from
+  CStringA yields buffer address; CStringA destructs at end of the if block,
+  pointer dangles. Every subsequent read reads freed memory. Called from
+  OnInitDialog — runs BEFORE user click. Release-build heap reuse triggers
+  silent crash.
+FIX:
+  Change static type to CStringA (or std::string) and store the value:
+    static CStringA dataFeedServer;
+    CStaticClass::dataFeedServer = CStringA(strval);
+
+---
+
+ID: I7
+SEVERITY: HIGH
+TITLE: Cross-TU static construction order undefined (audit CR7)
+FILE: OrikaServer/StaticClass.cpp:13-225; OrikaServer/OrikaServer.cpp:31
+CODE:
+  CManager  CStaticClass::m_mtmanager;
+  CDataSource CStaticClass::connection;
+  CSqlData  CStaticClass::m_sqldata;
+  CLogFile  CStaticClass::m_logfile;
+  COrikaServerApp theApp;   // OrikaServer.cpp:31
+WHY:
+  Cross-TU static init order is unspecified. g_iocpServer runs WSAStartup; theApp
+  inits MFC; CLogFile leaves m_pLogFile uninitialised. Any early-running static
+  hitting LogEvent reads garbage and crashes.
+FIX:
+  Construct-On-First-Use:
+    static CManager& mtmanager() { static CManager m; return m; }
+  Or add CStaticClass::Init() called from InitInstance.
+
+---
+
+ID: I8
+SEVERITY: HIGH
+TITLE: CLogFile constructor leaves m_pLogFile uninitialised
+FILE: OrikaServer/LogWriter/LogFile.cpp:46-77
+CODE:
+  CLogFile::CLogFile() { /* OpenFile commented out, m_pLogFile uninit */ }
+  void CLogFile::LogEvent(CString event) { ChangeFile(name); Write(event); }
+  void CLogFile::ChangeFile(...) { if (strFile != m_filename) { CloseFile(); ... } }
+  void CLogFile::CloseFile() { if (m_pLogFile) { fputs(...); fclose(m_pLogFile); } ... }
+WHY:
+  m_pLogFile, m_lTruncate, m_cs are all uninitialised. First LogEvent goes to
+  ChangeFile -> CloseFile. If m_pLogFile happens to be non-zero garbage (likely
+  in Release where stack/BSS is recycled), the if passes and fputs/fclose run
+  on garbage = access violation. Process dies before log even created.
+FIX:
+  CLogFile::CLogFile() : m_pLogFile(nullptr), m_lTruncate(0) {
+      InitializeCriticalSection(&m_cs);
+  }
+
+---
+
+ID: I9
+SEVERITY: HIGH
+TITLE: initializeconnection() ignores OpenFromInitializationString HRESULT
+FILE: OrikaServer/StaticClass.cpp:7427-7437
+CODE:
+  void CStaticClass::initializeconnection() {
+      CoInitialize(NULL);
+      hr = connection.OpenFromInitializationString(L"...");
+      // no FAILED(hr) check, no log
+      CStaticClass::m_requestResponseData.SetAt(...);
+  }
+WHY:
+  If SQL server unreachable, password unparseable, or SQLNCLI11 not installed
+  (default on Windows Server 2019+), hr is E_FAIL silently. Every later
+  m_tempSession.Open(connection) on un-opened CDataSource throws E_FAIL.
+  Combined with load order this manifests as process dying mid-Start.
+FIX:
+  if (FAILED(hr)) {
+      CString err; err.Format(L"SQL connect failed hr=0x%08x", hr);
+      CStaticClass::m_logfile.LogEvent(err);
+      AfxMessageBox(err);
+      return;  // or set startupOK = false
+  }
+
+---
+
+ID: I10
+SEVERITY: MEDIUM
+TITLE: UserLogin.cpp dead `if(!SUCCEEDED(hr))` after `HRESULT hr=NULL` (CR12)
+FILE: OrikaServer/UserLogin.cpp:23-48, 93-115, 152-172
+CODE:
+  HRESULT hr = NULL;
+  if(!SUCCEEDED(hr)) { return false; }    // SUCCEEDED(0)==true, dead branch
+  while(hr=data_table.MoveNext()==S_OK) { m_sl_validated = 1; }  // CR11 precedence
+WHY:
+  Dead guard. Plus MoveNext loop has CR11 precedence bug (hr := bool). After CR1
+  removed the 1001/1002 backdoor, validateSerialno hard-depends on SQL working.
+  If I9 failure occurred, Open() throws, dialog crashes on first login attempt.
+FIX:
+  HRESULT hr = E_FAIL;  // not NULL
+  // remove dead guard
+  while ((hr = data_table.MoveNext()) == S_OK) { m_sl_validated = 1; }
+
+---
+
+ID: I11
+SEVERITY: MEDIUM
+TITLE: CManager::Initialize leaks MT5 DLL handle on partial-init failure
+FILE: OrikaServer/Manager.cpp:2399-2447
+CODE:
+  if((res=m_factory.Initialize(L"MT5\\Manager\\API\\"))!=MT_RET_OK) return(false);
+  if((res=m_factory.Version(version))!=MT_RET_OK) return(false);  // no Shutdown
+  if(version!=MTManagerAPIVersion) return(false);                  // no Shutdown
+  if((res=m_factory.CreateManager(...))!=MT_RET_OK) return(false);// no Shutdown
+WHY:
+  Three early returns leak the LoadLibrary handle. Combined with I5 (caller
+  ignores bool), Initialize false then login() deref NULL m_manager.
+FIX:
+  In each early-return branch: m_factory.Shutdown(); before return false.
+
+---
+
+ID: I12
+SEVERITY: MEDIUM
+TITLE: initializePointerArray performs 59,000 unchecked malloc()s
+FILE: OrikaServer/StaticClass.cpp:7390-7421
+CODE:
+  for (int i=0;i<35000;i++)
+      lastrateArray[i] = (st_TickBidAskLast*)malloc(sizeof(st_TickBidAskLast));
+WHY:
+  35000 + 6000*4 = 59000 small allocations. Any malloc returning NULL produces
+  NULL deref on next access (e.g., *lastrateArray[i] = ...). Combined with
+  audit CR8 (uninit reads via *st_tmpData.m_lastrate), first tick after Start
+  can crash before logging.
+FIX:
+  static std::vector<st_TickBidAskLast> lastrateArray(35000); // value-init
+  Or check malloc returns and bail with logged error.
+
+---
+
+ID: I13
+SEVERITY: MEDIUM
+TITLE: stratServer() no error propagation
+FILE: OrikaServer/server/Server.cpp:180-192
+CODE:
+  void stratServer() {
+      ssl_init();
+      set_cert();
+      int port = _wtoi(CStaticClass::orikaPort);
+      SOCKET s = create_listen_socket(port);
+      SSL_session *psession = session_new(0);   // can return NULL
+      psession->s_listening = s;                 // NULL deref if session_new failed
+      session_accept(psession);
+  }
+WHY:
+  No return code, no logging. create_listen_socket doesn't check bind/listen
+  errors. session_new(0) can return NULL (audit S44). dereference psession on
+  next line — crash silently. orikaPort parse fail -> port=0, bind succeeds but
+  server unreachable.
+FIX:
+  Return bool. Check each step. Log. Null-check psession.
+
+---
+
+ID: I14
+SEVERITY: LOW
+TITLE: InitializeCriticalSection in button handler without DeleteCriticalSection (CR9)
+FILE: OrikaServer/OrikaServerDlg.cpp:353-354
+CODE:
+  InitializeCriticalSection(&CStaticClass::m_cs_Thread);
+  InitializeConditionVariable(&CStaticClass::m_cv_Thread);
+WHY:
+  Start -> Stop -> Start re-initializes the CS on top of itself = UB. Doesn't
+  affect first launch.
+FIX:
+  Initialize once from InitInstance. Or replace with std::mutex/condition_variable.
+
+================================================================================
+PART C: AUDIT-FIX VERIFICATION (A-series)
+================================================================================
+
+ID: A1
+SEVERITY: HIGH
+TITLE: Debug|x64 vcxproj flipped to Release-flavour build (cross-ref D2)
+FILE: OrikaServer/OrikaServer.vcxproj:34-150
+COMMIT: f8e5007 (or earlier user edit)
+WHY:
+  See D2 above. Debug|x64 with NDEBUG + MultiThreadedDLL is silently a release
+  binary. CLogFile uninitialised m_pLogFile (I8) is masked by debug CRT
+  pre-zeroing — but Release CRT does not pre-zero, so the latent crash now
+  fires.
+FIX:
+  See D2.
+
+---
+
+ID: A2
+SEVERITY: HIGH
+TITLE: OpenSSL link-vs-DLL version mismatch — likely cause of silent exit before WinMain
+FILE: OrikaServer/OrikaServer.vcxproj (AdditionalDependencies); openssl_iocp.cpp:157
+COMMIT: f8e5007
+CODE:
+  // vcxproj Release|x64 link:
+  <AdditionalDependencies>...libssl.lib;libcrypto.lib;...</AdditionalDependencies>
+  // code:
+  const SSL_METHOD* meth = TLS_server_method();
+WHY:
+  Project switched from libeay32.lib/ssleay32.lib (OpenSSL 1.0) to
+  libssl.lib/libcrypto.lib (OpenSSL 1.1+). x64/Release/ ships libssl-3-x64.dll
+  / libcrypto-3-x64.dll (OpenSSL 3). If import libs resolve to a different
+  major version than the shipped DLLs, OS loader can't find imports — process
+  killed before WinMain.
+
+  TOP CANDIDATE for the silent-launch symptom.
+FIX:
+  Verify with:
+    dumpbin /dependents x64\Release\OrikaServer.exe
+  Either ship matching DLLs (e.g., libssl-1_1-x64.dll if linked 1.1, or
+  libssl-3-x64.dll if linked 3) or relink to match shipped DLLs.
+
+---
+
+ID: A3
+SEVERITY: HIGH
+TITLE: exit(3)/(4)/(5) in ssl_set_ctx_cert_and_key (cross-ref I2)
+FILE: OrikaServer/server/openssl_iocp.cpp:179-191
+COMMIT: pre-existing
+WHY:
+  See I2 above. CR9 / D9 cross-ref: CLogFile::CreateDirectories calls
+  _chdir("..") 20 times on first log dir miss — destroys process CWD. Any
+  LogEvent in OnBnClickedStart before stratServer corrupts CWD; then
+  SSL_CTX_use_certificate_file("Certificate.pem", ...) fails (wrong cwd) and
+  exit(3) silently kills the process.
+
+  Most likely silent-exit path if the failure happens AFTER Start click.
+FIX:
+  See I2. Also fix the CWD-mutation D9 issue.
+
+---
+
+ID: A4
+SEVERITY: MEDIUM
+TITLE: SSL_session struct grew ~30%; session_new failure path unchecked
+FILE: OrikaServer/server/openssl_iocp.h:78-89; Server.cpp:188-189
+COMMIT: f8e5007
+CODE:
+  // New fields:
+  char frame_buffer[BUFFER_SIZE];     // +900 KB
+  char LastFrame[BUFFER_SIZE];        // +900 KB
+  char unprocessBuffer[BUFFER_SIZE];  // +900 KB
+  // Per-session memory now ~6.3 MB
+WHY:
+  malloc(sizeof(SSL_session)) is now ~6.3 MB. OOM more likely. session_new
+  returns nullptr — stratServer dereferences on next line.
+FIX:
+  if (!psession) { log; return; } before psession->s_listening = s;
+
+---
+
+ID: A5
+SEVERITY: LOW
+TITLE: S3 refcount fragile — session_delete + session_release in close branch
+FILE: OrikaServer/server/openssl_iocp.cpp:802-812
+COMMIT: 9029de9
+WHY:
+  Refcount math is correct (audit verified). But the pattern of "session_delete
+  inside the close branch AND session_release at end of function" creates a
+  maintenance burden — future modifier likely to leak or double-release.
+FIX:
+  Refactor to single exit-with-release. Or RAII wrapper. Optional.
+
+---
+
+ID: A6
+SEVERITY: INFO
+TITLE: S6 cert.cpp stubs verified safe — not a launch regression
+FILE: OrikaServer/server/cert.cpp:9-10; Server.cpp:160-177
+COMMIT: 936e047
+WHY:
+  Pre-S6: ssl_set_ctx_cert_and_key received valid X509*/EVP_PKEY* and threw
+  them away (uses _file variants instead).
+  Post-S6: receives NULL and throws them away.
+  X509_free(NULL) and EVP_PKEY_free(NULL) are explicit no-ops per OpenSSL docs.
+  Net runtime difference: zero.
+
+  The actual launch failure mode is I2/A3 (exit on cert load) which is
+  pre-existing.
+FIX:
+  None for correctness. Optional cleanup per I3.
+
+---
+
+ID: A7
+SEVERITY: LOW
+TITLE: Static IOCPServer global with WSAStartup at ctor (cross-ref D8)
+FILE: OrikaServer/OrikaServerDlg.cpp:18; SocketServer/IOCPServer.cpp:39-57
+COMMIT: f8e5007
+WHY:
+  See D8. WSAStartup at static-init is mostly safe; concern is WSACleanup at
+  static dtor running before MFC tears down WinSock users.
+FIX:
+  See D8.
+
+---
+
+ID: A8
+SEVERITY: INFO
+TITLE: Phase 1/2/3 runtime fixes verified safe — do not touch launch path
+FILES: DataBuffer.cpp:55, openssl_iocp.cpp:316, ClientSocket.cpp/UniFeederSocket.cpp,
+       Manager.cpp:2391, FrameAndDeframeMessage.cpp, WebsocketHandshakeMessage.cpp,
+       ProtoMessageConverter.cpp, UserLogin.cpp:22
+COMMITS: e14a73b, 2d5370a, 936e047
+WHY:
+  Audit fixes verified clean for launch:
+  - S1 (new char[N]) — runs in DataBuffer::Clear, per-frame, not init
+  - S8 (sizeof closeMessage) — runs in send_close_message_to_client
+  - S11/S12 (recv parens / debug str=multi) — legacy socket recv loops
+  - CR5 (CManager() temp removal) — CManager ctor trivial; temporary's dtor
+    Shutdown was no-op when m_manager is NULL. Safe.
+  - S2 close_session — uses lock-captured value; semantically correct
+  - S4/S5/S9/CR4 — WebSocket / proto paths, post-handshake only
+  - CR1 (1001/1002 backdoor) — validateSerialno called only on user login,
+    not on startup
+  - S3 refcount — balanced; listener session ends startup with refcount=2,
+    correct
+FIX:
+  None — these are correct and not the silent-exit cause.
+
+================================================================================
+RECOMMENDED ACTION ORDER
+================================================================================
+
+Step 1: Run `dumpbin /dependents x64\Release\OrikaServer.exe`
+        - Check imported DLLs vs what's on disk in x64\Release\
+        - Verify A2 (OpenSSL version mismatch). If `libssl-1_1-x64.dll` or
+          `libcrypto-1_1-x64.dll` listed as imports but not on disk: that's
+          the smoking gun.
+
+Step 2: Fix D1 + D2 in vcxproj
+        - StackReserveSize -> 1048576 (1 MB) for Debug|x64 (line 134)
+        - StackReserveSize -> 8388608 (8 MB) or remove entirely for Release|x64
+        - Debug|x64 ClCompile: _DEBUG instead of NDEBUG, MultiThreadedDebugDLL
+          instead of MultiThreadedDLL
+
+Step 3: Fix I8 (init m_pLogFile to nullptr in CLogFile ctor)
+        - Single-line fix that defangs the worst latent uninit-pointer crash
+
+Step 4: Rebuild, relaunch via double-click, observe.
+
+Step 5: If still failing — apply I2 (replace exit() with logged error in
+        ssl_set_ctx_cert_and_key). This converts the silent-exit-on-cert-fail
+        path into a visible error.
+
+Step 6: If still failing — install Sysinternals Process Monitor and capture
+        a trace per Task 2B of the implementation plan at
+        docs/superpowers/plans/2026-05-13-debug-server-launch.md.
+
+================================================================================
+END OF AUDIT
+================================================================================
+
+Total findings: 33
+  CRITICAL: 5   HIGH: 12   MEDIUM: 8   LOW: 6   INFO: 2
+
+Audit fixes (e14a73b, 2d5370a, 936e047, 9029de9) verified CLEAN for launch — no
+regression caused by the audit work. The silent-exit symptom is environmental
+(DLL version, build config, CRT pairing) and/or due to PRE-EXISTING latent bugs
+(uninitialised CLogFile pointer, exit() in cert load, NULL-checked-too-late
+SSL_CTX_new) that the audit work did not introduce but may have unmasked by
+forcing a rebuild.
