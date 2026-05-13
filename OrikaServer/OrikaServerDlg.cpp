@@ -500,7 +500,24 @@ void COrikaServerDlg::OnBnClickedStart()
 
 	AfxBeginThread(StartTickReceivingFromExternalServer, this);
 
-	stratServer();
+	// I13: stratServer now returns bool. Surface failures (invalid port,
+	// bind failure, OOM in session_new) to the operator so they know the
+	// WebSocket listener did NOT actually start. Other Start-time work
+	// (SQL load, MT5 login, broadcast threads) still proceeds; the dialog
+	// stays alive so the operator can hit Stop and fix the config.
+	if (!stratServer())
+	{
+		CStaticClass::m_logfile.LogEvent(L"OnBnClickedStart: stratServer() returned false - WebSocket listener not running");
+		AfxMessageBox(L"WebSocket server failed to start.\r\n\r\n"
+			L"Common causes:\r\n"
+			L"  - orikaPort in oreka.config is empty or non-numeric (parses to 0)\r\n"
+			L"  - The port is already in use by another process\r\n"
+			L"  - TLS init failed (Certificate.pem / key.pem unreadable from cwd)\r\n\r\n"
+			L"See D:\\logs\\<date>.log for the specific reason. Other server "
+			L"work (SQL, MT5, broadcast) is continuing; click Stop and fix the "
+			L"config to retry.",
+			MB_ICONWARNING | MB_OK);
+	}
 
 	
 	CStaticClass::startTickData=1;	

@@ -134,6 +134,9 @@ void app_on_session_close(CString strKey)
 	
 }
 // create a listening socket and associate it with iocp
+// I13: returns INVALID_SOCKET on any failure (WSASocket / bind / listen).
+// Previously the return value of those calls was discarded and a broken
+// socket was returned to stratServer.
 SOCKET create_listen_socket(int port)
 {
 	sockaddr_storage addr = {0};
@@ -143,13 +146,38 @@ SOCKET create_listen_socket(int port)
 	paddrin->sin_addr.s_addr = htonl(INADDR_ANY);
 
 	SOCKET s = WSASocket(addr.ss_family, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
+	if (s == INVALID_SOCKET)
+	{
+		CString line;
+		line.Format(L"create_listen_socket: WSASocket failed (port=%d, WSAGetLastError=%d)", port, WSAGetLastError());
+		CStaticClass::m_logfile.LogEvent(line);
+		return INVALID_SOCKET;
+	}
 	iocp_associate_handle((HANDLE)s);
-	bind(s, (sockaddr*)&addr, sizeof(addr));
-	listen(s, SOMAXCONN);
+	if (bind(s, (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR)
+	{
+		CString line;
+		line.Format(L"create_listen_socket: bind failed (port=%d, WSAGetLastError=%d) - port already in use?", port, WSAGetLastError());
+		CStaticClass::m_logfile.LogEvent(line);
+		closesocket(s);
+		return INVALID_SOCKET;
+	}
+	if (listen(s, SOMAXCONN) == SOCKET_ERROR)
+	{
+		CString line;
+		line.Format(L"create_listen_socket: listen failed (port=%d, WSAGetLastError=%d)", port, WSAGetLastError());
+		CStaticClass::m_logfile.LogEvent(line);
+		closesocket(s);
+		return INVALID_SOCKET;
+	}
 	return s;
 }
 
-void stratServer()
+// I13: now returns bool. False means the WebSocket listener did NOT start
+// (port misconfigured, port already in use, ssl_init / cert load failure
+// trickled into a NULL session, etc.). Caller (OnBnClickedStart) should
+// react accordingly.
+bool stratServer()
 {
 	//lzo_init();
 	ssl_init();
@@ -158,8 +186,27 @@ void stratServer()
 	// The former set_cert() wrapper parsed the now-empty embedded blobs only
 	// to throw the results away. Call directly with null args.
 	ssl_set_ctx_cert_and_key(nullptr, nullptr);
+
+	// I13: validate the configured port. _wtoi returns 0 on any unparseable
+	// input (empty string, non-numeric); bind to port 0 would succeed and
+	// pick an ephemeral port - the server would silently run on the wrong
+	// port and no client could ever connect.
 	int port = _wtoi(CStaticClass::orikaPort);
+	if (port <= 0 || port > 65535)
+	{
+		CString line;
+		line.Format(L"stratServer: configured orikaPort '%s' is invalid (parsed as %d) - listener NOT started",
+			(LPCWSTR)CStaticClass::orikaPort, port);
+		CStaticClass::m_logfile.LogEvent(line);
+		return false;
+	}
+
 	SOCKET s = create_listen_socket(port);
+	if (s == INVALID_SOCKET)
+	{
+		// create_listen_socket already logged the specific WSA error.
+		return false;
+	}
 
 	// A4: session_new does malloc(sizeof(SSL_session)) which is ~6.3 MB after
 	// the SSL_session struct grew (audit f8e5007). Under memory pressure or
@@ -170,16 +217,14 @@ void stratServer()
 	if (psession == nullptr)
 	{
 		CStaticClass::m_logfile.LogEvent(L"stratServer: session_new returned NULL - server listener NOT started");
-		if (s != INVALID_SOCKET)
-		{
-			closesocket(s);
-		}
-		return;
+		closesocket(s);
+		return false;
 	}
 
 	psession->s_listening = s;
 	session_accept(psession);
 
+	return true;
 }
 std::string JsonAsString(const Value& json);
 void updateFilterState(const Value& jsonObject, int m_viewno, CString m_metadatatype, CString m_userlogin)
