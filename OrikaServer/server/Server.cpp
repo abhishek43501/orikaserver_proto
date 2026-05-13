@@ -160,11 +160,26 @@ void stratServer()
 	ssl_set_ctx_cert_and_key(nullptr, nullptr);
 	int port = _wtoi(CStaticClass::orikaPort);
 	SOCKET s = create_listen_socket(port);
-		
+
+	// A4: session_new does malloc(sizeof(SSL_session)) which is ~6.3 MB after
+	// the SSL_session struct grew (audit f8e5007). Under memory pressure or
+	// if SSL_new fails (e.g., ssl_ctx is NULL because ssl_init bailed), the
+	// allocation/init can fail and return nullptr. Previously the next line
+	// dereferenced unconditionally - silent process death with no log entry.
 	SSL_session *psession = session_new(0);
+	if (psession == nullptr)
+	{
+		CStaticClass::m_logfile.LogEvent(L"stratServer: session_new returned NULL - server listener NOT started");
+		if (s != INVALID_SOCKET)
+		{
+			closesocket(s);
+		}
+		return;
+	}
+
 	psession->s_listening = s;
 	session_accept(psession);
-	
+
 }
 std::string JsonAsString(const Value& json);
 void updateFilterState(const Value& jsonObject, int m_viewno, CString m_metadatatype, CString m_userlogin)
