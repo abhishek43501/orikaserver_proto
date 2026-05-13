@@ -53,6 +53,50 @@ OrikeEXE/
 # Claude Code session state (never commit)
 .claude/
 
+# ===== Non-source extensions ===============================================
+# Reinforces "only push source files" - any file with one of these extensions
+# anywhere in the tree won't be tracked. Source we DO want stays tracked via
+# the .c/.h/.cpp/.hpp/.cc/.proto allow-list at the top of this file.
+*.lib
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.pdb
+*.pc
+*.cmake
+*.cmake.in
+*.inc
+*.inl
+*.nt
+*.Bat
+*.bat
+*.cmd
+*.ps1
+*.ico
+*.rc
+*.rc2
+*.res
+*.cs
+*.csproj
+*.1
+*.3
+*.5
+*.7
+*.man
+*.yml
+*.yaml
+*.toml
+*.txt
+*.html
+*.htm
+*.xml
+*.xsd
+Makefile
+makefile
+
+
 # ===== Visual Studio / MSBuild user state ===================================
 .vs/
 *.suo
