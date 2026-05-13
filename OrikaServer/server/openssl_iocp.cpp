@@ -778,92 +778,77 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 	////(L"Going ro UnLock UpT");
 	session_unlock(p->psession);
 	////(L"UpT");
+	// A5: single-exit refactor. The close branch used to have a special
+	// early-return when another worker was already handling deletion, which
+	// duplicated the completion-ref release at two sites. Inverting that
+	// check into an "if not already being deleted, do the work" body lets
+	// the function have exactly one Release at the end, which makes the
+	// ownership invariants easier to follow for future maintainers.
 	if (close_session)
 	{
-		CString m_key = L"";
-		m_key = p->psession->key;
+		CString m_key = p->psession->key;
 
 		int deleteclientFlag = 0;
 		m_deletedClientlist.Lookup(m_key, deleteclientFlag);
-		if (deleteclientFlag == 1)
+		if (deleteclientFlag != 1)
 		{
-			// S3: release this completion's ref before bailing out.
-			// Another worker is already handling the close-and-delete.
-			session_release(p->psession);
-			return;
-		}
-		deleteclientFlag = 1;
-		m_deletedClientlist.SetAt(m_key, deleteclientFlag);
-		CString m_log = L"";
-		/*m_log.Format(L"Going to delete client For Key %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);*/
+			// Not already being torn down by another worker - claim the
+			// deletion slot and do the cleanup.
+			deleteclientFlag = 1;
+			m_deletedClientlist.SetAt(m_key, deleteclientFlag);
+			CString m_log = L"";
 
+			CStaticClass::m_mutex_dealingClientList.Lock();
+			CStaticClass::m_ClientList_forDeal.RemoveKey(m_key);
+			CStaticClass::m_ClientList_forOrder.RemoveKey(m_key);
+			CStaticClass::m_mutex_dealingClientList.Unlock();
 
-		CStaticClass::m_mutex_dealingClientList.Lock();
-		CStaticClass::m_ClientList_forDeal.RemoveKey(m_key);
-		CStaticClass::m_ClientList_forOrder.RemoveKey(m_key);
-		CStaticClass::m_mutex_dealingClientList.Unlock();
+			CStaticClass::m_mutex_ClientList.Lock();
+			CStaticClass::st_ClientContext st_Check = {};
+			CStaticClass::m_ClientContext.Lookup(m_key, st_Check);
+			st_Check.m_startCalculationThread = 0;
+			CStaticClass::m_ClientContext.SetAt(m_key, st_Check);
+			CStaticClass::m_mutex_ClientList.Unlock();
 
-		CStaticClass::m_mutex_ClientList.Lock();
-
-		CStaticClass::st_ClientContext st_Check = {};
-		CStaticClass::m_ClientContext.Lookup(m_key, st_Check);
-		st_Check.m_startCalculationThread = 0;
-		CStaticClass::m_ClientContext.SetAt(m_key, st_Check);
-		CStaticClass::m_mutex_ClientList.Unlock();
-		int m_thread_terminate = 0;
-		/*if (WaitForSingleObject(st_Check.m_localThred, INFINITE) == WAIT_OBJECT_0)
-		{
-		}*/
-
-		if (st_Check.m_activeClient != 0)
-		{
-			m_log.Format(L"Going to trminate thread %s", m_key);
-			CStaticClass::m_logfile.LogEvent(m_log);
-			while (m_thread_terminate == 0)
+			int m_thread_terminate = 0;
+			if (st_Check.m_activeClient != 0)
 			{
-				CStaticClass::m_mutex_ClientList.Lock();
-				/*m_log.Format(L"Going to Lock Client Lock %s", m_key);
-				CStaticClass::m_logfile.LogEvent(m_log);*/
-				CStaticClass::m_ClientContext.Lookup(m_key, st_Check);
-				m_thread_terminate = st_Check.m_thread_terminate;
-				CStaticClass::m_mutex_ClientList.Unlock();
-				/*m_log.Format(L"UnLocked Client Lock %s", m_key);
-				CStaticClass::m_logfile.LogEvent(m_log);*/
-				Sleep(100);
+				m_log.Format(L"Going to trminate thread %s", m_key);
+				CStaticClass::m_logfile.LogEvent(m_log);
+				while (m_thread_terminate == 0)
+				{
+					CStaticClass::m_mutex_ClientList.Lock();
+					CStaticClass::m_ClientContext.Lookup(m_key, st_Check);
+					m_thread_terminate = st_Check.m_thread_terminate;
+					CStaticClass::m_mutex_ClientList.Unlock();
+					Sleep(100);
+				}
 			}
+			m_log.Format(L"Client thread trminated %s", m_key);
+			CStaticClass::m_logfile.LogEvent(m_log);
 
+			CStaticClass::m_mutex_ClientList.Lock();
+			CStaticClass::m_ClientContext.RemoveKey(m_key);
+			CStaticClass::m_mutex_ClientList.Unlock();
+
+			session_lock(p->psession);
+			session_close(p->psession);
+			session_unlock(p->psession);
+
+			app_on_session_close(m_key);
+
+			session_delete(p->psession);   // drops the owner ref (audit S3)
+			m_log.Format(L"Client deleted %s", m_key);
+			CStaticClass::m_logfile.LogEvent(m_log);
 		}
-		m_log.Format(L"Client thread trminated %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);
-
-
-		CStaticClass::m_mutex_ClientList.Lock();
-		CStaticClass::m_ClientContext.RemoveKey(m_key);
-		CStaticClass::m_mutex_ClientList.Unlock();
-
-
-		session_lock(p->psession);
-		session_close(p->psession);
-		session_unlock(p->psession);
-
-
-		/*m_log.Format(L"Call app_on_session_close %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);*/
-		app_on_session_close(m_key);
-		/*m_log.Format(L"Call app_on_session_close Finished %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);*/
-
-		session_delete(p->psession);
-		m_log.Format(L"Client deleted %s", m_key);
-		CStaticClass::m_logfile.LogEvent(m_log);
+		// else: another worker is handling deletion; just fall through.
 	}
 
-	// S3: release the ref taken when this completion's op was posted (in
-	// session_accept / session_send / session_recv). If the close branch
-	// above already released the owner ref AND this is the last in-flight
-	// op, this Release will free the session. After this point p->psession
-	// must NOT be touched.
+	// S3 / A5: SINGLE EXIT POINT - release the ref taken when this
+	// completion's op was posted (in session_accept / session_send /
+	// session_recv). If the close branch above already released the owner
+	// ref AND this is the last in-flight op, this Release will free the
+	// session. After this point p->psession must NOT be touched.
 	session_release(p->psession);
 }
 

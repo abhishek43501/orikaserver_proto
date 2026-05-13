@@ -21,36 +21,49 @@
 #define new DEBUG_NEW
 #endif
 
-// IOCP-based multi-client socket server (see SocketServer/ folder).
-static iocp::IOCPServer g_iocpServer;
+// D8: was `static iocp::IOCPServer g_iocpServer;` at file scope, which ran the
+// IOCPServer ctor (and its WSAStartup) at C++ static-init time, before MFC
+// theApp construction completed. Cross-TU static-init order is implementation
+// defined, and the matching ~IOCPServer() at static-deinit could run WSACleanup
+// before MFC was finished using WinSock. Switched to a function-local static
+// accessed via a getter so the ctor runs lazily on first StartIOCPSocketServer
+// call (after MFC InitInstance completes).
+static iocp::IOCPServer& IocpServerInstance()
+{
+	// C++11 thread-safe function-local static.
+	static iocp::IOCPServer instance;
+	return instance;
+}
 
 static void StartIOCPSocketServer(unsigned short port)
 {
-	g_iocpServer.SetOnConnect([](iocp::ClientContext* c) {
+	iocp::IOCPServer& server = IocpServerInstance();
+
+	server.SetOnConnect([](iocp::ClientContext* c) {
 		CString log;
 		log.Format(L"[IOCP] Client %llu connected (port=%u)",
 			c->clientId, ntohs(c->remoteAddr.sin_port));
 		CStaticClass::m_logfile.LogEvent(log);
 	});
 
-	g_iocpServer.SetOnDisconnect([](unsigned long long id) {
+	server.SetOnDisconnect([](unsigned long long id) {
 		CString log;
 		log.Format(L"[IOCP] Client %llu disconnected", id);
 		CStaticClass::m_logfile.LogEvent(log);
 	});
 
-	g_iocpServer.SetOnData([](iocp::ClientContext* c, const char* data, int len) {
+	server.SetOnData([](iocp::ClientContext* c, const char* data, int len) {
 		// Echo by default. Replace with the real request handler when ready.
-		g_iocpServer.Send(c->clientId, data, len);
+		IocpServerInstance().Send(c->clientId, data, len);
 	});
 
-	g_iocpServer.SetOnError([](const std::string& msg, int code) {
+	server.SetOnError([](const std::string& msg, int code) {
 		CString log;
 		log.Format(L"[IOCP] %S (code=%d)", msg.c_str(), code);
 		CStaticClass::m_logfile.LogEvent(log);
 	});
 
-	if (!g_iocpServer.Start(port)) {
+	if (!server.Start(port)) {
 		CString err;
 		err.Format(L"[IOCP] Failed to start on port %u", port);
 		CStaticClass::m_logfile.LogEvent(err);
@@ -60,6 +73,17 @@ static void StartIOCPSocketServer(unsigned short port)
 	CString ok;
 	ok.Format(L"[IOCP] Server listening on port %u", port);
 	CStaticClass::m_logfile.LogEvent(ok);
+}
+
+static void StopIOCPSocketServer()
+{
+	// D8: safe to call even if Start was never invoked (IocpServerInstance()
+	// would lazily construct the IOCPServer here, then Stop() early-returns
+	// because m_running is false). Side effect: WSAStartup runs even if no
+	// Start ever happened. Acceptable - Stop is only reached from the dialog's
+	// OnBnClickedStop after the user explicitly enabled Start at least once,
+	// at which point WSAStartup has already run.
+	IocpServerInstance().Stop();
 }
 
 void COrikaServerDlg::checkandremovetoken()
@@ -623,7 +647,7 @@ void COrikaServerDlg::OnBnClickedStop()
 	CStaticClass::startTickData=0;
 	CStaticClass::MSMQReaderStartStop=0;
 	SocketServer::m_Serverislive = 0;
-	g_iocpServer.Stop();
+	StopIOCPSocketServer();
 	m_btnstart.EnableWindow(true);
 	m_btnstop.EnableWindow(false);
 	m_btnexit.EnableWindow(true);
