@@ -60,7 +60,10 @@ public:
 	void UpdateClientMasterFromMuser_Manual(const IMTUser* m_user);
 	void UpdateClientMaster_Manual();
 
-	void LoadConfigFile(CString StrFilePath);
+	// D6: returns true if the file was opened (regardless of how many keys
+	// were recognised); false if the file is missing/unreadable, so the
+	// caller can warn that built-in defaults are being used.
+	bool LoadConfigFile(CString StrFilePath);
 
 	int CheckGroup(CString strgroupjson, CString strgroup);
 	void DeleteMTData(CString strgroupjson);

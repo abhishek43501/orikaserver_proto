@@ -2147,8 +2147,8 @@ CString CManager::CSVClosingfileTransfer(CString StrFilePath, CString closingDat
 
 
 
-void CManager::LoadConfigFile(CString StrFilePath)
-{		
+bool CManager::LoadConfigFile(CString StrFilePath)
+{
 	CString strval = L"";
 	CStdioFile	myFile;
 	if (myFile.Open(StrFilePath, CFile::modeRead))
@@ -2219,7 +2219,9 @@ void CManager::LoadConfigFile(CString StrFilePath)
 						
 		}
 		myFile.Close();
-	}	
+		return true;
+	}
+	return false;
 }
 
 

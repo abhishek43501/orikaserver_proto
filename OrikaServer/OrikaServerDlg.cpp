@@ -296,7 +296,21 @@ BOOL COrikaServerDlg::OnInitDialog()
 		PathRemoveFileSpec(buffer);
 		exePath = buffer;
 	}
-	CStaticClass::m_mtmanager.LoadConfigFile(exePath + L"\\oreka.config");
+	// D6: warn the operator if oreka.config is missing - without it the
+	// process runs with hardcoded fallback values (e.g., sa/ok@12345 SQL
+	// credentials, the wrong feed/gateway servers) and the operator has
+	// no easy way to tell.
+	CString configPath = exePath + L"\\oreka.config";
+	if (!CStaticClass::m_mtmanager.LoadConfigFile(configPath))
+	{
+		CString msg;
+		msg.Format(L"oreka.config not found next to OrikaServer.exe:\r\n\r\n  %s\r\n\r\n"
+			L"The server is using built-in default settings (port, SQL credentials,"
+			L" MT5 server, etc.) which may not be appropriate for this deployment.",
+			(LPCWSTR)configPath);
+		CStaticClass::m_logfile.LogEvent(L"OnInitDialog: " + msg);
+		AfxMessageBox(msg, MB_ICONWARNING | MB_OK);
+	}
 	m_txtport.SetWindowText(CStaticClass::orikaPort);
 	if (CStaticClass::APIFolderPath == L"")
 	{
