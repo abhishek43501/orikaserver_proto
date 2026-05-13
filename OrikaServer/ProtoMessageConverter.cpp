@@ -119,6 +119,7 @@ void  ProtoMessageConverter::JasonToProto(string jason, DataBuffer& buffer)
 	// Serialize the message into the charBuffer
 	m_clientmessage.SerializeToArray(charBuffer, serializedSize);
 	buffer.Append(charBuffer, serializedSize);
+	delete[] charBuffer;
 
 
 	//////Extra Code for comment

@@ -40,7 +40,7 @@ bool WebsocketHandshakeMessage::Parse()
 	std::string request;
 	// get status line
 	std::getline(s, request);
-	if (request[request.size() - 1] == '\r') {
+	if (!request.empty() && request.back() == '\r') {
 		request.erase(request.end() - 1);
 
 		std::stringstream ss(request);
@@ -59,7 +59,7 @@ bool WebsocketHandshakeMessage::Parse()
 
 	// get headers
 	while (std::getline(s, header) && header != "\r") {
-		if (header[header.size() - 1] != '\r') {
+		if (header.empty() || header.back() != '\r') {
 			continue; // ignore malformed header lines?
 		}
 		else {

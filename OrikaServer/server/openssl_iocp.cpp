@@ -676,7 +676,7 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 	////CStaticClass::m_logfile.LogEvent(L"Going ro UnLock UpT");
 	session_unlock(p->psession);
 	////CStaticClass::m_logfile.LogEvent(L"UpT");
-	if (p->psession->status == 8)
+	if (close_session)
 	{
 		CString m_key = L"";
 		m_key = p->psession->key;

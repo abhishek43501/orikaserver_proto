@@ -124,7 +124,7 @@ void FrameAndDeframeMessage::deframeIncomingMessage(char* incomingBuffer,int buf
 	////returnval = rMessage.c_str();
 	//returnval = rMessage;	
 	buffer.Append(payload, payloadSize);
-	delete payload;	
+	delete[] payload;
 	//return returnval;
 }
 
@@ -243,7 +243,7 @@ void FrameAndDeframeMessage::deframeLargeIncomingMessage(char* incomingBuffer, i
 		int i = 0;
 	}	
 	buffer.Append(payload, payloadSize);
-	delete payload;	
+	delete[] payload;
 }
 
 void FrameAndDeframeMessage::frameOutgoingMessage(char* inputdata, DataBuffer& buffer, int nWrittenBytes)
