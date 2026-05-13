@@ -172,24 +172,46 @@ void ssl_init()
 	InitializeCriticalSection(&lock_connect_ex);
 }
 
+// I2: drain OpenSSL error queue into the application log. Replaces
+// ERR_print_errors_fp(stderr) which produced no output for /SUBSYSTEM:WINDOWS.
+static void log_openssl_errors(const wchar_t* context)
+{
+	unsigned long e;
+	char buf[256];
+	while ((e = ERR_get_error()) != 0) {
+		ERR_error_string_n(e, buf, sizeof(buf));
+		CString errMsg(buf);
+		CString line;
+		line.Format(L"%s: OpenSSL: %s", context, (LPCWSTR)errMsg);
+		CStaticClass::m_logfile.LogEvent(line);
+	}
+}
+
 void ssl_set_ctx_cert_and_key(X509* cert, EVP_PKEY* pkey)
 {
 	/*SSL_CTX_use_certificate(ssl_ctx, cert);
 	SSL_CTX_use_PrivateKey(ssl_ctx, pkey);*/
+	// I2: replaced exit(3)/(4)/(5) with logged early-returns. /SUBSYSTEM:WINDOWS
+	// has detached stderr so ERR_print_errors_fp wrote to nothing, and exit()
+	// bypassed MFC cleanup. The process now stays alive; any later SSL operation
+	// fails visibly because ssl_ctx is missing the cert/key, and the cause is
+	// recorded in D:\logs\<date>.log via CStaticClass::m_logfile.
 	if (SSL_CTX_use_certificate_file(ssl_ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
-		ERR_print_errors_fp(stderr);
-		exit(3);
+		CStaticClass::m_logfile.LogEvent(L"ssl_set_ctx_cert_and_key: SSL_CTX_use_certificate_file failed for Certificate.pem");
+		log_openssl_errors(L"ssl_set_ctx_cert_and_key");
+		return;
 	}
 	if (SSL_CTX_use_PrivateKey_file(ssl_ctx, KEYF, SSL_FILETYPE_PEM) <= 0) {
-		ERR_print_errors_fp(stderr);
-		exit(4);
+		CStaticClass::m_logfile.LogEvent(L"ssl_set_ctx_cert_and_key: SSL_CTX_use_PrivateKey_file failed for key.pem");
+		log_openssl_errors(L"ssl_set_ctx_cert_and_key");
+		return;
 	}
 
 	if (!SSL_CTX_check_private_key(ssl_ctx)) {
-		//printf(stderr, "La clave privada no coincide con la clave publica del certificado\n");
-		exit(5);
+		CStaticClass::m_logfile.LogEvent(L"ssl_set_ctx_cert_and_key: private key does not match the certificate");
+		log_openssl_errors(L"ssl_set_ctx_cert_and_key");
+		return;
 	}
-	int i = 0;
 }
 
 void ssl_deinit()
