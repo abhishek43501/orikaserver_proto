@@ -7434,9 +7434,35 @@ void CStaticClass::initializeconnection()
 	//hr=connection.OpenFromInitializationString(L"Provider=SQLNCLI11.1;Password=ok@12345;Persist Security Info=False;User ID=sa;Initial Catalog=Orika;Data Source=.\\sqlexpress;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=WINDOWS-LOJSHQK;Initial File Name=\"\";Use Encryption for Data=False;Tag with column collation when possible=False;MARS Connection=False;DataTypeCompatibility=0;Trust Server Certificate=False;Application Intent=READWRITE");					
 	//Share Server
 	hr=connection.OpenFromInitializationString(L"Provider=SQLNCLI11.1;Password=" + CStaticClass::SqlServerPassword + ";Persist Security Info=False;User ID=" + CStaticClass::SqlServerUserID + ";Initial Catalog=" + CStaticClass::SqlServerDatabase + ";Data Source=" + CStaticClass::SqlServerAdd + ";Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=WIN-CE63GLSHUM0;Initial File Name=\"\";Use Encryption for Data=False;Tag with column collation when possible=False;MARS Connection=False;DataTypeCompatibility=0;Trust Server Certificate=False;Application Intent=READWRITE");
-	//hr=connection.OpenFromInitializationString(L"Provider=SQLNCLI11.1;Password=ok@12345;Persist Security Info=False;User ID=sa;Initial Catalog=Orika;Data Source=.\\sqlexpress;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=WINDOWS-LOJSHQK;Initial File Name=\"\";Use Encryption for Data=False;Tag with column collation when possible=False;MARS Connection=False;DataTypeCompatibility=0;Trust Server Certificate=False;Application Intent=READWRITE");					
+	//hr=connection.OpenFromInitializationString(L"Provider=SQLNCLI11.1;Password=ok@12345;Persist Security Info=False;User ID=sa;Initial Catalog=Orika;Data Source=.\\sqlexpress;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=WINDOWS-LOJSHQK;Initial File Name=\"\";Use Encryption for Data=False;Tag with column collation when possible=False;MARS Connection=False;DataTypeCompatibility=0;Trust Server Certificate=False;Application Intent=READWRITE");
 	/*hr=connection.OpenFromInitializationString(L"Provider=SQLOLEDB.1;Password=ok@12345;Persist Security Info=True;User ID=sa;Initial Catalog=Orika_Share_Test;Data Source=.\\sqlexpress;Use Procedure for Prepare=1;Auto Translate=True;Packet Size=4096;Workstation ID=SLSERDEMO;Use Encryption for Data=False;Tag with column collation when possible=False");					*/
-	
+
+	// I9: check the OpenFromInitializationString result. Prior code silently
+	// ignored failure; every later m_tempSession.Open(connection) on the
+	// un-opened CDataSource then threw an ATL E_FAIL exception that often
+	// propagated through MFC and killed the dialog with no diagnostic.
+	if (FAILED(hr))
+	{
+		CString err;
+		err.Format(L"initializeconnection: SQL OpenFromInitializationString failed hr=0x%08x.\r\n"
+			L"Server=%s  Database=%s  User=%s\r\n\r\n"
+			L"Common causes:\r\n"
+			L"  - SQL Server unreachable or service not running\r\n"
+			L"  - SQL Native Client 11 (SQLNCLI11) not installed on this machine\r\n"
+			L"  - Wrong credentials in oreka.config\r\n"
+			L"  - Connection-string injection from a special character in the password\r\n\r\n"
+			L"Subsequent SQL operations in OnBnClickedStart will fail. See D:\\logs\\<date>.log.",
+			hr,
+			(LPCWSTR)CStaticClass::SqlServerAdd,
+			(LPCWSTR)CStaticClass::SqlServerDatabase,
+			(LPCWSTR)CStaticClass::SqlServerUserID);
+		CStaticClass::m_logfile.LogEvent(err);
+		AfxMessageBox(err, MB_ICONERROR | MB_OK);
+		// Continue to populate the request/table maps so other startup code
+		// can still observe failures cleanly rather than crashing on missing
+		// CMap entries. Caller-side (I5-style) checks would be a better
+		// long-term answer.
+	}
 
 	CStaticClass::m_requestResponseData.SetAt(L"FETCH_CLIENT_MASTER_META_DATA",L"CLIENT_MASTER_META_DATA");
 
