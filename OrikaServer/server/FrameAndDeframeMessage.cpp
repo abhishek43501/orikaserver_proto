@@ -7,6 +7,11 @@
 #include "WebsocketDataMessage.h"
 #include <vector> // Include this header for std::vector
 #include "StaticClass.h"
+
+// S4: hard cap on WebSocket payload to bound allocation and bufferSize math.
+// 1 MB is well above any legitimate JSON message in this protocol; raise only
+// after auditing every consumer for int-overflow safety.
+static const unsigned __int64 MAX_WEBSOCKET_PAYLOAD_SIZE = 1ULL * 1024ULL * 1024ULL;
 FrameAndDeframeMessage::FrameAndDeframeMessage()
 {}
 FrameAndDeframeMessage::~FrameAndDeframeMessage(void)
@@ -79,14 +84,29 @@ void FrameAndDeframeMessage::deframeIncomingMessage(char* incomingBuffer,int buf
 		nMinExpectedSize += 8;
 		if (bufferSize < nMinExpectedSize)
 			return ;
-		payloadSize = ntohl(*(u_long*)(incomingBuffer + 2));
-		payloadSize = *(u_long*)(incomingBuffer + 2);
+		// S4: 8-byte length, big-endian. The previous code read 4 bytes from
+		// offset 2 with ntohl, then re-assigned native byte order from the
+		// same 4 bytes - dropping the high 32 bits and corrupting the value.
+		unsigned __int64 lenHi = (unsigned __int64)ntohl(*(u_long*)(incomingBuffer + 2));
+		unsigned __int64 lenLo = (unsigned __int64)ntohl(*(u_long*)(incomingBuffer + 6));
+		payloadSize = (lenHi << 32) | lenLo;
 		masksOffset = 10;
 	}
 	else
 		return ;
 
-	nMinExpectedSize += payloadSize;
+	// S4: reject oversized payloads BEFORE adding to nMinExpectedSize (which
+	// is int and would overflow) and BEFORE the new char[payloadSize+1] alloc.
+	if (payloadSize > MAX_WEBSOCKET_PAYLOAD_SIZE)
+		return ;
+
+	// S4: RFC 6455 requires MASK bit on every client->server frame. The code
+	// below XORs payload bytes with mask[i%4] unconditionally; if MASK is 0,
+	// mask[] is unset noise and the payload is corrupted. Reject early.
+	if ((getAt(incomingBuffer, 1) & 0x80) == 0)
+		return ;
+
+	nMinExpectedSize += (int)payloadSize;
 	if (bufferSize < nMinExpectedSize)
 	{
 		//psession->pending_socket_buffer_Rev = new char[bufferSize];

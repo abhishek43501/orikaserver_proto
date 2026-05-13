@@ -19,10 +19,6 @@ CUserLogin::~CUserLogin()
 
 bool CUserLogin::validateSerialno(CString loginuser,CString hdno)
 {
-	if (loginuser==L"1001" || loginuser == L"1002")
-	{
-		return true;
-	}
 	CString rval=L"";
 	HRESULT hr=NULL ;
 	CCommand<CAccessor<CTableHDno>> data_table;								
