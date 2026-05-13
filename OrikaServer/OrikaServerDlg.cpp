@@ -364,10 +364,28 @@ void COrikaServerDlg::OnBnClickedStart()
 	CStaticClass m_staticclass;
 	m_staticclass.initializeconnection();
 	m_staticclass.initializePointerArray();
-	CStaticClass::m_mtmanager.Initialize();
+	// I5: check Initialize() return - on failure m_manager is left NULL and
+	// the following login() call would do m_manager->Connect(...) and crash
+	// the process silently (no error log entry visible to operator).
+	if (!CStaticClass::m_mtmanager.Initialize())
+	{
+		CStaticClass::m_logfile.LogEvent(L"OnBnClickedStart: CManager::Initialize() failed - aborting Start");
+		AfxMessageBox(L"MT5 Manager API failed to initialise.\r\n\r\n"
+			L"Common causes:\r\n"
+			L"  - MT5\\Manager\\API\\MT5APIManager64.dll missing from the working directory\r\n"
+			L"  - DLL version mismatch with MTManagerAPIVersion\r\n"
+			L"  - CreateManager / CreateAdmin failure\r\n\r\n"
+			L"Server has NOT started. See D:\\logs\\<date>.log for details.",
+			MB_ICONERROR | MB_OK);
+		m_btnstart.EnableWindow(TRUE);
+		m_btnstop.EnableWindow(FALSE);
+		m_btnexit.EnableWindow(TRUE);
+		m_txtport.EnableWindow(TRUE);
+		return;
+	}
 
 
-	
+
 	CStaticClass::m_sqldata.getSymbolMasterDataForTickSubscribe();
 
 	////Share SERVER
