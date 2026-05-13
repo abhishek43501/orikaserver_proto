@@ -252,6 +252,9 @@ SSL_session* session_init(SSL_session* psession, void* pdata)
 	}
 	memset(psession, 0, sizeof(SSL_session));
 	psession->pdata = pdata;
+	// S3: owner ref. session_delete drops this. In-flight async ops AddRef
+	// before posting and Release in the completion handler. Last ref frees.
+	psession->refcount = 1;
 	InitializeCriticalSection(&psession->lock);
 
 	psession->overlapped[CONNECT].psession = psession->overlapped[RECV].psession = psession->overlapped[SEND].psession = psession;
@@ -280,14 +283,35 @@ SSL_session* session_new(void* pdata)
 	return session_init(psession, pdata);
 }
 
-void session_delete(SSL_session* psession)
+// S3: actual destruction. Only called by session_release when refcount reaches 0.
+// Caller is expected to have called session_close beforehand to release SSL/socket.
+static void session_destroy_internal(SSL_session* psession)
 {
-	/*int socketNumber = psession->s;
-	CString SocketNoforDelete = L"";*/
-	//SocketNoforDelete.Format(L"Going to delete session for Socket No:%d", socketNumber);
-	//CStaticClass::m_logfile.LogEvent(SocketNoforDelete);
 	DeleteCriticalSection(&psession->lock);
 	free(psession);
+}
+
+void session_addref(SSL_session* psession)
+{
+	if (psession)
+		InterlockedIncrement(&psession->refcount);
+}
+
+void session_release(SSL_session* psession)
+{
+	if (!psession)
+		return;
+	if (0 == InterlockedDecrement(&psession->refcount))
+		session_destroy_internal(psession);
+}
+
+void session_delete(SSL_session* psession)
+{
+	// S3: drop the owner reference. If any async ops are still in flight,
+	// they hold their own refs and the last one to Release will free the
+	// struct. Previously this unconditionally free()d the session, which
+	// could leave IOCP workers operating on freed memory.
+	session_release(psession);
 }
 
 void send_close_message_to_client(SSL_session* psession)
@@ -399,11 +423,13 @@ void session_accept(SSL_session* psession)
 	iocp_associate_handle((HANDLE)psession->s);
 
 	psession->status |= ACCEPTING;
+	session_addref(psession); // S3: ref for the pending AcceptEx; released at end of session_on_completed_packets
 	BOOL accepted = AcceptEx(psession->s_listening, psession->s, psession->addresses, 0, sizeof(sockaddr_storage), sizeof(sockaddr_storage), 0, &psession->overlapped[CONNECT].overlapped);
 	psession->overlapped[CONNECT].result = WSAGetLastError();
 	if (WSA_IO_PENDING != psession->overlapped[CONNECT].result)
 	{
 		psession->status = NONE;
+		session_release(psession); // S3: post failed, no completion will fire; unwind the AddRef
 		session_close(psession);
 	}
 }
@@ -414,6 +440,7 @@ void session_send(SSL_session* psession)
 	{
 		psession->status |= SENDING;
 		psession->bytes_transferred[SEND] = 0;
+		session_addref(psession); // S3: ref for the pending WSASend; released at end of session_on_completed_packets
 		WSASend(psession->s, &psession->wsabuf[SEND], 1, &psession->bytes_transferred[SEND], 0, &psession->overlapped[SEND].overlapped, 0);
 		psession->overlapped[SEND].result = WSAGetLastError();
 		if (0 != psession->overlapped[SEND].result && WSA_IO_PENDING != psession->overlapped[SEND].result)
@@ -421,6 +448,7 @@ void session_send(SSL_session* psession)
 			try
 			{
 				psession->status &= ~SENDING;
+				session_release(psession); // S3: post failed, unwind the AddRef
 				session_close(psession);
 			}
 			catch (CException* e)
@@ -439,11 +467,13 @@ void session_recv(SSL_session* psession)
 	{
 		psession->status |= RECEIVING;
 		DWORD size = 0;
+		session_addref(psession); // S3: ref for the pending WSARecv; released at end of session_on_completed_packets
 		WSARecv(psession->s, &psession->wsabuf[RECV], 1, &size, &psession->wsa_flags[RECV], &psession->overlapped[RECV].overlapped, 0);
 		psession->overlapped[RECV].result = WSAGetLastError();
 		if (0 != psession->overlapped[RECV].result && WSA_IO_PENDING != psession->overlapped[RECV].result)
 		{
 			psession->status &= ~RECEIVING;
+			session_release(psession); // S3: post failed, unwind the AddRef
 			session_close(psession);
 		}
 	}
@@ -752,6 +782,13 @@ void session_on_completed_packets(DWORD dwNumberOfBytesTransferred, ULONG_PTR lp
 		m_log.Format(L"Client deleted %s", m_key);
 		CStaticClass::m_logfile.LogEvent(m_log);
 	}
+
+	// S3: release the ref taken when this completion's op was posted (in
+	// session_accept / session_send / session_recv). If the close branch
+	// above already released the owner ref AND this is the last in-flight
+	// op, this Release will free the session. After this point p->psession
+	// must NOT be touched.
+	session_release(p->psession);
 }
 
 int session_send_data(SSL_session* psession, const char* data, int len, CString strkey, int ActiveClient)

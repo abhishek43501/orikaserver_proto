@@ -79,6 +79,7 @@ struct SSL_session
 	char pending_frame_buffer_Rev[BUFFER_SIZE_REV]; // memory used store pending frame
 	int  pending_frame_buffer_size;
 	BYTE masks[4];
+	volatile LONG refcount; // S3: refcount-based lifetime; struct is freed when this reaches 0
 };
 
 void iocp_associate_handle(HANDLE h);
@@ -93,6 +94,8 @@ void session_delete(SSL_session *psession);
 void send_close_message_to_client(SSL_session* psession);
 void session_lock(SSL_session *psession);
 void session_unlock(SSL_session *psession);
+void session_addref(SSL_session *psession);
+void session_release(SSL_session *psession);
 void session_connect(SSL_session *psession, const sockaddr_storage *remote_addr);
 void session_accept(SSL_session *psession);
 int session_send_data(SSL_session *psession, const char *data, int len, CString strkey,int ActiveClient);
