@@ -2390,7 +2390,6 @@ void CManager::SendOrderCountUpdate(CString m_login, CString  m_symbol)
 }
 bool CManager::Initialize()
   {
-   CManager();
    MTAPIRES res    =MT_RET_OK_NONE;
    UINT     version=0;
    CString  message;

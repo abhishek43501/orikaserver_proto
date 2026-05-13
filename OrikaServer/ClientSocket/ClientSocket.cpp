@@ -547,12 +547,10 @@ bool CClientSocket::ReadStringCheck(char *buf,const int maxlen,LPCSTR str,bool &
 //--- reset the flag that we've found the line
    found=false;
 //--- reading data
-   if(res=ReadString(buf,maxlen))
-
-	   //For Checking Pur
-		   str="multi";
-		   //End
+   if((res=ReadString(buf,maxlen)))
+   {
       found=strstr(buf,str)!=NULL;
+   }
 //--- return the result
    return(res);
   }
@@ -570,7 +568,7 @@ bool CClientSocket::ReadString(char *buf,const int maxlen)
 //--- read data
 		
 		int recvcheck=0;
-	if(recvcheck=recv(m_socket,buf, maxlen,0)!=1)
+	if((recvcheck=recv(m_socket,buf, maxlen,0))<1)
 	{		
 		//--- checking errors of the socket
 		if(WSAGetLastError()!=WSAEWOULDBLOCK || count>10)

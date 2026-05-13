@@ -555,12 +555,10 @@ bool CUniFeederSocket::ReadStringCheck(char *buf,const int maxlen,LPCSTR str,boo
 //--- reset the flag that we've found the line
    found=false;
 //--- reading data
-   if(res=ReadString(buf,maxlen))
-
-	   //For Checking Pur
-		   str="multi";
-		   //End
+   if((res=ReadString(buf,maxlen)))
+   {
       found=strstr(buf,str)!=NULL;
+   }
 //--- return the result
    return(res);
   }
@@ -579,7 +577,7 @@ bool CUniFeederSocket::ReadString(char *buf,const int maxlen)
 	while(len<maxlen)
 	{	
 		int recvcheck=0;
-	if(recvcheck=recv(m_socket,buf,1,0)!=1)
+	if((recvcheck=recv(m_socket,buf,1,0))!=1)
 	{		
 		//--- checking errors of the socket
 		if(WSAGetLastError()!=WSAEWOULDBLOCK || count>10)

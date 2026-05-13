@@ -52,7 +52,7 @@ void DataBuffer::Clear()
 		   delete[] pBuffer; 
 		   pBuffer=NULL; 
 	   }
-	   char* new_char=new char(10000000); 
+	   char* new_char=new char[10000000];
 	   pBuffer=new_char;
 	   this->uMaxSize = 10000000;
 	   uSize=0;

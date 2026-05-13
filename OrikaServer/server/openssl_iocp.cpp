@@ -296,7 +296,7 @@ void send_close_message_to_client(SSL_session* psession)
 	const char* closeMessageStr = reinterpret_cast<const char*>(closeMessage);
 	//clientSocket->ShutDown();
 	//clientSocket->Close();
-	session_send_data(psession, closeMessageStr, sizeof(closeMessageStr), L"", 1);
+	session_send_data(psession, closeMessageStr, sizeof(closeMessage), L"", 1);
 }
 
 void session_lock(SSL_session* psession)
