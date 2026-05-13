@@ -282,7 +282,13 @@ END_MESSAGE_MAP()
 
 
 BOOL COrikaServerDlg::OnInitDialog()
-{	
+{
+	// I7: anchor for explicit static-set bring-up. Runs after the
+	// implementation-defined cross-TU static-init ordering has already
+	// completed (we're inside InitInstance), so this is a deterministic
+	// post-condition - past here, m_logfile / m_mtmanager / connection
+	// are all definitely constructed and safe to use.
+	CStaticClass::Init();
 	CDialogEx::OnInitDialog();
 
 	// Add "About..." menu item to system menu.
@@ -615,6 +621,10 @@ void COrikaServerDlg::OnCancel()
 	// Without the base call, pressing Esc just flipped the MSMQ flag and
 	// the dialog stayed open with no UI feedback.
 	CStaticClass::MSMQReaderStartStop = 0;
+	// I7: flip the log shutdown gate before MFC starts tearing down the
+	// cross-TU static set. After this, any LogEvent invoked from another
+	// static's destructor is a deterministic no-op.
+	CStaticClass::Shutdown();
 	CDialogEx::OnCancel();
 }
 
@@ -632,6 +642,8 @@ void COrikaServerDlg::OnClose()
 	// D4: call the base so the X-button / Alt+F4 actually closes the
 	// window. Previously the override swallowed the message and the
 	// dialog couldn't be closed via the title bar.
+	// I7: same shutdown gate as OnCancel - the X-button path skips OnCancel.
+	CStaticClass::Shutdown();
 	CDialogEx::OnClose();
 }
 

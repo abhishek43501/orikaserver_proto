@@ -32,6 +32,23 @@ public:
 	static int		APISERVER_PORT;
 	CStaticClass();
 	~CStaticClass();
+
+	// I7: deterministic init/teardown for the cross-TU static set.
+	// The audit (CR7) flagged that g_iocpServer's WSAStartup, COrikaServerApp's
+	// MFC init, and CLogFile's uninitialised m_pLogFile could all run in
+	// implementation-defined order across translation units. Three pieces
+	// close the loop:
+	//   - D8 made g_iocpServer a function-local static (lazy WSAStartup).
+	//   - I8 made CLogFile self-initialising in its constructor.
+	//   - Init()/Shutdown() below pin the explicit ordering: at start of
+	//     OnInitDialog we declare the static set "live"; at start of
+	//     OnCancel we tear down log/IO so any late LogEvent triggered from
+	//     another static's destructor becomes a no-op instead of touching
+	//     a destroyed CRITICAL_SECTION.
+	// Safe to call multiple times.
+	static void Init();
+	static void Shutdown();
+
 	static int loginvalidate;
 	static CManager m_mtmanager;
 	static std::string  strTick;

@@ -15,6 +15,12 @@ public:
 	void ChangeFile(CString strFile, bool bAppend = TRUE, long lTruncate = 4096);
 	void CloseFile();
 
+	// I7: set the shutdown gate so subsequent LogEvent/Write calls become
+	// no-ops. Called from CStaticClass::Shutdown() before MFC tears down the
+	// cross-TU statics so any late LogEvent (e.g. from another static's
+	// dtor) cannot reach an already-destroyed CRITICAL_SECTION.
+	void Shutdown();
+
 	char* CstringToCharP(CString event);
 
 	//	Write log info into the logfile, with printf like parameters support
@@ -24,6 +30,10 @@ private:
 	FILE*	m_pLogFile;
 	long	m_lTruncate;
 	CRITICAL_SECTION	m_cs;
+	// I7: once set, LogEvent/Write return immediately. Plain bool is fine -
+	// the only writer is CStaticClass::Shutdown() on the main UI thread,
+	// and readers tolerate one transient miss.
+	bool	m_shutdown;
 
 	CString	m_filename;
 

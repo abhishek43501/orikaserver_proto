@@ -47,12 +47,23 @@ void CLogFile::OpenFile(CString strFile, bool bAppend, long lTruncate)
 
 
 CLogFile::CLogFile()
-	: m_pLogFile(nullptr), m_lTruncate(0)
+	: m_pLogFile(nullptr), m_lTruncate(0), m_shutdown(false)
 {
 	// I8: initialise members in the ctor so that the first LogEvent's
 	// ChangeFile -> CloseFile sequence doesn't read garbage from m_pLogFile
 	// or call DeleteCriticalSection on an uninitialised CRITICAL_SECTION.
 	InitializeCriticalSection(&m_cs);
+}
+
+void CLogFile::Shutdown()
+{
+	// I7: flip the gate first so any concurrent / subsequent LogEvent bails
+	// before it tries to touch m_pLogFile or the CRITICAL_SECTION. Then
+	// flush+close the file. The CS itself is still destroyed in the dtor.
+	m_shutdown = true;
+	EnterCriticalSection(&m_cs);
+	CloseFile();
+	LeaveCriticalSection(&m_cs);
 }
 
 	/////////////////////////////////
@@ -123,6 +134,10 @@ void CLogFile::CreateDirectories(CString filename)
 
 void CLogFile::Write(CString pszFormat)
 {
+	// I7: gate post-shutdown writes so we don't touch m_cs after
+	// CStaticClass::Shutdown() / dtor have torn it down.
+	if (m_shutdown)
+		return;
 	CString strFinalStr = L"";
 	strFinalStr = pszFormat;
 	if (pszFormat.GetLength() >=500)
@@ -151,15 +166,19 @@ void CLogFile::Write(CString pszFormat)
 	}
 void CLogFile::LogEvent(CString event)
 {
+	// I7: bail before doing any work (incl. ChangeFile / OpenFile) once the
+	// owning CStaticClass has been told to shut down.
+	if (m_shutdown)
+		return;
 	CString name;
-	SYSTEMTIME systime; 
+	SYSTEMTIME systime;
 
 	GetLocalTime(&systime);
 
 	name.Format(L"MYLog\\log_%02i%02i%02i.txt",
 		systime.wDay,
 		systime.wMonth,
-		systime.wYear		
+		systime.wYear
 		);
 	ChangeFile(name);
 

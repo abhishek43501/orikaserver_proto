@@ -9,6 +9,26 @@
 #include "AlertStaticClass.h"
  
 using namespace rapidjson;
+
+// I7: see StaticClass.h for the full rationale. These are intentionally
+// minimal - they don't reconstruct the static set, they only mark explicit
+// init/teardown checkpoints that close the cross-TU lifecycle gap.
+void CStaticClass::Init()
+{
+	// Reserved for future deterministic early-init wiring (eager log open,
+	// MSMQ probe, etc.). Today the static set is self-sufficient once D8/I8
+	// land, so this is a no-op anchor for OnInitDialog to call - and a
+	// natural seam if something later needs ordered startup.
+}
+
+void CStaticClass::Shutdown()
+{
+	// Order matters: close the log gate first so any subsequent LogEvent
+	// from a static's destructor (CManager::Shutdown, ATL CDataSource, etc.)
+	// becomes a no-op instead of reaching into a destroyed CRITICAL_SECTION.
+	m_logfile.Shutdown();
+}
+
 bool CStaticClass::terminated=false;
 CManager CStaticClass::m_mtmanager;
 int CStaticClass::portno;
