@@ -7390,36 +7390,86 @@ CStaticClass::CStaticClass()
 
 void CStaticClass::initializePointerArray()
 {
-	for (int i=0;i<35000;i++)
+	// I12: switched from malloc to calloc. malloc returned uninitialised
+	// memory, so the first read of any slot before the first OnTick fired
+	// for that symbol returned garbage bid/ask/last values (or NaN). calloc
+	// also returns NULL on failure - now checked. Each loop logs and bails
+	// on the first NULL so the downstream NULL deref doesn't go undiagnosed.
+	// st_TickBidAskLast is POD (three doubles), so all-zero is a valid
+	// "no data yet" state.
+	for (int i = 0; i < 35000; i++)
 	{
-		//lastrateArray[i]=(double *)malloc(sizeof(double)); 
-		lastrateArray[i] = (CStaticClass::st_TickBidAskLast*)malloc(sizeof(CStaticClass::st_TickBidAskLast));
+		lastrateArray[i] = (CStaticClass::st_TickBidAskLast*)calloc(1, sizeof(CStaticClass::st_TickBidAskLast));
+		if (!lastrateArray[i])
+		{
+			CString line;
+			line.Format(L"initializePointerArray: calloc(lastrateArray) failed at i=%d", i);
+			CStaticClass::m_logfile.LogEvent(line);
+			return;
+		}
 	}
-	for (int i=0;i<6000;i++)
+	for (int i = 0; i < 6000; i++)
 	{
-		clientgrosstotalArray[i]=(double *)malloc(sizeof(double)); 
-	}	
+		clientgrosstotalArray[i] = (double*)calloc(1, sizeof(double));
+		if (!clientgrosstotalArray[i])
+		{
+			CString line;
+			line.Format(L"initializePointerArray: calloc(clientgrosstotalArray) failed at i=%d", i);
+			CStaticClass::m_logfile.LogEvent(line);
+			return;
+		}
+	}
 
 	for (int i = 0; i < 6000; i++)
 	{
-		CompanyVolumeAfterMultiTotalArray[i] = (double*)malloc(sizeof(double));
+		CompanyVolumeAfterMultiTotalArray[i] = (double*)calloc(1, sizeof(double));
+		if (!CompanyVolumeAfterMultiTotalArray[i])
+		{
+			CString line;
+			line.Format(L"initializePointerArray: calloc(CompanyVolumeAfterMultiTotalArray) failed at i=%d", i);
+			CStaticClass::m_logfile.LogEvent(line);
+			return;
+		}
+		// calloc already zeroed; explicit assignment kept for documenting intent.
 		*CompanyVolumeAfterMultiTotalArray[i] = 0;
 	}
-	
+
 	for (int i = 0; i < 6000; i++)
 	{
-		LpVolumeTotal[i] = (double*)malloc(sizeof(double));
+		LpVolumeTotal[i] = (double*)calloc(1, sizeof(double));
+		if (!LpVolumeTotal[i])
+		{
+			CString line;
+			line.Format(L"initializePointerArray: calloc(LpVolumeTotal) failed at i=%d", i);
+			CStaticClass::m_logfile.LogEvent(line);
+			return;
+		}
+		// calloc already zeroed; explicit assignment kept for documenting intent.
 		*LpVolumeTotal[i] = 0;
 	}
 
-	for (int i=0;i<6000;i++)
+	for (int i = 0; i < 6000; i++)
 	{
-		clientbroktotalArray[i]=(double *)malloc(sizeof(double)); 
-	}	
-	for (int i=0;i<6000;i++)
+		clientbroktotalArray[i] = (double*)calloc(1, sizeof(double));
+		if (!clientbroktotalArray[i])
+		{
+			CString line;
+			line.Format(L"initializePointerArray: calloc(clientbroktotalArray) failed at i=%d", i);
+			CStaticClass::m_logfile.LogEvent(line);
+			return;
+		}
+	}
+	for (int i = 0; i < 6000; i++)
 	{
-		clientnettotalArray[i]=(double *)malloc(sizeof(double)); 
-	}			
+		clientnettotalArray[i] = (double*)calloc(1, sizeof(double));
+		if (!clientnettotalArray[i])
+		{
+			CString line;
+			line.Format(L"initializePointerArray: calloc(clientnettotalArray) failed at i=%d", i);
+			CStaticClass::m_logfile.LogEvent(line);
+			return;
+		}
+	}
 }
 	
 CStaticClass::~CStaticClass()
