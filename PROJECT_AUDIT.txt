@@ -1,0 +1,2732 @@
+================================================================================
+ORIKASERVER FULL-PROJECT AUDIT
+================================================================================
+
+Date:       2026-05-13
+Scope:      Whole project (server, ClientSocket, SocketServer, DataTable, MSMQ,
+            SQLDATA, LogWriter, core/main, build, repo hygiene)
+Auditor:    Claude (Opus 4.7, 1M context) - 5 parallel review agents
+Method:     Static review of source. No code modified. No tests run.
+Predecessor: OrikaServer\docs\STABILITY_AUDIT.md (2026-05-08) - all of its
+            findings remain present in current code and are re-listed here
+            with current line numbers.
+
+--------------------------------------------------------------------------------
+RESULT SUMMARY
+--------------------------------------------------------------------------------
+
+164 total findings across five areas:
+
+  Area                                Count   CRIT   HIGH   MED   LOW
+  ---------------------------------   -----   ----   ----   ---   ---
+  Server (WebSocket/IOCP/OpenSSL)       60     12     12    27    9
+  ClientSocket / SocketServer           33      5     14    11    3
+  Data layer (SQL/MSMQ/Log/Tables)      30      4      9    14    3
+  Core / main / dialog                  26      6      9     8    3
+  Repo hygiene / build / config         15      4      6     3    2
+  ---------------------------------   -----   ----   ----   ---   ---
+  Total                                164     31     50    63   20
+
+--------------------------------------------------------------------------------
+SEVERITY LEGEND
+--------------------------------------------------------------------------------
+
+  CRITICAL  Remotely exploitable, crashes, heap corruption, credential leak,
+            authentication bypass, currently-broken core functionality.
+            Fix before next deployment.
+
+  HIGH      Will cause failures under load, memory growth, DoS, race-driven
+            corruption, or significant data quality loss. Fix soon.
+
+  MEDIUM    Latent bugs, incorrect behaviour in edge cases, design smells
+            that will turn into real bugs as the code evolves.
+
+  LOW       Style, dead code, future-proofing, cosmetic.
+
+--------------------------------------------------------------------------------
+HIGHEST-PRIORITY FIX QUEUE
+--------------------------------------------------------------------------------
+
+The following are the cheapest fixes with the highest return:
+
+  Phase 1 - One-line edits, under 1 hour total
+    S1   DataBuffer.cpp:55             new char(N) -> new char[N]
+    S8   openssl_iocp.cpp:316          sizeof(closeMessageStr) -> sizeof(closeMessage)
+    S11  ClientSocket.cpp:573, UniFeederSocket.cpp:582, SocketServer.cpp:160
+                                       recv-precedence parens
+    S12  ClientSocket.cpp:550, UniFeederSocket.cpp:558
+                                       delete str="multi" debug override
+    R14  .gitignore                    install standard VS template + key/zip/pdb rules
+    CR5  Manager.cpp:2401              delete dead `CManager();` temporary
+
+  Phase 2 - Half-day fixes
+    S2   openssl_iocp.cpp:693          status == 8 -> close_session flag
+    S5   FrameAndDeframeMessage.cpp:112 add delete[] payload_t
+    S7   key.pem / Certificate.pem     re-issue expired TLS cert
+    S9   WebsocketHandshakeMessage.cpp:43, 62  guard request.empty()
+    CR4  ProtoMessageConverter.cpp:160  delete charBuffer -> delete[] charBuffer
+
+  Phase 3 - One-to-three days
+    S3   openssl_iocp.cpp:694           refcounted session lifetime
+    S4   FrameAndDeframeMessage.cpp     frame parser hardening + max payload
+    S6   cert.cpp                       remove embedded private key, restrict ACLs
+    D1   SQLDATA/SqlData.cpp            parameterize ALL CString::Format SQL
+    CR1  UserLogin.cpp:22               remove 1001/1002 backdoor + hash passwords
+    R1   *.pem                          rotate keys, purge from git history
+    R2   StaticClass.cpp:211            rotate sa credentials + move to config
+    R3/R4  .gitignore                   git rm --cached build artifacts/zip/pdb
+
+  Phase 4 - Architectural / multi-week
+    A1   refcounted SSL_session
+    A2   per-session send queue (no busy-wait)
+    A3   bounded resources at every boundary
+    H4/S15  pointer-allocated session buffers
+    A6   complete or replace WebSocket implementation
+    A7   consolidate ClientSocket/UniFeederSocket duplication
+    CR6  break up CStaticClass god-singleton
+
+--------------------------------------------------------------------------------
+ARCHITECTURE-LEVEL CONCERNS
+--------------------------------------------------------------------------------
+
+A1. No ownership model for SSL_session.
+    Application, IOCP completion and deletion threads all touch the same
+    struct with implicit "hold psession->lock sometimes" discipline. Used in
+    session_send_data, ignored in session_close, released mid-deletion in
+    session_on_completed_packets. Root cause of ~half the concrete bugs in
+    the server section.
+    Direction: refcounted SSL_session, free only when refcount==0.
+
+A2. No backpressure / flow control.
+    session_send_data busy-loops with Sleep(0) and a 5-second wall-clock
+    timeout instead of queueing on WSASend completion. Under congestion this
+    starves IOCP workers and deletes clients incorrectly.
+    Direction: per-session send queue serviced by WSASend completions.
+
+A3. No bounds anywhere.
+    No max concurrent connections, no max message size, no handshake/idle
+    timeout, ~6.9 MB inline buffers per session. A single misbehaving peer
+    OOMs the server.
+
+A4. Coarse-grained global state.
+    m_ClientContext / m_ClientList_forDeal / m_ClientList_forOrder /
+    m_SymbolHighLowTimeWiseArray / m_SymbolSourceArray are all CMaps guarded
+    by one CMutex. Hot paths iterate without locking.
+
+A5. Sleep-based polling everywhere.
+    Sleep(0), Sleep(100), Sleep(5000), while(m_recvThreadSrynk==1) {}.
+    Direction: Events, condition variables, completion-based notifications.
+
+A6. WebSocket protocol implementation is partial.
+    No control-frame handling, no ping/pong, no close-frame handling, no MASK
+    validation, no max frame size, no fragmentation invariants, no
+    permessage-deflate.
+    Direction: implement RFC 6455 fully or adopt libwebsockets / Beast.
+
+A7. Three mostly-duplicated socket layers.
+    ClientSocket.cpp and UniFeederSocket.cpp are ~85% identical; SocketServer.cpp
+    is dead. Bugs need fixing in three places.
+    Direction: consolidate into one abstraction; delete SocketServer.cpp.
+
+A8. Build artifacts in the repo.
+    ~18,555 generated files tracked. .gitignore is a generic Node template.
+    Direction: install the standard VS .gitignore; git rm --cached the rest.
+
+A9. CStaticClass god-singleton.
+    Hundreds of static members carrying virtually all program state, accessed
+    from ~10 threads with inconsistent locking and read-modify-write races.
+    Direction: split into purpose-specific services owned by a coordinator.
+
+================================================================================
+PART A: SERVER (WebSocket / IOCP / OpenSSL)
+================================================================================
+
+ID: S1
+SEVERITY: CRITICAL
+TITLE: DataBuffer::Clear() allocates 1 byte but advertises 10 MB
+FILE: OrikaServer/server/DataBuffer.cpp:55
+CODE:
+  char* new_char=new char(10000000);
+  pBuffer=new_char;
+  this->uMaxSize = 10000000;
+  uSize=0;
+WHY:
+  new char(N) (parentheses) allocates a single char initialised to (N & 0xFF),
+  not an array. Append/Pop/memmove then write up to 10 MB into a 1-byte
+  allocation, and ~DataBuffer runs delete[] on a non-array pointer. Double UB:
+  heap corruption plus invalid deallocation. Re-confirms prior audit C1.
+FIX:
+  new char[10000000] - or remove the magic constant and reuse Allocate(uMaxSize).
+IMPACT:
+  Eliminates an immediate heap-corruption / UB trigger on every Clear() call
+  (called per-frame in the deframer). Likely root cause of "random" crashes
+  anywhere downstream.
+
+---
+
+ID: S2
+SEVERITY: CRITICAL
+TITLE: Disconnection branch keyed on status == 8 (CONNECTED), not CLOSED
+FILE: OrikaServer/server/openssl_iocp.cpp:691-696
+CODE:
+  bool close_session = (CLOSED == p->psession->status);   // computed, never used
+  session_unlock(p->psession);
+  if (p->psession->status == 8) { ... session_delete(p->psession); ... }
+WHY:
+  CONNECTED = 0x8, CLOSED = 0x80 (enum in openssl_iocp.h:25-36). The
+  "delete the session" cleanup runs on the first IO completion of any healthy
+  connected session, freeing it while other overlapped operations and
+  m_ClientContext entries are still live.
+FIX:
+  Replace status == 8 with close_session (or psession->status & CLOSED), and
+  read it under the lock.
+IMPACT:
+  Single highest-impact fix. Almost certainly removes a large class of session
+  use-after-free crashes and "ghost client" bugs.
+
+---
+
+ID: S3
+SEVERITY: CRITICAL
+TITLE: Session lock released before reading/deleting session - use-after-free race
+FILE: OrikaServer/server/openssl_iocp.cpp:694-771
+CODE:
+  session_unlock(p->psession);
+  ...
+  if (p->psession->status == 8) {
+      session_lock(p->psession);
+      session_close(p->psession);
+      session_unlock(p->psession);
+      ...
+      session_delete(p->psession);
+  }
+WHY:
+  After unlocking on line 694, code dereferences p->psession and ultimately
+  calls session_delete, which free()s the struct that contains the OVERLAPPED
+  structures. Another IOCP worker can simultaneously complete WSARecv/WSASend
+  on that same session and dereference freed memory.
+FIX:
+  Introduce a refcount or dedicated "pending-delete" status; drain outstanding
+  async ops before session_delete. Never free SSL_session while OPERATING is
+  set or while another thread holds a pointer.
+IMPACT:
+  Eliminates a class of heap-corruption crashes in IOCP workers under
+  concurrency.
+
+---
+
+ID: S4
+SEVERITY: CRITICAL
+TITLE: WebSocket deframer buffer overflow - peer-controlled length unchecked
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:75, 85, 96, 102, 120
+CODE:
+  payloadSize = ntohl(*(u_long*)(m_databuffer.GetBuffer() + 6));   // 8-byte length path
+  memcpy(psession->frame_buffer,
+         m_databuffer.GetBuffer() + masksOffset + extra_headerSize,
+         m_databuffer.GetDataSize() - masksOffset - extra_headerSize);
+  memcpy(psession->LastFrame + psession->LastFrame_size, payload_t,
+         psession->frame_buffer_size);
+WHY:
+  (1) payloadSize is signed int - peer-supplied 64-bit length above 2^31
+  becomes negative then huge unsigned. (2) The 127 (8-byte length) path reads
+  ntohl of 4 bytes from offset 6 - top 4 bytes silently dropped, non-spec for
+  payloads >= 4 GB and miscomputes many smaller ones. (3) frame_buffer is
+  BUFFER_SIZE (900000) bytes but no bound check vs
+  m_databuffer.GetDataSize() - masksOffset - extra_headerSize. (4) LastFrame_size
+  + frame_buffer_size not bounded vs BUFFER_SIZE; fragmented messages can write
+  past LastFrame. (5) Continuation path (line 96) and chunked-copy path
+  (line 102) likewise lack bound checks. A single malicious frame
+  crashes / corrupts heap.
+FIX:
+  - Make payloadSize uint64_t; for basicSize==127 read all 8 bytes via
+    _byteswap_uint64.
+  - Define and enforce a server-side max payload (e.g. 1 MB). Reject larger.
+  - Validate dst_size + chunk <= dst_capacity before every memcpy.
+  - Require MASK bit on client->server; close on violation.
+IMPACT:
+  Closes the largest remote attack surface in the codebase. Removes a
+  single-frame crash/RCE vector. Brings deframer toward RFC 6455 compliance.
+
+---
+
+ID: S5
+SEVERITY: CRITICAL
+TITLE: Per-frame heap leak of payload_t in deframer
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:112-120
+CODE:
+  char* payload_t = new char[psession->frame_buffer_size + 1];
+  for (...) payload_t[i] = (psession->frame_buffer[i] ^ psession->masks[i % 4]);
+  payload_t[psession->frame_buffer_size] = '\0';
+  memcpy(psession->LastFrame + psession->LastFrame_size, payload_t, psession->frame_buffer_size);
+  // no delete[] payload_t along any path
+WHY:
+  Every received WebSocket frame leaks frame_buffer_size + 1 bytes; unbounded
+  steady-state growth under load.
+FIX:
+  delete[] payload_t before every return, or XOR-unmask directly into
+  LastFrame + LastFrame_size and drop the temporary.
+IMPACT:
+  Stops continuous memory growth that eventually OOM-crashes the server.
+
+---
+
+ID: S6
+SEVERITY: CRITICAL
+TITLE: Hardcoded TLS private key in source + SSL_VERIFY_NONE
+FILE: OrikaServer/server/cert.cpp:46-71, 114-141; openssl_iocp.cpp:168
+CODE:
+  // cert.cpp embeds a full "-----BEGIN PRIVATE KEY-----...-----END PRIVATE KEY-----"
+  SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_NONE, nullptr);
+WHY:
+  Anyone with access to source or a stripped binary recovers the server
+  private key. Combined with VERIFY_NONE, TLS becomes trivially MITM-able once
+  the key leaks. The binary actually loads key.pem from disk
+  (openssl_iocp.cpp:179-191) so the embedded blob is dead weight that just
+  leaks the secret.
+FIX:
+  Rotate immediately, delete ca_cert_key_pem and server_cert_key_pem from
+  cert.cpp. Decide whether to enable client cert auth with SSL_VERIFY_PEER +
+  a CA bundle.
+IMPACT:
+  Restores TLS as an actual confidentiality and authenticity boundary.
+  Removes a credential-exposure compliance failure.
+
+---
+
+ID: S7
+SEVERITY: CRITICAL
+TITLE: Bundled TLS certificate is expired (NotAfter 2026-01-12; today 2026-05-13)
+FILE: OrikaServer/server/cert.cpp:78-79 (and Certificate.pem on disk)
+WHY:
+  Current date is 2026-05-13 - the bundled server cert is four months expired.
+  All modern browsers and most clients refuse to connect. The earlier
+  ca_cert_key_pem cert expired 2021-01-11 and is just dead source.
+FIX:
+  Reissue Certificate.pem / key.pem for the deployed hostname, redeploy.
+  Delete the embedded blobs in cert.cpp.
+IMPACT:
+  Restores the ability of clients to connect at all. Removes a hard outage
+  that gets worse the longer it sits.
+
+---
+
+ID: S8
+SEVERITY: CRITICAL
+TITLE: send_close_message_to_client sends sizeof(pointer) not sizeof(buffer)
+FILE: OrikaServer/server/openssl_iocp.cpp:312-316
+CODE:
+  BYTE closeMessage[] = { 0x88, 0x00 };
+  const char* closeMessageStr = reinterpret_cast<const char*>(closeMessage);
+  session_send_data(psession, closeMessageStr, sizeof(closeMessageStr), L"", 1);
+WHY:
+  sizeof(closeMessageStr) is sizeof(const char*) (4 / 8), not the array size
+  (2). The server transmits 2 close-frame bytes + 2-6 bytes of stack data.
+FIX:
+  Pass sizeof(closeMessage).
+IMPACT:
+  Sends a spec-compliant close frame; eliminates a small stack-leak side
+  channel.
+
+---
+
+ID: S9
+SEVERITY: CRITICAL
+TITLE: WebsocketHandshakeMessage::Parse() underflows request[-1] on empty input
+FILE: OrikaServer/server/WebsocketHandshakeMessage.cpp:43, 62
+CODE:
+  std::getline(s, request);
+  if (request[request.size() - 1] == '\r') { ... }
+  while (std::getline(s, header) && header != "\r") {
+      if (header[header.size() - 1] != '\r') { ... }
+WHY:
+  When getline returns an empty string (CRLF-only input, blank header),
+  request.size() - 1 underflows to SIZE_MAX and the indexed access is UB -
+  almost always a crash. Reachable from app_on_session_recv on every
+  pre-handshake message.
+FIX:
+  if (!request.empty() && request.back() == '\r')   (same for the header line)
+IMPACT:
+  Server cannot be crashed by a malformed first-line or blank-header
+  WebSocket handshake.
+
+---
+
+ID: S10
+SEVERITY: CRITICAL
+TITLE: app_on_session_recv treats binary WebSocket bytes as a NUL-terminated C string
+FILE: OrikaServer/server/Server.cpp:59-66
+CODE:
+  char buffer[BUFFER_SIZE+1] = {0};                              // ~900 KB on stack
+  strncpy_s(buffer, psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV]);
+  buffer[psession->ssl_buffer_size[RECV]] = 0;
+  ...
+  WebsocketHandshakeMessage* wshs = new WebsocketHandshakeMessage(buffer, strlen(buffer));
+WHY:
+  ~900 KB stack allocation per recv (deep-stack-overflow risk). strncpy_s on
+  MSVC aborts/throws if a NUL is encountered inside count; binary frame with
+  embedded 0x00 during re-handshake is truncated by strlen.
+FIX:
+  Pass psession->ssl_buffer_Rev and ssl_buffer_size[RECV] directly. Drop the
+  900 KB stack buffer. Don't use strlen on raw network bytes.
+IMPACT:
+  Removes ~900 KB per-thread stack allocation, a potential strncpy_s invariant
+  violation, and a residual binary-truncation hazard.
+
+---
+
+ID: S11
+SEVERITY: CRITICAL
+TITLE: Wrong-precedence assignment in recv/Receive callsites discards byte count
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:573;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:582;
+      OrikaServer/SocketServer.cpp:160
+CODE:
+  if(recvcheck = recv(m_socket, buf, maxlen, 0) != 1)        // ClientSocket
+  if(recvcheck = recv(m_socket, buf, 1, 0) != 1)             // UniFeederSocket
+  if (datasize = pSocket->Receive(cbuf + incrementval, sizeof(cbuf)-1) > 0)
+WHY:
+  != / > bind tighter than =, parsed as recvcheck = (recv(...) != 1). The
+  recv'd byte count is permanently lost; recvcheck/datasize is always 0 or 1.
+FIX:
+  if ((recvcheck = recv(...)) < 1)  etc.
+IMPACT:
+  Restores deterministic upstream-feeder parsing.
+
+---
+
+ID: S12
+SEVERITY: CRITICAL
+TITLE: Hardcoded str = "multi" overrides every Login state-machine search
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:550-556;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:558-563
+CODE:
+  if(res = ReadString(buf, maxlen))
+         //For Checking Pur
+             str = "multi";
+             //End
+        found = strstr(buf, str) != NULL;
+WHY:
+  Debug code overrides caller-supplied search string with "multi". Login
+  negotiation only progresses if the feeder happens to emit "multi". No
+  braces on the if; found = strstr(...) is unconditional.
+FIX:
+  Delete the three "For Checking Pur" lines; brace the if.
+IMPACT:
+  Login flow against the upstream feeder works deterministically.
+
+---
+
+ID: S13
+SEVERITY: HIGH
+TITLE: Unsynchronized m_deletedClientlist (CMap) from every IOCP worker
+FILE: OrikaServer/server/openssl_iocp.cpp:30, 702-708
+WHY:
+  CMap is not thread-safe; touched from any IOCP completion thread with no
+  lock. Concurrent Lookup/SetAt during rehash -> corruption / crash.
+FIX:
+  Wrap with a dedicated CRITICAL_SECTION/CMutex or replace with
+  std::unordered_map + mutex.
+IMPACT:
+  Removes a periodic random crash under multi-client churn.
+
+---
+
+ID: S14
+SEVERITY: HIGH
+TITLE: session_send_data checks ssl == nullptr before locking - TOCTOU
+FILE: OrikaServer/server/openssl_iocp.cpp:801-855
+WHY:
+  Null-check runs without the session lock. Another thread can run
+  session_close and SSL_free between the check and session_lock. The function
+  then proceeds with a freed SSL pointer; the 5-second busy-wait amplifies
+  the window.
+FIX:
+  Lock first, re-check, proceed. Better: refcount the session (A1).
+IMPACT:
+  Eliminates a race that worsens with traffic.
+
+---
+
+ID: S15
+SEVERITY: HIGH
+TITLE: ~5-7 MB per SSL_session - DoS-able memory budget
+FILE: OrikaServer/server/openssl_iocp.h:39-40, 57-88
+CODE:
+  #define BUFFER_SIZE         900000
+  #define BUFFER_SIZE_REV     900000
+  struct SSL_session {
+      char socket_buffer_Rev[BUFFER_SIZE_REV];
+      char socket_buffer_Send[BUFFER_SIZE];
+      char ssl_buffer_Rev[BUFFER_SIZE_REV];
+      char ssl_buffer_Send[BUFFER_SIZE];
+      char pending_socket_buffer_Rev[BUFFER_SIZE_REV];   // dead - never used
+      char frame_buffer[BUFFER_SIZE];
+      char LastFrame[BUFFER_SIZE];
+      char unprocessBuffer[BUFFER_SIZE];
+      ...
+  };
+WHY:
+  ~6.9 MB per connection. 100 clients ~ 690 MB. pending_socket_buffer_Rev is
+  dead memory.
+FIX:
+  Pointer-allocate the buffers, drop unused fields, cap concurrent connections.
+IMPACT:
+  10x-50x more concurrent capacity on the same hardware; OOM resistance.
+
+---
+
+ID: S16
+SEVERITY: HIGH
+TITLE: BUFFER_SIZE_REV vs BUFFER_SIZE inconsistency in SSL_read
+FILE: OrikaServer/server/openssl_iocp.cpp:498
+CODE:
+  bytes = SSL_read(psession->ssl, psession->ssl_buffer_Rev, BUFFER_SIZE);
+  // ssl_buffer_Rev is sized BUFFER_SIZE_REV
+WHY:
+  Today both = 900000; a future shrink of BUFFER_SIZE_REV becomes silent
+  stack-adjacent overflow.
+FIX:
+  SSL_read(..., sizeof(psession->ssl_buffer_Rev)).
+IMPACT:
+  Removes a future-proofing trap.
+
+---
+
+ID: S17
+SEVERITY: HIGH
+TITLE: OpenSSL return values unchecked in set_cert and session_init
+FILE: OrikaServer/server/Server.cpp:160-178;
+      OrikaServer/server/openssl_iocp.cpp:286-298
+WHY:
+  PEM_read_bio_*, BIO_new, SSL_new, malloc can all return NULL. set_cert
+  feeds them straight into OpenSSL without checks. session_new's
+  malloc(sizeof(SSL_session)) (~6.9 MB) is realistic to fail; callers
+  (session_on_accept, Server::stratServer) don't check the return either.
+FIX:
+  Check every return; on failure free what was allocated, log, return cleanly.
+  Use calloc for zero-init.
+IMPACT:
+  Server fails cleanly under low memory or bad config instead of crashing.
+
+---
+
+ID: S18
+SEVERITY: HIGH
+TITLE: No handshake/idle timeout; only one pre-posted AcceptEx - slow-loris DoS
+FILE: OrikaServer/server/Server.cpp:180-192; OrikaServer/server/openssl_iocp.cpp
+WHY:
+  Any peer that opens TCP+TLS and never sends Upgrade holds ~6.9 MB. Only one
+  AcceptEx is pre-posted; concurrent connect bursts serialize.
+FIX:
+  Pre-post >= 16 AcceptEx; add a per-session deadline; close on expiry.
+IMPACT:
+  Server resists trivial DoS and accepts connections in parallel during bursts.
+
+---
+
+ID: S19
+SEVERITY: HIGH
+TITLE: session_close mutates state without consistent locking discipline
+FILE: OrikaServer/server/openssl_iocp.cpp:346-367
+CODE:
+  psession->status = CLOSED;   // clobbers other bits with = instead of |=
+WHY:
+  Called both with and without the lock. Final assignment clobbers any
+  concurrently-set bits (RECEIVING, SENDING) - masks that other threads have
+  outstanding ops.
+FIX:
+  Pick one rule: caller always holds the lock. Use status |= CLOSED. Document
+  who frees ssl.
+IMPACT:
+  Stops the close path from racing with itself; supports S2/S3 fix.
+
+---
+
+ID: S20
+SEVERITY: HIGH
+TITLE: WebSocket protocol validation absent
+FILE: OrikaServer/server/WebsocketHandshakeMessage.cpp:36-80;
+      OrikaServer/server/FrameAndDeframeMessage.cpp:18-149
+WHY:
+  Parse does not validate method=="GET", Connection: Upgrade, Upgrade: websocket,
+  Sec-WebSocket-Version: 13, or Sec-WebSocket-Key length. Frame parser never
+  tests MASK bit, reserved bits, opcode range; PING (0x9) / PONG (0xA) /
+  CLOSE (0x8) silently dispatched as data; control frames not size-limited or
+  forced unfragmented.
+FIX:
+  Per-field handshake validation; reject + 400 on violation. Frame parser:
+  enforce MASK bit on C->S, opcode whitelist, control-frame size <=125, no
+  fragmentation of control frames. Implement ping->pong and close handling.
+IMPACT:
+  Compatibility with browsers and standards-compliant clients; rejects
+  malformed/malicious input early.
+
+---
+
+ID: S21
+SEVERITY: HIGH
+TITLE: ssl_get_error mis-uses ERR_error_string_n with SSL_get_error codes
+FILE: OrikaServer/server/openssl_iocp.cpp:239-257
+WHY:
+  ERR_error_string_n expects ERR_get_error() packed code, not SSL_get_error()
+  result. First iteration prints garbage.
+FIX:
+  Loop only over ERR_get_error(); format each via ERR_error_string_n. Print
+  SSL_get_error's result separately.
+IMPACT:
+  Diagnostic output actually identifies which OpenSSL error occurred.
+
+---
+
+ID: S22
+SEVERITY: HIGH
+TITLE: OpenSSL locking callbacks ignored on the actual OpenSSL version in use
+FILE: OrikaServer/server/openssl_iocp.cpp:131-149
+WHY:
+  TLS_server_method() is OpenSSL 1.1+. CRYPTO_set_locking_callback and
+  CRYPTO_num_locks are no-ops there. Locks allocated and never used.
+FIX:
+  Delete the locking-callback init/teardown blocks.
+IMPACT:
+  Less misleading code; one less false "we have locks" assumption.
+
+---
+
+ID: S23
+SEVERITY: HIGH
+TITLE: WebsocketDataMessage::Decode underflows substring when separator is 0 or npos
+FILE: OrikaServer/server/WebsocketDataMessage.cpp:45-50
+CODE:
+  string::size_type separator = raw.find_first_of("|");
+  arg1 = raw.substr(0, separator-1);
+WHY:
+  When raw starts with |, separator==0, so separator-1 underflows to SIZE_MAX.
+  std::string::substr clamps but the intent is clearly off-by-one.
+FIX:
+  if (separator == string::npos) { arg1 = raw; return true; }
+  arg1 = raw.substr(0, separator);
+  arg2 = raw.substr(separator+1);
+IMPACT:
+  Correct parsing of pipe-delimited payloads; removes a latent UB-by-luck.
+
+---
+
+ID: S24
+SEVERITY: HIGH
+TITLE: Non-const lvalue ref bound to a temporary WebsocketDataMessage
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:162
+CODE:
+  WebsocketDataMessage& dataMessage = WebsocketDataMessage(inputdata);
+  string strData = dataMessage.GetEncodedData();
+WHY:
+  MSVC-only extension; temporary's lifetime is not extended; dataMessage
+  immediately dangles; subsequent member call is UB.
+FIX:
+  WebsocketDataMessage dataMessage(inputdata);   (value, not reference)
+IMPACT:
+  Removes UB; eliminates an MSVC-only construct.
+
+---
+
+ID: S25
+SEVERITY: MEDIUM
+TITLE: frameOutgoingMessage builds strData but uses nWrittenBytes instead
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:162-219
+CODE:
+  if (payloadSize <= 125 && payloadSize <= 65535)   // tautology
+      expectedSize += 1;
+  else if (payloadSize > 125 & payloadSize <= 65535) // bitwise & on bools
+WHY:
+  strData is computed and never used. The if is a tautology; else-if uses
+  bitwise & instead of logical &&.
+FIX:
+  Delete the dead WebsocketDataMessage lines (S24). Rewrite size dispatch
+  with && and the correct medium-length condition.
+IMPACT:
+  Removes confusing dead code, fixes a misleading conditional.
+
+---
+
+ID: S26
+SEVERITY: HIGH
+TITLE: Per-call 1.5 MB DataBuffer allocations on every send/broadcast
+FILE: OrikaServer/server/Server.cpp:57, 6159, 6163, 6193, 6245, 6251, 6295, 6330, 6340
+WHY:
+  Every received WebSocket frame and every send allocates 1.5 MB and frees it.
+  Under burst this thrashes the heap, causes latency spikes, increases
+  working-set churn. SendDataToClient_AllClient is called per client per
+  broadcast -> ~3 MB allocated/freed per recipient per broadcast.
+FIX:
+  Thread-local or per-session scratch DataBuffers; reuse across calls.
+  Re-allocate only if asked for more than current capacity.
+IMPACT:
+  Lower CPU, smoother latency, less long-run fragmentation.
+
+---
+
+ID: S27
+SEVERITY: HIGH
+TITLE: WebsocketHandshakeMessage leaked on parse failure
+FILE: OrikaServer/server/Server.cpp:66-79
+WHY:
+  delete wshs only on the success branch. Every malformed first message leaks
+  ~900 KB. Combined with no handshake timeout (S18), an attacker can grow
+  heap unboundedly.
+FIX:
+  std::unique_ptr<WebsocketHandshakeMessage> wshs(new ...) or delete on both
+  branches.
+IMPACT:
+  Closes a remotely-triggerable memory growth vector.
+
+---
+
+ID: S28
+SEVERITY: MEDIUM
+TITLE: DataBuffer::Append silently truncates on overflow
+FILE: OrikaServer/server/DataBuffer.cpp:31-43;
+      OrikaServer/server/Server.cpp:90;
+      OrikaServer/server/FrameAndDeframeMessage.cpp:22-23, 133, 219
+WHY:
+  Append returns false on overflow; no caller checks. m_databuffer (100000)
+  asked to hold larger data silently no-ops; deframer reads from stale buffer.
+FIX:
+  Check return; or assert; or grow on demand.
+IMPACT:
+  Surfaces overflow conditions instead of silently corrupting protocol state.
+
+---
+
+ID: S29
+SEVERITY: MEDIUM
+TITLE: DataBuffer no copy/move declarations - double-free hazard
+FILE: OrikaServer/server/DataBuffer.h:10-33
+WHY:
+  Rule of three violated. Compiler-generated copy ctor / assign do a shallow
+  copy of pBuffer; both source and destination free the same pointer.
+FIX:
+  Delete copy ctor/assign or implement properly. Or use std::vector<char>.
+IMPACT:
+  Prevents a future double-free from a casual copy.
+
+---
+
+ID: S30
+SEVERITY: MEDIUM
+TITLE: DataBuffer::Allocate leaks if called twice without Delete
+FILE: OrikaServer/server/DataBuffer.cpp:20-25
+FIX:
+  if (pBuffer) { delete[] pBuffer; pBuffer = nullptr; } before the new.
+IMPACT:
+  Defensive; removes a footgun.
+
+---
+
+ID: S31
+SEVERITY: MEDIUM
+TITLE: DataBuffer::Pop(int) accepts a signed size; negative pop UB
+FILE: OrikaServer/server/DataBuffer.cpp:78-82
+WHY:
+  Negative _uSize -> uSize - _uSize wraps to huge unsigned -> memmove past end.
+FIX:
+  Take unsigned int, clamp to uSize, assert.
+IMPACT:
+  Defense in depth against arithmetic UB.
+
+---
+
+ID: S32
+SEVERITY: MEDIUM
+TITLE: Pop is dead code; class has unused API surface
+FILE: OrikaServer/server/DataBuffer.cpp (Pop, getAt, GrowSize)
+FIX:
+  Delete unused methods.
+IMPACT:
+  Smaller surface, fewer latent bugs to maintain.
+
+---
+
+ID: S33
+SEVERITY: MEDIUM
+TITLE: deframeLargeIncomingMessage is an empty stub
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:151-154
+FIX:
+  Remove the stub or finish it.
+IMPACT:
+  Cleaner code surface; removes misleading API.
+
+---
+
+ID: S34
+SEVERITY: MEDIUM
+TITLE: ssl_set_ctx_cert_and_key calls exit() on failure inside a server process
+FILE: OrikaServer/server/openssl_iocp.cpp:179-192
+WHY:
+  exit() from library code: no destructors, no MFC cleanup, no logging, no
+  WSACleanup. Cert+key loaded twice (cert.cpp blob + disk). The disk path is
+  used; the blob is dead AND leaks the key (S6).
+FIX:
+  Return a bool/HRESULT; let the caller decide. Remove the dual load.
+IMPACT:
+  Service can log a useful failure and exit cleanly.
+
+---
+
+ID: S35
+SEVERITY: MEDIUM
+TITLE: ssl_print_cert_info uses > 0 checks on pointers
+FILE: OrikaServer/server/openssl_iocp.cpp:972, 975, 980, 990, 997, 1007, 1016, 1041
+FIX:
+  Replace with != nullptr.
+IMPACT:
+  Code correct under the C++ standard, and clearer.
+
+---
+
+ID: S36
+SEVERITY: MEDIUM
+TITLE: ssl_init doesn't check SSL_CTX_new return value
+FILE: OrikaServer/server/openssl_iocp.cpp:157-168
+FIX:
+  Check ssl_ctx == nullptr after the call; log and bail.
+IMPACT:
+  Cleaner startup failure mode.
+
+---
+
+ID: S37
+SEVERITY: MEDIUM
+TITLE: BIO_new_file("error_log.txt","w") truncates the log on every startup failure
+FILE: OrikaServer/server/openssl_iocp.cpp:160-165
+FIX:
+  Open in append mode, check return, log via existing logger.
+IMPACT:
+  Operational visibility of TLS misconfigurations.
+
+---
+
+ID: S38
+SEVERITY: MEDIUM
+TITLE: Busy-wait + 5-second wall-clock timeout in session_send_data / _AllClient
+FILE: OrikaServer/server/openssl_iocp.cpp:775-855, 862-942
+WHY:
+  Application threads spin-wait on ssl_buffer_size[SEND] == 0 for up to 5s.
+  Holds psession->lock repeatedly, burns CPU, on timeout mutates
+  m_ClientContext.
+FIX:
+  Per-session send queue serviced by WSASend completions.
+IMPACT:
+  Frees CPU, eliminates 5-second pauses, makes broadcast scalable.
+
+---
+
+ID: S39
+SEVERITY: HIGH
+TITLE: 5-second Sleep while holding the broadcast iteration window
+FILE: OrikaServer/server/openssl_iocp.cpp:785-797, 872-884, 901-918
+WHY:
+  _AllClient variant accesses m_ClientContext without holding
+  m_mutex_ClientList (locks are commented out). Concurrent broadcast iteration
+  corrupts the CMap. Even where the lock is held, Sleep(5000) blocks the
+  caller; broadcast iterator at Server.cpp:6172 holds m_mutex_ClientList while
+  calling session_send_data_AllClient -> one slow client freezes the entire
+  broadcast pipeline.
+FIX:
+  Don't hold the broadcast lock across send. Remove the unconditional
+  Sleep(5000). Synchronize _AllClient like the regular variant.
+IMPACT:
+  Broadcasts proceed at line rate; one slow client cannot freeze the server.
+
+---
+
+ID: S40
+SEVERITY: MEDIUM
+TITLE: session_send_data silently truncates len > BUFFER_SIZE
+FILE: OrikaServer/server/openssl_iocp.cpp:842-844, 927-929
+CODE:
+  bytes_sent = min(BUFFER_SIZE, len);
+  memcpy_s(psession->ssl_buffer_Send, BUFFER_SIZE, data, bytes_sent);
+  psession->ssl_buffer_size[SEND] = bytes_sent;
+WHY:
+  If len > 900000 only the first 900 KB are sent and the function reports
+  success. Frame headers + payload routinely exceed 900 KB if the user pushes
+  a large symbol table.
+FIX:
+  Loop until all len bytes are sent (chunked) or return bytes_sent and require
+  callers to loop.
+IMPACT:
+  Correct handling of large protocol messages.
+
+---
+
+ID: S41
+SEVERITY: MEDIUM
+TITLE: session_delete doesn't null-check psession
+FILE: OrikaServer/server/openssl_iocp.cpp:300-308
+FIX:
+  if (!psession) return; at the top.
+IMPACT:
+  Defensive; supports the S17 fix.
+
+---
+
+ID: S42
+SEVERITY: MEDIUM
+TITLE: session_recv arms WSARecv with a check that races with session_on_recv
+FILE: OrikaServer/server/openssl_iocp.cpp:453-468
+WHY:
+  Under the lock-release-then-process pattern, two threads can both see
+  bytes_transferred[RECV] == 0 and both call WSARecv on the same socket with
+  the same OVERLAPPED.
+FIX:
+  All access to bytes_transferred[], status, wsabuf[] under psession->lock.
+IMPACT:
+  Eliminates a class of double-WSARecv races.
+
+---
+
+ID: S43
+SEVERITY: LOW
+TITLE: iocp_proc logs "Error in IOCP" on the normal shutdown sentinel
+FILE: OrikaServer/server/openssl_iocp.cpp:37-57
+FIX:
+  Reword the log; in iocp_stop post threads_count sentinels.
+IMPACT:
+  Faster, cleaner shutdown; less log noise.
+
+---
+
+ID: S44
+SEVERITY: MEDIUM
+TITLE: session_on_accept doesn't re-arm on null session_new result
+FILE: OrikaServer/server/openssl_iocp.cpp:593-621
+WHY:
+  If a single ~6.9 MB malloc fails, listener stops accepting forever.
+FIX:
+  Even on failure, re-arm AcceptEx on the original listener (or schedule a
+  retry). Log the alloc failure.
+IMPACT:
+  Server self-heals from transient low-memory conditions.
+
+---
+
+ID: S45
+SEVERITY: MEDIUM
+TITLE: _iob[] CRT-compat workaround uses dereferenced FILE* at static init
+FILE: OrikaServer/server/openssl_iocp.cpp:12-16
+FIX:
+  Rebuild OpenSSL against the current CRT, or use FILE* per call. Better:
+  drop the workaround.
+IMPACT:
+  Reduces a Windows-specific portability landmine.
+
+---
+
+ID: S46
+SEVERITY: MEDIUM
+TITLE: base64_decode uses string::find return as a byte (can be npos)
+FILE: OrikaServer/server/base64/base64.cpp:69-71, 86-87
+WHY:
+  std::string::find returns npos if not found; truncating to unsigned char ->
+  0xFF used as a valid base64 index. Output silently wrong instead of an error.
+FIX:
+  Validate is_base64 before lookup on the tail block; on failure return error.
+IMPACT:
+  Robustness if base64_decode is ever exposed to a peer.
+
+---
+
+ID: S47
+SEVERITY: LOW
+TITLE: WebsocketMessage destructor non-virtual + multiple base classes
+FILE: OrikaServer/server/WebsocketMessage.h:5-26
+FIX:
+  Consolidate to a single base or drop the inheritance. Make ~ explicitly
+  virtual.
+IMPACT:
+  Cleaner type hierarchy.
+
+---
+
+ID: S48
+SEVERITY: LOW
+TITLE: Dead sha.cpp / shacmp.cpp / shatest.cpp driver files
+FILE: OrikaServer/server/sha1/sha.cpp, shacmp.cpp, shatest.cpp
+FIX:
+  Move out of the build tree or delete.
+IMPACT:
+  Smaller surface; less risk of accidental linkage.
+
+---
+
+ID: S49
+SEVERITY: LOW
+TITLE: GetServiceId always returns 1 regardless of stored serviceId
+FILE: OrikaServer/server/WebsocketDataMessage.cpp:56-59
+FIX:
+  return serviceId; or remove both members if unused.
+IMPACT:
+  Restores intent; eliminates confusing dead behaviour.
+
+---
+
+ID: S50
+SEVERITY: MEDIUM
+TITLE: WebsocketHandshakeMessage default ctor leaves pRaw=NULL, Parse() dereferences
+FILE: OrikaServer/server/WebsocketHandshakeMessage.cpp:10-34
+FIX:
+  Initialise pRaw to an empty buffer in the default ctor or assert in Parse.
+IMPACT:
+  Prevents accidental crash if anyone uses default ctor + Parse.
+
+---
+
+ID: S51
+SEVERITY: HIGH
+TITLE: WebSocket frame parser uses int for sizes - signed arithmetic UB / overflow
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:25-26, 113, 121, 134
+WHY:
+  payloadSize, masksOffset, extra_headerSize, frame_buffer_size,
+  LastFrame_size all int. 1.5 GB payload overflows to negative;
+  remaining_frame_buffer_size > 0 fails open in unintuitive ways.
+FIX:
+  Use uint64_t (or size_t) consistently for all frame/buffer sizes.
+IMPACT:
+  Eliminates signed-overflow UB; supports S4 fix.
+
+---
+
+ID: S52
+SEVERITY: LOW
+TITLE: Explicit DataBuffer::Delete() + stack DTOR pattern is fragile
+FILE: OrikaServer/server/Server.cpp:54-95
+FIX:
+  Remove explicit .Delete() calls; rely on RAII. Or make DataBuffer
+  non-copyable.
+IMPACT:
+  Less footgun.
+
+---
+
+ID: S53
+SEVERITY: MEDIUM
+TITLE: Frame builder payloadFlags = 130 hardcoded - only binary FIN=1 frames produced
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:180-182
+FIX:
+  Either document the constraint clearly or add explicit functions for
+  control/text/fragmented frames.
+IMPACT:
+  Clear, intentional API.
+
+---
+
+ID: S54
+SEVERITY: MEDIUM
+TITLE: deframeIncomingMessage ignores opcode - control frames dispatched as data
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:40-42
+WHY:
+  Opcode bits extracted but only continuation flag tested. CLOSE (0x8), PING
+  (0x9), PONG (0xA) appended to LastFrame and forwarded to JSON parser.
+FIX:
+  Branch on opcode: 0x0 cont, 0x1 text, 0x2 binary, 0x8 close, 0x9 ping,
+  0xA pong.
+IMPACT:
+  Spec-compliant control-frame handling.
+
+---
+
+ID: S55
+SEVERITY: LOW
+TITLE: WebsocketHandshakeMessage::ProcessHandshake is dead code (never called)
+FILE: OrikaServer/server/WebsocketHandshakeMessage.cpp:135-163
+FIX:
+  Delete.
+IMPACT:
+  Removes confusing dead path.
+
+---
+
+ID: S56
+SEVERITY: LOW
+TITLE: Inconsistent header include casing (stdafx.h vs StdAfx.h)
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:1;
+      OrikaServer/server/WebsocketDataMessage.cpp:1;
+      OrikaServer/server/DataBuffer.cpp:1
+FIX:
+  Pick one canonical name. Use forward slashes in include paths.
+IMPACT:
+  Portability; ready for future CI.
+
+---
+
+ID: S57
+SEVERITY: MEDIUM
+TITLE: deframeIncomingMessage early-return paths call .Clear() which re-allocates
+FILE: OrikaServer/server/FrameAndDeframeMessage.cpp:20-21
+FIX:
+  Drop all m_databuffer.Clear() lines; rely on the stack ~DataBuffer.
+IMPACT:
+  Eliminates a guaranteed 10 MB allocation per early-return after S1 is fixed.
+
+---
+
+ID: S58
+SEVERITY: MEDIUM
+TITLE: SSL_session field pdata is unused dead weight
+FILE: OrikaServer/server/openssl_iocp.h:78
+FIX:
+  Remove the field and the pdata parameter on session_new/session_init.
+IMPACT:
+  Smaller per-session footprint.
+
+---
+
+ID: S59
+SEVERITY: MEDIUM
+TITLE: Logging from inside the lock with a 100 ms poll loop
+FILE: OrikaServer/server/openssl_iocp.cpp:733-734, 749-750, 770-771
+WHY:
+  IOCP completion thread spins waiting for app thread to set m_thread_terminate
+  while repeatedly locking m_mutex_ClientList and sleeping 100 ms. Real
+  deadlock if app side gets stuck on its own send-loop.
+FIX:
+  Use Win32 Event (auto-reset) signalled by the app thread on exit;
+  WaitForSingleObject(..., INFINITE).
+IMPACT:
+  Faster, deterministic teardown; eliminates a deadlock window.
+
+---
+
+ID: S60
+SEVERITY: LOW
+TITLE: using namespace std; in headers
+FILE: OrikaServer/server/FrameAndDeframeMessage.h:11;
+      OrikaServer/server/WebsocketHandshakeMessage.h:10;
+      OrikaServer/server/WebsocketDataMessage.h:8
+FIX:
+  Remove from headers; fully qualify with std:: in headers; use namespace
+  aliases in .cpp only.
+IMPACT:
+  Avoids subtle name collisions, especially with future C++ standard additions.
+
+================================================================================
+PART B: CLIENT SOCKET / SOCKET SERVER (legacy + new IOCP)
+================================================================================
+
+ID: CS1
+SEVERITY: CRITICAL
+TITLE: Operator-precedence bug in ClientSocket::ReadString - recv byte count discarded
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:573
+CODE:
+  int recvcheck=0;
+  if(recvcheck=recv(m_socket,buf, maxlen,0)!=1)
+WHY:
+  != binds tighter than =, parsed as recvcheck = (recv(...) != 1). Actual byte
+  count thrown away. The function then unconditionally returns true regardless
+  of what happened; no loop, no retry on WSAEWOULDBLOCK, no terminator scan,
+  no NUL-termination. The entire login state machine reads through this.
+FIX:
+  if ((recvcheck = recv(m_socket, buf, maxlen, 0)) < 1)
+  Add byte-by-byte read loop / '\n' terminator handling (or share with
+  UniFeederSocket::ReadString).
+IMPACT:
+  Login negotiation and any path that reads server responses through this
+  method gets real byte counts and proper error handling.
+
+---
+
+ID: CS2
+SEVERITY: CRITICAL
+TITLE: Operator-precedence bug in UniFeederSocket::ReadString - recv count discarded
+FILE: OrikaServer/ClientSocket/UniFeederSocket.cpp:582
+CODE:
+  if(recvcheck=recv(m_socket,buf,1,0)!=1)
+FIX:
+  if ((recvcheck = recv(m_socket, buf, 1, 0)) != 1)
+IMPACT:
+  Eliminates wrong-bytes-count trap before it bites the next maintainer.
+
+---
+
+ID: CS3
+SEVERITY: CRITICAL
+TITLE: SocketServer::Request_receiver_tHandler receive loop overwrites position 0
+FILE: OrikaServer/SocketServer.cpp:160
+CODE:
+  if (datasize=pSocket->Receive(cbuf + incrementval, sizeof(cbuf)-1) > 0)
+WHY:
+  Same precedence bug: datasize = (Receive(...) > 0). incrementval is never
+  increased; every iteration overwrites position 0 of cbuf. Empty success
+  body means the loop does no useful work.
+FIX:
+  Delete the file (see CS18). If kept: parenthesize and process the data.
+IMPACT:
+  If ever resurrected, receive logic would actually function.
+
+---
+
+ID: CS4
+SEVERITY: CRITICAL
+TITLE: Debug override str="multi" breaks login state machine in ClientSocket
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:550-555
+FIX:
+  Delete //For Checking Pur / str="multi"; / //End. Brace the if.
+IMPACT:
+  Restores upstream-feeder login. Login() becomes usable.
+
+---
+
+ID: CS5
+SEVERITY: CRITICAL
+TITLE: Debug override str="multi" breaks login state machine in UniFeederSocket
+FILE: OrikaServer/ClientSocket/UniFeederSocket.cpp:558-563
+FIX:
+  Same as CS4.
+IMPACT:
+  Prevents a returning-to-Login() path from silently breaking later.
+
+---
+
+ID: CS6
+SEVERITY: HIGH
+TITLE: Connect() skips the entire Login() step in both socket classes
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:63-64;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:63-64
+CODE:
+  //return(ConnectDDE(server) && Login(login,password,symbols));
+  return(ConnectDDE(server) );
+WHY:
+  Login parameters accepted but ignored. Callers pass empty strings - server
+  is connected without ever sending credentials or subscription list.
+FIX:
+  Restore Login() (and fix it per CS4/CS5), or delete the dead 4-parameter
+  signature.
+IMPACT:
+  Either credentials are sent or the dead code is removed - misleading API
+  fixed.
+
+---
+
+ID: CS7
+SEVERITY: HIGH
+TITLE: Off-by-one buffer overflow / wrong bookkeeping in DataGetString and get_data
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:497-516, 177-198;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:185-206, 505-524
+CODE:
+  while(len<=r_byte) { *buf++=*start; start++; len++; }
+  *buf=0;
+  m_data_readed=m_data_readed+len-1;
+WHY:
+  Copies r_byte+1 bytes from m_data into buf, then NUL - total r_byte+2.
+  maxlen never consulted in the loop. m_data_readed += len-1 = r_byte, so the
+  next call re-reads the last byte (1-byte rolling rewind). Identical in
+  both files, 4 copies.
+FIX:
+  while (len < r_byte). m_data_readed += len. Validate r_byte < maxlen up
+  front.
+IMPACT:
+  Removes a stack/heap overflow that scales with tick_size from the feeder,
+  plus a silent off-by-one in the readhead.
+
+---
+
+ID: CS8
+SEVERITY: HIGH
+TITLE: gethostbyname / inet_addr - deprecated and not thread-safe
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:150-157;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:158-165
+FIX:
+  Use getaddrinfo / freeaddrinfo with AF_UNSPEC (or AF_INET).
+IMPACT:
+  Thread-safe DNS, IPv6 support, correct handling of edge-case IP literals.
+
+---
+
+ID: CS9
+SEVERITY: HIGH
+TITLE: Leaked CClientSocket in Server.cpp config-update handler
+FILE: OrikaServer/server/Server.cpp:6060-6123
+CODE:
+  CClientSocket* m_unisocket = new CClientSocket();
+  ...
+  m_unisocket->Close();
+  // no delete m_unisocket;
+WHY:
+  Each limit-config change leaks ~128 KB plus a socket-wrapper object.
+FIX:
+  delete m_unisocket; m_unisocket = nullptr; after Close(). Or unique_ptr.
+IMPACT:
+  Stops a 128 KB-per-config-edit leak.
+
+---
+
+ID: CS10
+SEVERITY: HIGH
+TITLE: ProcessConnect / CDataSourceConnection leaks CUniFeederSocket
+FILE: OrikaServer/ClientSocket/DataSource.cpp:101-107
+WHY:
+  ~CDataSourceConnection is empty. m_workflag set in Start, never cleared, so
+  the worker thread runs forever. static m_ticks_buffer is shared across
+  instances with no lock.
+FIX:
+  delete m_unisocket in destructor. Add Stop() that joins the thread. Remove
+  static on m_ticks_buffer or document why it's shared.
+IMPACT:
+  Clean shutdown, no leaked feeder socket, no zombie thread.
+
+---
+
+ID: CS11
+SEVERITY: HIGH
+TITLE: Feeder-controlled tick_size unbounded -> overflow vector in ReadTick
+FILE: OrikaServer/ClientSocket/UniFeederSocket.cpp:90-122, 670-678
+CODE:
+  tick_size = m_st_Data_Details->Un_com_Size;
+WHY:
+  tick_size read from the wire and passed directly to get_data with no
+  validation; combined with CS7 a malicious feeder packet triggers buffer
+  overflow.
+FIX:
+  After ConvertToHeaderData, validate tick_size against sizeof(st_tick) and a
+  hard upper bound. Reject the connection on mismatch.
+IMPACT:
+  Closes a remote-controlled buffer overflow rooted in feeder input.
+
+---
+
+ID: CS12
+SEVERITY: HIGH
+TITLE: SocketServer::Sending_Handler - busy loop, unsynchronised CMap, double-attach
+FILE: OrikaServer/SocketServer.cpp:81-122
+WHY:
+  while(true) with no sleep -> 100% CPU. Iterates m_socket_detail_Map without
+  a lock while another thread mutates it. CSocket::Attach on the same raw
+  SOCKET from multiple iterations is undefined. Send return value ignored.
+FIX:
+  Either delete the file (CS18), or use send() directly with per-client write
+  lock, a condition variable, and short-write retry.
+IMPACT:
+  Removes a 100% CPU burner.
+
+---
+
+ID: CS13
+SEVERITY: HIGH
+TITLE: m_Serverislive / m_recvThreadSrynk - non-volatile non-atomic flags in busy-waits
+FILE: OrikaServer/SocketServer.cpp:9-10, 37, 56-58
+WHY:
+  m_Serverislive == 0 forever (accept loop is dead). m_recvThreadSrynk
+  busy-wait reads a plain int across threads; MSVC release optimisation can
+  hoist the read.
+FIX:
+  Delete the file. If kept: std::atomic<int>, Event/WaitForSingleObject.
+IMPACT:
+  Removes an UB pattern and a CPU burner.
+
+---
+
+ID: CS14
+SEVERITY: HIGH
+TITLE: IOCPServer::AcceptLoop is a 100 ms busy-loop thread that does nothing
+FILE: OrikaServer/SocketServer/IOCPServer.cpp:222-226
+FIX:
+  Delete AcceptThreadProc / AcceptLoop, m_acceptThread, the _beginthreadex call.
+IMPACT:
+  One fewer thread, no periodic wakeup, less code.
+
+---
+
+ID: CS15
+SEVERITY: HIGH
+TITLE: IOCPServer::HandleAccept ZeroMemory wipes a yet-to-be-initialised CRITICAL_SECTION
+FILE: OrikaServer/SocketServer/IOCPServer.cpp:331-340
+WHY:
+  Currently safe because CRITICAL_SECTION is POD-trivial - but breaks the
+  moment ClientContext gains a non-POD member.
+FIX:
+  Remove the ZeroMemory; initialise fields explicitly. acceptSocket =
+  INVALID_SOCKET in a default ctor.
+IMPACT:
+  Removes a foot-gun.
+
+---
+
+ID: CS16
+SEVERITY: HIGH
+TITLE: IOCPServer::Send - concurrent calls share one send buffer per client
+FILE: OrikaServer/SocketServer/IOCPServer.cpp:416-452
+WHY:
+  Each ClientContext has one sendCtx / OVERLAPPED / 8 KB buffer. CS released
+  after WSASend is posted. A second Send() can race in and overwrite
+  sendCtx.buffer / overlapped while the previous WSASend is in flight in the
+  kernel.
+FIX:
+  Per-client send queue (deque<vector<char>>) + "send in progress" flag;
+  completion handler pops next item and posts next WSASend.
+IMPACT:
+  Eliminates corruption of in-flight sends; correct back-pressure.
+
+---
+
+ID: CS17
+SEVERITY: HIGH
+TITLE: Sending_Handler reads n_ch with uninitialised header padding
+FILE: OrikaServer/SocketServer.cpp:97-116
+WHY:
+  Stack array never zero-initialised. If sizeof(struct) < the slot reserved,
+  uninitialised stack bytes go on the wire.
+FIX:
+  char n_ch[...] = {}; and static_assert sizes.
+IMPACT:
+  No more stack-data leak to network clients; structurally correct alerts.
+
+---
+
+ID: CS18
+SEVERITY: HIGH
+TITLE: SocketServer.cpp / .h is dead code - duplicated, never instantiated
+FILE: OrikaServer/SocketServer.cpp:1-179; OrikaServer/SocketServer.h:1-65
+WHY:
+  Grep finds no construction of SocketServer. OrikaServerDlg.cpp uses
+  iocp::IOCPServer (in OrikaServer/SocketServer/IOCPServer.cpp - subdirectory).
+  The dead file contains CS3, CS12, CS13, CS17 - all "fixes" to it are wasted
+  work.
+FIX:
+  Delete OrikaServer\SocketServer.cpp and OrikaServer\SocketServer.h. Remove
+  from OrikaServer.vcxproj.
+IMPACT:
+  Eliminates four HIGH issues by deletion; halves audit surface.
+
+---
+
+ID: CS19
+SEVERITY: HIGH
+TITLE: ClientSocket.cpp / UniFeederSocket.cpp are ~85% duplicated source
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:1-648;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:1-683
+WHY:
+  Every bug touching both files is the same bug pasted twice. Classes differ
+  only in three meaningful ways.
+FIX:
+  Refactor into a single CFeederSocket base with virtual hook for the "1007"
+  handshake difference and a single ParseTick taking a divisor parameter.
+IMPACT:
+  One place to fix bugs. Reduces footprint by ~600 lines.
+
+---
+
+ID: CS20
+SEVERITY: HIGH
+TITLE: Hardcoded server IP + plaintext credentials in CDataSourceConnection
+FILE: OrikaServer/ClientSocket/DataSource.cpp:16-20
+CODE:
+  _snprintf_s(m_address, ..., "13.126.83.17:6062");
+  _snprintf_s(m_login,..., "1000");
+  _snprintf_s(m_password,..., "hello");
+WHY:
+  AWS IP and credentials baked into the binary. m_address is dead -
+  ProcessConnect uses CStaticClass::dataFeedServer from config.
+FIX:
+  Delete the three _snprintf_s calls. Rotate the upstream feeder password.
+IMPACT:
+  Removes secret leakage; clarifies the configuration source of truth.
+
+---
+
+ID: CS21
+SEVERITY: MEDIUM
+TITLE: IsReadable has an unbraced if; falls off function without return when size==0
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:417-419;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:425-427
+FIX:
+  Brace properly or remove the if.
+IMPACT:
+  Eliminates undefined behaviour on a hot path.
+
+---
+
+ID: CS22
+SEVERITY: MEDIUM
+TITLE: m_string declared as char[] but constructor writes wide NUL L'\0'
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:14;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:14
+FIX:
+  m_string[0] = '\0';
+IMPACT:
+  Removes a type-confusion smell.
+
+---
+
+ID: CS23
+SEVERITY: MEDIUM
+TITLE: m_bytes member never initialised, never used
+FILE: OrikaServer/ClientSocket/ClientSocket.h:33;
+      OrikaServer/ClientSocket/UniFeederSocket.h:35
+FIX:
+  Delete the member, the CharToByte helper, and the free function.
+IMPACT:
+  Removes dead state and a future-crash trap.
+
+---
+
+ID: CS24
+SEVERITY: MEDIUM
+TITLE: st_tick / st_Data_Details parse uses reinterpret_cast with no alignment/endian check
+FILE: OrikaServer/ClientSocket/UniFeederSocket.cpp:283-291, 670-676;
+      OrikaServer/ClientSocket/ClientSocket.cpp:275-285
+FIX:
+  #pragma pack(push,1) around the struct, static_assert(sizeof(...) ==
+  EXPECTED_WIRE_SIZE). Document wire endianness.
+IMPACT:
+  Wire format documented and robust to compiler flag changes.
+
+---
+
+ID: CS25
+SEVERITY: MEDIUM
+TITLE: DataUpdate uses FIONREAD byte count - partial recv loses data
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:481-488;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:489-496
+FIX:
+  Pull as much as the buffer allows in one recv. Distinguish recv 0 vs -1 for
+  shutdown vs error.
+IMPACT:
+  Lower parse latency; correct disconnect detection.
+
+---
+
+ID: CS26
+SEVERITY: MEDIUM
+TITLE: SendString send loop closes socket after 500ms of WSAEWOULDBLOCK
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:612-640;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:638-666
+FIX:
+  Set socket to non-blocking and use select/WSAPoll with a real timeout, or
+  set blocking and remove the retry. Replace magic numbers.
+IMPACT:
+  Predictable behaviour under load.
+
+---
+
+ID: CS27
+SEVERITY: MEDIUM
+TITLE: ReadTick casts int price/size fields to double with hardcoded divisors
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:300-322;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:309-330
+FIX:
+  Promote price fields to int64 if values can exceed 21.47. Replace 1000000
+  and 100 with named kPriceScaleNNN constants. Delete unused tick fields.
+IMPACT:
+  Future-proofs the parser; documents the price-scaling convention.
+
+---
+
+ID: CS28
+SEVERITY: MEDIUM
+TITLE: CharToByte duplicated as both member function and free function
+FILE: OrikaServer/ClientSocket/ClientSocket.cpp:425-429;
+      OrikaServer/ClientSocket/UniFeederSocket.cpp:433-437
+FIX:
+  Delete both definitions and m_bytes (CS23).
+IMPACT:
+  Removes dead code and an ODR-violation trap.
+
+---
+
+ID: CS29
+SEVERITY: MEDIUM
+TITLE: STABILITY_AUDIT.md M3 / M4 / C10 / C11 / A7 - all still apply
+FILE: OrikaServer/ClientSocket/* (line numbers in CS items above)
+WHY:
+  All five items from the prior partial audit are still present at the lines
+  given in CS items above. None has been fixed since 2026-05-08.
+FIX:
+  Apply CS1-CS5, CS7, CS8, CS18, CS19 as the resolution.
+IMPACT:
+  Closes out the open Phase-1 items from the prior audit.
+
+---
+
+ID: CS30
+SEVERITY: LOW
+TITLE: SslEchoClient::onSslErrors silently ignores all SSL errors
+FILE: OrikaServer/WebSocketClient/sslechoclient.cpp:37-46
+CODE:
+  m_webSocket.ignoreSslErrors();
+FIX:
+  Confine to test builds (#ifdef _DEBUG), or implement CA pinning.
+IMPACT:
+  Closes a "TLS that isn't TLS" hole.
+
+---
+
+ID: CS31
+SEVERITY: LOW
+TITLE: IOCPServer::HandleSend is empty
+FILE: OrikaServer/SocketServer/IOCPServer.cpp:412-414
+WHY:
+  No send queue; bursts beyond ~8 KB clobbered.
+FIX:
+  Implement the queue from CS16.
+IMPACT:
+  Server can sustain back-pressured sends.
+
+---
+
+ID: CS32
+SEVERITY: LOW
+TITLE: IOCPServer::HandleAccept re-posts only on success - accept pool can shrink to 0
+FILE: OrikaServer/SocketServer/IOCPServer.cpp:351-376
+FIX:
+  On PostAccept failure log via ReportError, schedule a retry.
+IMPACT:
+  Server self-heals after transient accept-side failures.
+
+---
+
+ID: CS33
+SEVERITY: LOW
+TITLE: IOCPServer::Stop may double-free PerIoContext acceptSocket
+FILE: OrikaServer/SocketServer/IOCPServer.cpp:203-209
+FIX:
+  Move the accept-pool cleanup inside the worker-wait block; or add an
+  explicit comment about ordering.
+IMPACT:
+  Cleaner shutdown invariant.
+
+================================================================================
+PART C: DATA LAYER (SQL, MSMQ, LogWriter, DataTable)
+================================================================================
+
+ID: D1
+SEVERITY: CRITICAL
+TITLE: SQL injection across many CSqlData methods via CString::Format("...'%s'...")
+FILE: OrikaServer/SQLDATA/SqlData.cpp:1371, 1412, 1439, 1468, 1605, 1629, 1673,
+      1712, 1757, 2177, 2265, 2295, 2330, 2471, 2601, 2948, 3453, 3614, 3673,
+      3735, 3853, 5552, 5629, 5654, 5690, 5718, 5995, 6070, 6319, 6425, 6453,
+      6523, 6637, 6749, 6799, 7313, 7467, 7621, 7697, 7708, 7721, 7730, 7758,
+      7798, 7822, 7841, 7962, 7995 (~50 sites)
+CODE:
+  strCommand.Format(L"exec insert_orika_columnTemplate '%s','%s','%s';",
+                    name, userLogin, colorData);
+  strCommand.Format(L"select ... where authKey='%s'", authKey);
+WHY:
+  Almost every SQL command is built by formatting CString user input directly,
+  no escaping. Values arriving as JSON from socket clients flow into queries.
+  An input with a single quote breaks the query or, with crafted input,
+  executes arbitrary SQL. The application uses sa (CR3), so this is full
+  database compromise.
+FIX:
+  Parameterised commands (CCommand with parameter map) or sp_executesql with
+  @P params. At minimum, double single quotes on every CString segment.
+  Validate numeric inputs as integers before formatting (deals, id, viewSlNo
+  are pasted as %s and never sanitised).
+IMPACT:
+  Eliminates a CRITICAL externally-exploitable vulnerability that can leak
+  credentials, modify trade tables, and execute OS commands via xp_cmdshell
+  if enabled.
+
+---
+
+ID: D2
+SEVERITY: CRITICAL
+TITLE: HRESULT hr=NULL with !SUCCEEDED check - early-return guards are dead
+FILE: OrikaServer/SQLDATA/SqlData.cpp:242-247 (same pattern in ~80 functions)
+CODE:
+  HRESULT hr=NULL ;                       // 0 == S_OK
+  if(!SUCCEEDED(hr)) { return ; }         // always false
+  ...
+  hr=data_table.Open(...);
+  if(FAILED(hr)) { ... }
+WHY:
+  hr=NULL is 0 == S_OK, so !SUCCEEDED is always false and the guard is a
+  no-op. Further, `while(hr=data_table.MoveNext()==S_OK)` has wrong precedence
+  - hr becomes a bool, not the HRESULT, masking DB_S_ENDOFROWSET vs real
+  failures.
+FIX:
+  HRESULT hr = S_OK; hr = data_table.Open(...); if (FAILED(hr)) { ... }
+  while ((hr = data_table.MoveNext()) == S_OK)
+IMPACT:
+  Restores real error handling so partial reads / transient DB outages don't
+  silently produce corrupt CMaps and JSON.
+
+---
+
+ID: D3
+SEVERITY: CRITICAL
+TITLE: Hardcoded provider/connection string with embedded password
+FILE: OrikaServer/SQLDATA/SqlData.cpp:6526
+CODE:
+  m_sqlconnection.OpenFromInitializationString(L"Provider=SQLNCLI11.1;Password="
+    + CStaticClass::SqlServerPassword + ";...;Workstation ID=WIN-CE63GLSHUM0;...");
+WHY:
+  generateJsonForUserTabs opens a fresh CDataSource rather than reusing the
+  global; on failure no Close. Password concatenated into a CString in clear
+  - observable via crash dumps. Hardcoded Workstation ID.
+FIX:
+  Reuse the global connection. If a per-call data source is needed, RAII-wrap
+  and Close() in all paths.
+IMPACT:
+  Removes connection leaks under failure and reduces password exposure.
+
+---
+
+ID: D4
+SEVERITY: CRITICAL
+TITLE: Inconsistent locking - readers iterate shared CMaps with no lock; stray Unlock()
+FILE: OrikaServer/SQLDATA/SqlData.cpp:68, 265-283, 705-737, 1638-1657, 5024-5043
+WHY:
+  getOrderData walks m_Orika_orderHastable WITHOUT m_mutex_order yet calls
+  m_mutex_order.Unlock() at the end (undefined). Writers in convertToDealFormat
+  / orderUpdate do lock - readers race writers. POSITION can be invalidated
+  -> AVs or skipped/duplicated entries served as JSON.
+FIX:
+  Standardise scoped RAII lock around every traversal of shared CMaps
+  (m_Orika_orderHastable, m_Orika_dealtableAccountingHastable, m_ClientContext,
+  m_columnsubscription, m_brokerageLoginSymbolWiseHastable). Remove dangling
+  Unlock() when no Lock() exists.
+IMPACT:
+  Eliminates crashes, phantom/duplicate orders sent to dealers.
+
+---
+
+ID: D5
+SEVERITY: HIGH
+TITLE: COLUMN_ENTRY_LENGTH_STATUS uses wrong status/length variables - data corruption
+FILE: OrikaServer/DataTable/OrderTable.h:82
+CODE:
+  COLUMN_ENTRY_LENGTH_STATUS(17, m_orderstate, s_ourcomment, l_ourcomment);
+WHY:
+  17th column m_orderstate bound to 16th column's status/length vars. OLE DB
+  fills overwrite the length/status meant for m_ourcomment -> corrupted
+  comments and bogus orderstate. Same shape in TableClosingFile.h:483-487
+  where l_COLOR_THEME_ID etc. are declared DBSTATUS instead of DBLENGTH.
+FIX:
+  COLUMN_ENTRY_LENGTH_STATUS(17, m_orderstate, s_orderstate, l_orderstate);
+  Change CTableColorTheme l_* fields to DBLENGTH.
+IMPACT:
+  Fixes a quiet data-corruption bug.
+
+---
+
+ID: D6
+SEVERITY: HIGH
+TITLE: Headers contain non-inline implementations / #include "StdAfx.h" in headers
+FILE: OrikaServer/DealerSink.h:1
+WHY:
+  #include "StdAfx.h" at top of a header pulls precompiled-header marker into
+  every TU that includes it.
+FIX:
+  Remove #include "StdAfx.h" from headers; only #pragma once. Move CDealerSink
+  bodies into a .cpp.
+IMPACT:
+  Cleaner builds, avoids linker errors when refactoring.
+
+---
+
+ID: D7
+SEVERITY: HIGH
+TITLE: vtValue.vt = VT_BSTR uses assignment instead of comparison
+FILE: OrikaServer/MSMQ/MSMQApiWrapper.cpp:751, 788
+CODE:
+  if(vtValue.vt = VT_BSTR)     // assigns 8, condition always true
+WHY:
+  Unconditionally reads bstrVal even when actual VARTYPE isn't BSTR - bad
+  pointer deref and process crash for non-string messages.
+FIX:
+  if (vtValue.vt == VT_BSTR) szMessage = vtValue.bstrVal;
+IMPACT:
+  Prevents crashes on messages that aren't BSTRs.
+
+---
+
+ID: D8
+SEVERITY: HIGH
+TITLE: LocatePrivateQueue dereferences potentially null IMSMQQueueInfoPtr
+FILE: OrikaServer/MSMQ/MSMQApiWrapper.cpp:114-141
+WHY:
+  qinfo->PathName = ... runs before the null check. Even when non-null, the
+  prior BSTR value (if any) is not SysFreeString'd - per-call BSTR leak.
+FIX:
+  Validate qinfo before any deref. Use _bstr_t or call SysFreeString on the
+  prior BSTR.
+IMPACT:
+  Avoids NULL deref crashes and a per-call BSTR leak in a hot path.
+
+---
+
+ID: D9
+SEVERITY: HIGH
+TITLE: CreateDirectories destroys process cwd by _chdir("..") 20 times
+FILE: OrikaServer/LogWriter/LogFile.cpp:79-108
+WHY:
+  Changes process cwd globally as a side effect of opening a log file. Every
+  other module using relative paths starts misbehaving after the first log
+  rotation.
+FIX:
+  Build the directory path mathematically and call SHCreateDirectoryExW with
+  the absolute path. If cwd manipulation is unavoidable, save with _wgetcwd
+  and restore.
+IMPACT:
+  Eliminates a process-wide side effect that probably explains intermittent
+  "file not found" issues elsewhere.
+
+---
+
+ID: D10
+SEVERITY: HIGH
+TITLE: Logger races CRITICAL_SECTION init/delete; FILE* never nulled after fclose
+FILE: OrikaServer/LogWriter/LogFile.cpp:7-67, 140-155
+WHY:
+  Default ctor never InitializeCriticalSection, but ~CLogFile always
+  DeleteCriticalSection. ChangeFile leaks handles if another thread is in
+  Write() holding the section. m_pLogFile never assigned NULL after fclose
+  so the if (m_pLogFile) guard cannot protect against double-close.
+FIX:
+  Initialise CS in constructor (or InitOnceExecuteOnce). m_pLogFile = NULL
+  after fclose. Serialise ChangeFile against Write.
+IMPACT:
+  Prevents crashes during log rotation and double-free of the CS.
+
+---
+
+ID: D11
+SEVERITY: HIGH
+TITLE: PositionFileReadAndCheck has a code path with no return value
+FILE: OrikaServer/SQLDATA/SqlData.cpp:2779-2875
+WHY:
+  When Open fails the function reaches end-of-function without returning.
+  Caller receives indeterminate CString that produces garbage or crashes.
+FIX:
+  Add return L""; at the end (or a structured "file missing" status).
+IMPACT:
+  Removes UB and silent failure when the position file is missing.
+
+---
+
+ID: D12
+SEVERITY: HIGH
+TITLE: getCommentDealWise has O(n*m) substring scans on a growing CString
+FILE: OrikaServer/SQLDATA/SqlData.cpp:1746-1845
+WHY:
+  Each iteration calls deals.Find(",") 3 times and dealfound.Find(tmpdeals)
+  against a growing string. O(N^2) with client-controlled input.
+FIX:
+  Tokenise once into std::set<long long>. Build JSON via StringBuffer writer.
+  Replace dealfound substring tracking with set membership.
+IMPACT:
+  Removes a quadratic CPU spike and a trivial DoS via crafted long comma lists.
+
+---
+
+ID: D13
+SEVERITY: HIGH
+TITLE: validatelogintoken authorises stale tokens; removelogintoken body commented out
+FILE: OrikaServer/SQLDATA/SqlData.cpp:7872-7896, 7926-7950
+WHY:
+  Logic checks IP only in the else-if path; fall-throughs aren't covered.
+  removelogintoken body is fully commented out, so tokens never invalidate -
+  once generated a token is valid as long as the server runs. No expiry check
+  against m_tokenactivetime.
+FIX:
+  Centralise: if (token not found || status != 1) return 1; if (IP !=
+  expected) return 2; if (now - tokenactivetime > MAX_AGE) return 1; return 0;
+  Re-enable token removal. Consider HMAC-signed tokens.
+IMPACT:
+  Fixes a stale-token authentication weakness and re-enables session lifecycle.
+
+---
+
+ID: D14
+SEVERITY: MEDIUM
+TITLE: generatelogintoken returns a predictable, attacker-known concatenation
+FILE: OrikaServer/SQLDATA/SqlData.cpp:7897-7902
+CODE:
+  returnval.Format(L"%s!~o!%s!~o!%s!~o!%I64u", key, userlogin, ipAddress, logintime);
+FIX:
+  Generate a cryptographically random token (BCryptGenRandom, 256 bits) and
+  store mapping server-side, OR HMAC-sign the payload with a server secret.
+IMPACT:
+  Removes token-forgery vulnerability.
+
+---
+
+ID: D15
+SEVERITY: MEDIUM
+TITLE: deleteColumnSubscriptionData modifies CMap while iterating with POSITION
+FILE: OrikaServer/SQLDATA/SqlData.cpp:1638-1660
+FIX:
+  Collect keys-to-delete in a CStringArray during the walk, RemoveKey after
+  the loop.
+IMPACT:
+  Avoids missed-deletes and possible crashes.
+
+---
+
+ID: D16
+SEVERITY: MEDIUM
+TITLE: data_table.Close() not called in many paths after CCommand::Open succeeds
+FILE: OrikaServer/SQLDATA/SqlData.cpp:240-288, 294-333, 388-419, ... (20+ sites)
+FIX:
+  Add data_table.Close(); before every m_tempSession.Close(). Or RAII helper
+  RunRowset(strCommand, fn).
+IMPACT:
+  Removes a slow accessor/handle leak.
+
+---
+
+ID: D17
+SEVERITY: MEDIUM
+TITLE: generateMasterMetadata returns before closing session; dead Close() after return
+FILE: OrikaServer/SQLDATA/SqlData.cpp:2335-2339
+FIX:
+  Reorder: m_tempSession.Close(); return L""; Better: CSession RAII wrapper.
+IMPACT:
+  Prevents session leak under DB error.
+
+---
+
+ID: D18
+SEVERITY: MEDIUM
+TITLE: generateMasterMetadata issues N+1 queries
+FILE: OrikaServer/SQLDATA/SqlData.cpp:2369-2554
+FIX:
+  Single JOIN parent / Orika_ChieldColumn with parameterised metadatatype.
+  Group rows in client code.
+IMPACT:
+  Major latency reduction on a frequently-called endpoint.
+
+---
+
+ID: D19
+SEVERITY: MEDIUM
+TITLE: Self-assignment typo silently drops broker net amount column
+FILE: OrikaServer/SQLDATA/SqlData.cpp:838, 922
+CODE:
+  m_brokernetAmount = m_brokernetAmount;   // should be data_table.m_brokernetAmount
+FIX:
+  m_brokernetAmount = data_table.m_brokernetAmount;
+IMPACT:
+  Correct broker/sub-broker net amounts.
+
+---
+
+ID: D20
+SEVERITY: MEDIUM
+TITLE: %s format specifier used with double values - crash hazard
+FILE: OrikaServer/SQLDATA/SqlData.cpp:845, 929, 996-1010
+FIX:
+  Change to %.0lf (or %.2lf). Enable /W4 + warn-as-error on format.
+IMPACT:
+  Removes a crash hazard whose timing depends on the bits of broker net amount.
+
+---
+
+ID: D21
+SEVERITY: MEDIUM
+TITLE: while(hr = X.MoveNext() == S_OK) precedence bug (ubiquitous)
+FILE: OrikaServer/SQLDATA/SqlData.cpp (every such line, ~80 sites)
+FIX:
+  while ((hr = data_table.MoveNext()) == S_OK)
+IMPACT:
+  Real DB errors during reads become visible instead of producing silently
+  truncated result sets.
+
+---
+
+ID: D22
+SEVERITY: MEDIUM
+TITLE: TCHAR fixed buffers in DataTable headers truncate without warning
+FILE: OrikaServer/DataTable/netpositionTable.h:8-10
+CODE:
+  TCHAR m_login[20];
+  TCHAR m_name[50];
+  TCHAR m_symbol[32];
+WHY:
+  20 wide chars truncate compound logins. Downstream lookups miss the row.
+FIX:
+  Bump sizes (login >= 64) or use heap-allocated CString. Always pass buffer
+  size to Copy and check return.
+IMPACT:
+  Avoids data loss and missing trade attribution.
+
+---
+
+ID: D23
+SEVERITY: MEDIUM
+TITLE: assert(...) used as input validation on JSON fields - release builds skip checks
+FILE: OrikaServer/SQLDATA/SqlData.cpp:4649, 4658, 4663, 4672, 4677, 4682, 4687,
+      4706, 4711, 4717, 4722, 4727
+FIX:
+  Replace each assert(v.IsXxx()) with if (!v.IsXxx()) { log; return; }. Use
+  HasMember first.
+IMPACT:
+  Prevents remote crash from clients sending malformed JSON.
+
+---
+
+ID: D24
+SEVERITY: MEDIUM
+TITLE: m_mutex_order.Unlock() at line 7859 with no matching Lock
+FILE: OrikaServer/SQLDATA/SqlData.cpp:7853-7862
+FIX:
+  Delete the stray Unlock or add a matching Lock at the top.
+IMPACT:
+  Prevents permanent deadlock of the order subsystem after
+  UpdateLoginUserCredentials.
+
+---
+
+ID: D25
+SEVERITY: MEDIUM
+TITLE: SendStringMessage leaks MSMQ handle and reports wrong iResult
+FILE: OrikaServer/MSMQ/MSMQApiWrapper.cpp:597-647
+FIX:
+  if (qSend) qSend->Close(); before return. Call LocatePrivateQueue first to
+  set iResult correctly.
+IMPACT:
+  Stops MSMQ handle leak; accurate queue-existence status.
+
+---
+
+ID: D26
+SEVERITY: MEDIUM
+TITLE: m_clientkey grows unbounded per-login (no dedupe + removal commented out)
+FILE: OrikaServer/SQLDATA/SqlData.cpp:7906-7923
+FIX:
+  Check if the key is already present before Add. Re-enable removal.
+IMPACT:
+  Bounded memory and accurate connection counts.
+
+---
+
+ID: D27
+SEVERITY: LOW
+TITLE: CSqlData / CLogFile header has member declarations qualified with CSqlData:: / CLogFile::
+FILE: OrikaServer/SQLDATA/SqlData.h:12-13, 21, 28; OrikaServer/LogWriter/LogFile.h:21, 22
+FIX:
+  Remove qualifiers from member declarations inside class body.
+IMPACT:
+  Build-portability improvement (/permissive- compatibility).
+
+---
+
+ID: D28
+SEVERITY: LOW
+TITLE: Inconsistent %d-vs-%s quoting in SQL EXEC strings
+FILE: OrikaServer/SQLDATA/SqlData.cpp:1412, 1439
+FIX:
+  Use %d without quotes for numeric. Parameterise (D1).
+IMPACT:
+  Cleaner intent; reduces SQL injection surface for these endpoints.
+
+---
+
+ID: D29
+SEVERITY: LOW
+TITLE: CDealerSink::Wait dereferences m_request without nullptr check
+FILE: OrikaServer/DealerSink.h:57-74
+FIX:
+  if (m_request) res = m_request->ResultRetcode();
+IMPACT:
+  Defensive null check for an inline rarely-called path.
+
+---
+
+ID: D30
+SEVERITY: LOW
+TITLE: rapidjson Document operator[] without HasMember in convertToDealFormat
+FILE: OrikaServer/SQLDATA/SqlData.cpp:4648, 4657, 4662, 4670, 4675, 4680, 4686,
+      4705, 4710, 4716, 4721, 4726
+FIX:
+  if (!msg_data.HasMember("login") || !msg_data["login"].IsInt64()) { ... } before
+  each access.
+IMPACT:
+  Resilience against malformed dealing-feed messages.
+
+================================================================================
+PART D: CORE / MAIN / DIALOG / PROTOBUF
+================================================================================
+
+ID: CR1
+SEVERITY: CRITICAL
+TITLE: Plaintext password comparison and hardcoded user bypass in login
+FILE: OrikaServer/UserLogin.cpp:22, 128, 185
+CODE:
+  if (loginuser==L"1001" || loginuser == L"1002") { return true; }
+  ...
+  strCommand.Format(L"select pwd,name from orika_userlogin where UserLogin='%s';", struser);
+  ...
+  if (m_password==strpwd) { return 0; }
+WHY:
+  validateSerialno trusts logins 1001 and 1002 - a hardcoded backdoor that
+  bypasses serial-number validation. userValideate reads pwd from the DB and
+  performs plaintext CString equality - passwords are stored in clear text.
+  No salt, no hash, no constant-time compare.
+FIX:
+  Remove 1001/1002 bypass. Store bcrypt/argon2/PBKDF2 hashes in
+  orika_userlogin.pwd. Verify with the KDF and constant-time comparison.
+IMPACT:
+  Closes a backdoor and prevents DB-leak-to-account-takeover. Eliminates the
+  largest authentication weakness.
+
+---
+
+ID: CR2
+SEVERITY: CRITICAL
+TITLE: SQL injection in login / serial validation
+FILE: OrikaServer/UserLogin.cpp:35, 105, 164
+WHY:
+  Login user, password JSON, serial number come from the network and are
+  interpolated into SQL via Format("...%s..."). `1003' OR '1'='1` returns all
+  rows and bypasses auth.
+FIX:
+  Parameterise. Validate struser against ^[0-9]{1,15}$ - the column is numeric.
+IMPACT:
+  Eliminates classic auth-bypass and data-exfiltration SQLi on the
+  highest-privilege endpoint.
+
+---
+
+ID: CR3
+SEVERITY: CRITICAL
+TITLE: Hardcoded SQL sa credentials and MT5 manager password in source
+FILE: OrikaServer/StaticClass.cpp:211-218
+CODE:
+  CString CStaticClass::SqlServerUserID  = L"sa";
+  CString CStaticClass::SqlServerPassword = L"ok@12345";
+  CString CStaticClass::MTServerUserID = L"1017";
+  CString CStaticClass::MTServerPassword = L"ASDF123";
+WHY:
+  Production SQL sa credentials and MT5 manager API credentials baked into
+  source. Multiple commented alternate deployments with the same password.
+FIX:
+  Remove credentials from source. Require LoadConfigFile() to succeed. Read
+  via DPAPI-protected config or env vars. Use a non-sa SQL login.
+IMPACT:
+  Closes the most direct path to total compromise.
+
+---
+
+ID: CR4
+SEVERITY: CRITICAL
+TITLE: delete vs delete[] mismatch on protobuf serialization buffer
+FILE: OrikaServer/ProtoMessageConverter.cpp:143, 160
+CODE:
+  char* charBuffer = new char[serializedSize];
+  ...
+  delete charBuffer;     // should be delete[]
+WHY:
+  UB - on MSVC typically corrupts the heap. Also ByteSizeLong returns size_t
+  but is assigned to int serializedSize - truncation for >2 GB.
+FIX:
+  std::vector<char> buf(serializedSize); m_clientmessage.SerializeToArray(
+  buf.data(), buf.size()); buffer.Append(buf.data(), (int)buf.size());
+IMPACT:
+  Removes heap corruption on every outgoing proto message - very likely cause
+  of random crashes under sustained traffic.
+
+---
+
+ID: CR5
+SEVERITY: CRITICAL
+TITLE: CManager::Initialize() calls CManager() as an unused temporary
+FILE: OrikaServer/Manager.cpp:2399-2402
+CODE:
+  bool CManager::Initialize()
+  {
+     CManager();
+     ...
+  }
+WHY:
+  Temporary default-constructed CManager destroyed at end of full-expression.
+  Currently safe only because members are NULL; the moment anyone adds an
+  owned resource the temporary's destructor will tear down a fresh object.
+FIX:
+  Delete the line. Or explicitly null members at top of Initialize.
+IMPACT:
+  Removes a footgun.
+
+---
+
+ID: CR6
+SEVERITY: CRITICAL
+TITLE: CStaticClass god-singleton - hundreds of statics with inconsistent locking
+FILE: OrikaServer/StaticClass.h:10-1309; OrikaServer/StaticClass.cpp:298-440
+WHY:
+  Virtually all program state lives as static members of CStaticClass,
+  accessed from ~10 AfxBeginThread workers. The CMutex map (m_mutex_Tick,
+  m_mutex_order, m_mutex_ClientList) is inconsistently used. CMap stores by
+  value, so Lookup/modify/SetAt sequences are read-modify-write races.
+FIX:
+  (a) Dedicated lock per shared container; document the protocol. (b) Replace
+  RMW blocks with single critical-section passes. (c) Split CStaticClass into
+  purpose-specific services owned by a single coordinator.
+IMPACT:
+  Removes silent data races and torn updates that produce wrong net positions
+  / wrong balances.
+
+---
+
+ID: CR7
+SEVERITY: HIGH
+TITLE: Non-deterministic static-initialisation order across TUs
+FILE: OrikaServer/OrikaServer.cpp:31; StaticClass.cpp:13-225; AlertStaticClass.cpp:4-5
+WHY:
+  Constructors of CStaticClass::m_mtmanager, m_sqldata, m_logfile, etc.
+  spanning TUs run at static init with no defined order. Also a stray
+  file-scope global `cmdExecute` shadows the class member.
+FIX:
+  Construct-on-First-Use (function-local statics) or a single explicit
+  CStaticClass::Init() from InitInstance. Delete the stray cmdExecute global
+  at StaticClass.cpp:280.
+IMPACT:
+  Eliminates "works in Debug, crashes in Release" startup bugs.
+
+---
+
+ID: CR8
+SEVERITY: HIGH
+TITLE: 70 000 raw malloc'd doubles in arrays, never freed, sometimes read uninitialised
+FILE: OrikaServer/StaticClass.cpp:7390-7421
+WHY:
+  35000 + 6000 raw allocations leaked on shutdown. lastrateArray slots
+  uninitialised; sendClientPosition_NewUpdate reads *st_tmpData.m_lastrate
+  before any tick has fired - UB on the float fields.
+FIX:
+  std::vector<st_TickBidAskLast> lastrateArray(35000); value-initialised. Store
+  indices. Or at minimum calloc + matching free in destructor.
+IMPACT:
+  Removes several MB of leaked memory per Start/Stop cycle and fixes UB.
+
+---
+
+ID: CR9
+SEVERITY: HIGH
+TITLE: InitializeCriticalSection called from a button handler; no DeleteCriticalSection
+FILE: OrikaServer/OrikaServerDlg.cpp:353-354
+FIX:
+  Initialise once (std::call_once or in InitInstance). Pair Init with Delete.
+  Better: std::mutex / std::condition_variable.
+IMPACT:
+  Removes UB on operator Start/Stop cycles and prevents leak-on-restart.
+
+---
+
+ID: CR10
+SEVERITY: HIGH
+TITLE: UINT64 timestamps truncated to int in JSON / Format
+FILE: OrikaServer/Manager.cpp:3537-3538, 3626, 3451
+CODE:
+  UINT64 m_dealTime = deal->Time();
+  writer.Key("dealtime");
+  writer.Int(m_dealTime);
+WHY:
+  RapidJSON Writer::Int is signed 32-bit. After 2038-01-19 (or millisecond
+  timestamps now) values overflow to negative.
+FIX:
+  writer.Int64(static_cast<int64_t>(m_dealTime)) or Uint64. Audit every
+  writer.Int with UINT64/INT64/time source.
+IMPACT:
+  Prevents corrupt deal-time fields and post-2038 timestamps.
+
+---
+
+ID: CR11
+SEVERITY: HIGH
+TITLE: while(hr = X.MoveNext() == S_OK) operator-precedence (mirror of D21)
+FILE: OrikaServer/UserLogin.cpp:48, 119, 176; OrikaServer/Manager.cpp:4003
+FIX:
+  while ((hr = data_table.MoveNext()) == S_OK)
+IMPACT:
+  Restores diagnostic value of hr.
+
+---
+
+ID: CR12
+SEVERITY: HIGH
+TITLE: Dead "if(!SUCCEEDED(hr))" guard immediately after `HRESULT hr=NULL`
+FILE: OrikaServer/UserLogin.cpp:27-32, 97-102, 156-161
+FIX:
+  Delete the dead guard. Initialise HRESULT hr = E_FAIL; re-assign at Open().
+IMPACT:
+  Reduces noise / false sense of security; forces real error handling.
+
+---
+
+ID: CR13
+SEVERITY: HIGH
+TITLE: Busy-wait spin without sleep blocks server start
+FILE: OrikaServer/SocketServer.cpp:56-58
+FIX:
+  SetEvent/WaitForSingleObject or std::atomic<int> + CV. Or pass data into
+  the thread via LPVOID.
+IMPACT:
+  Eliminates CPU burn and potential hang.
+
+---
+
+ID: CR14
+SEVERITY: HIGH
+TITLE: ThreadProc_Log loop ignores stop flag; SQL on closed connection during shutdown
+FILE: OrikaServer/OrikaServerDlg.cpp:581-609, 488-510
+FIX:
+  while (CStaticClass::startTickData == 1). SignalObjectAndWait on a stop
+  event so Sleep wakes immediately.
+IMPACT:
+  Server actually stops cleanly when operator clicks Stop.
+
+---
+
+ID: CR15
+SEVERITY: HIGH
+TITLE: SqlServerPassword interpolated unescaped into OLE DB connection string
+FILE: OrikaServer/StaticClass.cpp:7435
+WHY:
+  Concatenation of CString values from oreka.config. A password with ; or "
+  injects additional connection options (disable encryption, redirect Data
+  Source). Connection is plaintext on the wire by default.
+FIX:
+  Wrap each value in {} or double embedded quotes. Validate no ; or '.
+  Set Use Encryption for Data=True and pin the server certificate.
+IMPACT:
+  Removes a config-injection path and protects credentials/queries in transit.
+
+---
+
+ID: CR16
+SEVERITY: MEDIUM
+TITLE: Logging includes IP, hardware ID, full deal/order objects (PII / trade data)
+FILE: OrikaServer/OrikaServerDlg.cpp:23-44, 47, 62; Manager.cpp:3962
+FIX:
+  Define log levels and what may be logged. Never log full inbound JSON;
+  hash/redact hardware IDs and IPs; rotate / encrypt logs.
+IMPACT:
+  Lowers blast radius if logs leak; helps regulatory compliance.
+
+---
+
+ID: CR17
+SEVERITY: MEDIUM
+TITLE: CShellManager leaked on DoModal exception path
+FILE: OrikaServer/OrikaServer.cpp:55, 89-92
+FIX:
+  std::unique_ptr<CShellManager> pShellManager(new CShellManager);
+IMPACT:
+  Removes a small leak on the error path.
+
+---
+
+ID: CR18
+SEVERITY: MEDIUM
+TITLE: Read-modify-write on m_ClientContext loses concurrent updates
+FILE: OrikaServer/StaticClass.cpp:7360-7365 and many similar
+FIX:
+  shared_ptr<st_ClientContext> in the map with per-field atomic/mutex, OR
+  keep snapshot read-only and write only delta fields via dedicated setters
+  that hold the lock for the whole RMW.
+IMPACT:
+  Fixes lost-update races on per-client subscription state.
+
+---
+
+ID: CR19
+SEVERITY: MEDIUM
+TITLE: Format specifier mismatches; deal/order int fields can't hold MT5 UINT64
+FILE: OrikaServer/StaticClass.h:259 (st_order::m_time is int);
+      OrikaServer/Manager.cpp:3494, 3498, 3614
+FIX:
+  st_order m_time/m_deal/m_order/m_contraorder/m_tradeexecutetime -> INT64/UINT64.
+  Use %I64d / %I64u consistently.
+IMPACT:
+  Closes 2038/UINT-overflow data corruption.
+
+---
+
+ID: CR20
+SEVERITY: MEDIUM
+TITLE: BEGIN_MESSAGE_MAP has ON_WM_CLOSE but OnClose is empty
+FILE: OrikaServer/OrikaServerDlg.cpp:240-249, 527-530
+WHY:
+  X / Alt+F4 don't stop worker threads, don't call g_iocpServer.Stop, don't
+  release SQL/MT connections. Threads write to dialog members during destruct.
+FIX:
+  In OnClose call OnBnClickedStop body, wait for threads to drain before
+  CDialogEx::OnClose.
+IMPACT:
+  Clean shutdown via the X button.
+
+---
+
+ID: CR21
+SEVERITY: MEDIUM
+TITLE: `CCommand<CNoAccessor, CNoRowset> cmdExecute;` file-scope shadows class member
+FILE: OrikaServer/StaticClass.h:771; OrikaServer/StaticClass.cpp:280
+FIX:
+  Delete the file-scope global at line 280. If the member is unused, remove
+  it from the header too.
+IMPACT:
+  Removes ambiguity.
+
+---
+
+ID: CR22
+SEVERITY: MEDIUM
+TITLE: g_iocpServer is a static global referenced by lambdas after Stop
+FILE: OrikaServer/OrikaServerDlg.cpp:18-56
+FIX:
+  Move g_iocpServer out of file scope into COrikaServerDlg as a member.
+  Stop() joins all callback threads before returning.
+IMPACT:
+  Removes a callback-vs-shutdown race that surfaces as a crash on close.
+
+---
+
+ID: CR23
+SEVERITY: LOW
+TITLE: OnTick is declared inline in a .cpp file
+FILE: OrikaServer/Manager.cpp:3912
+FIX:
+  Remove inline.
+IMPACT:
+  Cosmetic clarity.
+
+---
+
+ID: CR24
+SEVERITY: LOW
+TITLE: m_Serverislive / m_recvThreadSrynk / startTickData are plain int, not atomic
+FILE: OrikaServer/SocketServer.cpp:9-10; OrikaServer/StaticClass.cpp:365-386
+FIX:
+  std::atomic<int> everywhere they're set/read across threads, or atomic<bool>
+  g_running + stop_event.
+IMPACT:
+  Removes latent "threads don't stop in Release build" risk.
+
+---
+
+ID: CR25
+SEVERITY: LOW
+TITLE: LPCSTR globals point at temporary CStringA buffers in LoadConfigFile
+FILE: OrikaServer/Manager.cpp:2197-2206; OrikaServer/StaticClass.cpp:220-221
+CODE:
+  CStringA cstrA(strval);
+  CStaticClass::dataFeedServer = cstrA;     // LPCSTR
+  // cstrA destructs; pointer dangles
+FIX:
+  Change global type to CStringA (or std::string), or static char buffer.
+IMPACT:
+  Removes a use-after-free for two config values that drive feed/gateway
+  connections.
+
+---
+
+ID: CR26
+SEVERITY: LOW
+TITLE: Closing-file SQL command built with %f and unescaped strings
+FILE: OrikaServer/Manager.cpp:153
+FIX:
+  Use a parameterised stored proc call, or sanitise/whitelist each value.
+IMPACT:
+  Closes SQL injection through the master-data import path.
+
+================================================================================
+PART E: REPO HYGIENE / BUILD / CONFIG
+================================================================================
+
+ID: R1
+SEVERITY: CRITICAL
+TITLE: Live private TLS key (key.pem) committed to repository (6 copies)
+FILE: OrikaServer/key.pem (also OrikeEXE/key.pem, OrikeEXE/SLLCretificate/key.pem,
+      SLLCretificate/key.pem, x64/Release/key.pem, x64/Release/SLLCretificate/key.pem)
+EVIDENCE:
+  git ls-files shows 6 copies tracked. File begins -----BEGIN RSA PRIVATE KEY-----
+  (1675 bytes). Matching Certificate.pem (GoDaddy-signed) tracked in 7 paths
+  plus gd_bundle.crt in OrikaServer/.
+WHY:
+  An unencrypted RSA private key is in git history forever. Anyone with read
+  access to backups/forks/clones owns this key. The key signs a real GoDaddy
+  certificate, so it controls TLS for a production-issued cert.
+FIX:
+  Revoke the certificate at the CA, generate a new keypair/CSR, reissue.
+  Remove from working tree and history with `git filter-repo --invert-paths
+  --path-glob '*key.pem'` (or BFG), force-push, rotate. Add *.pem, *.key,
+  *.pfx, SLLCretificate/ to .gitignore. Load keys from an external secrets
+  store or out-of-tree file referenced by config.
+IMPACT:
+  Stops attackers from impersonating the server / MITM'ing TLS, prevents
+  secret leakage through any clone, satisfies basic compliance.
+
+---
+
+ID: R2
+SEVERITY: CRITICAL
+TITLE: Hardcoded production credentials and internal IPs in tracked source
+FILE: OrikaServer/StaticClass.cpp:211-222
+EVIDENCE:
+  Active uncommented values: SqlServerAdd L"95.111.253.230,7082",
+  SqlServerUserID L"sa", SqlServerPassword L"ok@12345",
+  MTServerAdd L"38.170.242.2:443", MTServerPassword L"ASDF123",
+  dataFeedServer "13.126.83.17:60631",
+  GatewayServer "95.111.253.230:99801"
+  Plus dozens of commented historical credentials (`hello12345@`, etc.) for
+  multiple environments (FO, MCX, Demo).
+WHY:
+  sa is SQL Server super-admin. Public IP + weak password = full DB
+  compromise. MT5 manager creds give the trading backend. Commented historical
+  credentials must be considered burned.
+FIX:
+  Rotate every password (SQL sa, MT manager 1017, MSMQ ACLs). Replace
+  hardcoded values with env vars / config under %PROGRAMDATA% / Windows
+  Credential Manager / Azure Key Vault. Remove historical commented blocks
+  and purge from git history. Never use sa for the application - create a
+  least-privilege SQL login.
+IMPACT:
+  Eliminates trivial full-system takeover via repo read.
+
+---
+
+ID: R3
+SEVERITY: CRITICAL
+TITLE: 1.3 GB OrikaServer.zip in repo root; tracked PDBs and other zips
+FILE: OrikaServer.zip (untracked, 1.3 GB); OrikeEXE/MT5.zip (10.2 MB, tracked);
+      OrikeEXE/OrikaServer.zip (1.5 MB, tracked); OrikeEXE/OrikaServer.pdb (20.9 MB,
+      tracked); x64/Release/OrikaServer.pdb (tracked)
+WHY:
+  The 1.3 GB zip is untracked but sits in the working tree where any
+  `git add .` would commit it. Tracked PDBs/zips bloat clones; PDBs ship
+  private symbols.
+FIX:
+  Delete OrikaServer.zip from the working tree. Add *.zip, *.pdb, *.ilk,
+  *.pch, *.idb, *.exe.recipe to .gitignore. `git rm --cached` the tracked
+  instances. Purge from history if desired.
+IMPACT:
+  Prevents an accidental 1.3 GB push that would render the remote unusable.
+
+---
+
+ID: R4
+SEVERITY: CRITICAL
+TITLE: Build artifacts massively tracked - ~18,555 generated files in git
+FILE: OrikaServer/Debug/, OrikaServer/x64/Debug/, OrikaServer/x64/Release/,
+      OrikaServer/x64_Lib/, OrikaServer/x64_Debug_Lib/, OrikaServer/x32/,
+      vcpkg_installed/
+EVIDENCE:
+  20,864 total tracked files; 18,555 in build/lib subtrees. 220 .obj files
+  tracked. Sizes: x64 449 MB, vcpkg_installed 2.6 GB. .gitignore has no
+  *.obj, *.pdb, Debug/, Release/, x64/, vcpkg_installed/ entries.
+FIX:
+  Add standard VS .gitignore patterns (see R14). `git rm -r --cached` every
+  now-ignored path. Optionally `git filter-repo` to slim history.
+IMPACT:
+  Reduces clone size by multiple GB; eliminates spurious diffs.
+
+---
+
+ID: R5
+SEVERITY: HIGH
+TITLE: Visual Studio user/IDE state files tracked (*.suo, *.sdf, *.aps, *.vcxproj.user)
+FILE: OrikaServer.v11.suo, OrikaServer.sdf, OrikaServer/OrikaServer.aps,
+      OrikaServer/OrikaServer.vcxproj.user
+FIX:
+  Add *.suo *.sdf *.opensdf *.opendb *.aps *.vcxproj.user to .gitignore;
+  `git rm --cached` each.
+IMPACT:
+  Stops per-developer churn in commits; removes accidental leakage.
+
+---
+
+ID: R6
+SEVERITY: HIGH
+TITLE: vcxproj security/quality settings: redundant SDLCheck, /W3, broken Debug, oversized stack
+FILE: OrikaServer/OrikaServer.vcxproj
+EVIDENCE:
+  All configs Level3 (/W3). SDLCheck true but no ControlFlowGuard, no
+  TreatWarningAsError, no EnablePREfast. Debug|x64 sets
+  UseDebugLibraries=false + MultiThreadedDLL + NDEBUG - effectively a release
+  CRT in the "Debug" build. Debug|Win32 defines _DEBUG - inconsistent. Both
+  Release configs ship full PDB. Debug|x64 StackReserveSize 500000000000
+  (~500 GB - typo).
+FIX:
+  WarningLevel=Level4, ControlFlowGuard=Guard, Debug uses MultiThreadedDebugDLL
+  + _DEBUG, Release uses NDEBUG + MultiThreadedDLL. Fix StackReserveSize to
+  8388608. PDB to symbol server only.
+IMPACT:
+  Catches more bugs at compile time, adds CFG, makes Debug behave as Debug.
+
+---
+
+ID: R7
+SEVERITY: HIGH
+TITLE: vcpkg.json has no version pinning, no baseline, no overrides
+FILE: vcpkg.json
+EVIDENCE:
+  { "name": "orikaserver", "version-string": "1.0.0", "dependencies": [ "protobuf" ] }
+  No builtin-baseline. Yet vcxproj links absl_*, grpc, cares, re2, upb, zlib,
+  lzo, Qt5Core, libssl, libcrypto - none declared in vcpkg.json.
+FIX:
+  Add builtin-baseline (a tested vcpkg sha). Declare every used port and pin
+  with version>= and overrides. Delete ProtoBuff/lib/*.lib once vcpkg supplies.
+IMPACT:
+  Reproducible builds; single source of truth for dependency versions.
+
+---
+
+ID: R8
+SEVERITY: HIGH
+TITLE: Vendored DLLs/.lib binaries in source tree (Qt5Core, libcrypto, libssl, protobuf, openssl.exe)
+FILE: OrikaServer/Qt5Core.dll (tracked); libcrypto-3-x64.dll, libssl-3-x64.dll,
+      libprotobuf*.dll, openssl.exe, zlibd1.dll (untracked); MT5/Manager/API/*.dll
+      (tracked, three copies); ProtoBuff/lib/*.lib (200+ tracked).
+WHY:
+  Binary blobs bloat clones with no diff; version drift between prebuilt DLLs
+  and what vcpkg would build; no SBOM means CVEs can't be tracked
+  (libcrypto-3 < 3.0.13 has CVE-2024-0727).
+FIX:
+  Move third-party DLLs out of source control. OpenSSL/Qt/protobuf/zlib via
+  vcpkg. For closed-source MT5 API, ONE copy under third_party/MT5/. Add a
+  THIRD_PARTY.md/SBOM listing exact versions and CVE status.
+IMPACT:
+  Slims repo, ends version drift, enables CVE scanning.
+
+---
+
+ID: R9
+SEVERITY: HIGH
+TITLE: SQL database backup file in repo
+FILE: DataBase_Backup/Orika_Backup_06-08-2021.Bak
+EVIDENCE:
+  Tracked. 15 MB SQL Server backup dated 2021-08-06.
+WHY:
+  Backups typically contain customer/account/trading data, password hashes -
+  direct PII/PCI leak via clone. GDPR right-to-erasure cannot be honoured
+  once data is in git history.
+FIX:
+  Confirm with data-protection owner; if real data, treat as a breach. Purge
+  from history via filter-repo. Store backups in S3/Blob with access controls.
+IMPACT:
+  Reduces compliance/legal exposure.
+
+---
+
+ID: R10
+SEVERITY: HIGH
+TITLE: Per-user runtime state JSON files tracked (GUID-named page layouts)
+FILE: OrikaServer/*.json (15 GUID-named files)
+EVIDENCE:
+  15 GUID-named JSONs tracked - serialised UI layout produced at runtime when
+  users save dashboard pages. Current git status shows all as D (deleted) -
+  confirming they're transient.
+FIX:
+  `git rm` the GUID JSONs. Add a .gitignore rule. Persist page layouts in the
+  SQL DB or under %PROGRAMDATA%\Orika\pages\ - never next to the .exe.
+IMPACT:
+  Cleans git status; decouples runtime data from build artifacts.
+
+---
+
+ID: R11
+SEVERITY: MEDIUM
+TITLE: error_log.txt present in source tree at install location
+FILE: OrikaServer/error_log.txt (untracked, 0 bytes)
+FIX:
+  Configure logger to write to %PROGRAMDATA%\Orika\logs\ with rotation. Add
+  *.log, error_log*.txt to .gitignore.
+IMPACT:
+  Prevents logs entering history; enables proper retention.
+
+---
+
+ID: R12
+SEVERITY: MEDIUM
+TITLE: Multiple unused/duplicate layouts (Properties/, ipch/, OrikeEXE/, x64/, x64_Lib/, x32/, MT5/ x3, ProtoFile_*)
+FILE: Repo root + OrikaServer/
+EVIDENCE:
+  Three near-identical ProtoFile / ProtoFile_Debug / ProtoFile_Release dirs
+  with generated .pb.cc/.pb.h. Three copies of MT5/Manager/API/. Two solution
+  files. Properties/AssemblyInfo.cs is C# metadata in a C++ project.
+FIX:
+  One canonical location: third_party/MT5/, generated/proto/ (excluded from
+  VCS), single OrikaServer.sln at root. Set pre-build step that runs protoc
+  -> generated/proto. Remove Properties/, ipch/, OrikeEXE/, x64/, x32/ from
+  VCS.
+IMPACT:
+  Halves the repo's mental complexity; ~3 GB smaller.
+
+---
+
+ID: R13
+SEVERITY: MEDIUM
+TITLE: Hardcoded absolute Windows paths in vcxproj IncludePath
+FILE: OrikaServer/OrikaServer.vcxproj (Debug|x64 line 85, etc.)
+EVIDENCE:
+  IncludePath contains `\OrikaServer_proto\PushFramework` (drive-root absolute).
+  OutDir inconsistent between Win32/x64.
+FIX:
+  Replace `\OrikaServer_proto\...` with `..\PushFramework` (already used in
+  Win32). One <OutDir>/<IntDir> consistently. Use $(SolutionDir) everywhere
+  instead of mixed `..\` and $(ProjectDir).
+IMPACT:
+  Project builds on any developer machine / CI agent without renaming the
+  source folder.
+
+---
+
+ID: R14
+SEVERITY: LOW
+TITLE: Generic .gitignore missing all C++/MSBuild/VS standard patterns
+FILE: .gitignore
+EVIDENCE:
+  Current .gitignore only ignores Node/Java/Python/Maven artifacts, *.exe,
+  *.ipch, *.db, .vs/. No *.obj, *.pdb, Debug/, Release/, x64/, *.pem, *.zip,
+  vcpkg_installed/.
+WHY:
+  Generic web/Node template - root cause enabling R3, R4, R5, R8.
+FIX:
+  Replace with the standard GitHub VisualStudio.gitignore template plus
+  appended rules: *.pem *.key *.pfx *.crt *.cer, *.zip *.bak,
+  vcpkg_installed/, OrikaServer/[0-9a-f]*-[0-9a-f]*-...json, error_log*.txt,
+  *.log.
+IMPACT:
+  Single durable fix preventing R3/R4/R5/R8 from re-occurring.
+
+---
+
+ID: R15
+SEVERITY: LOW
+TITLE: gd_bundle.crt (public CA bundle) in working tree but undocumented
+FILE: OrikaServer/gd_bundle.crt
+FIX:
+  Either delete and rely on OS trust store, or move under third_party/ca/godaddy/
+  with a README capturing source URL and renewal procedure.
+IMPACT:
+  Documents trust roots; prevents stale CA bundles breaking TLS.
+
+================================================================================
+END OF AUDIT
+================================================================================
+
+Total findings: 164
+  CRITICAL: 31   HIGH: 50   MEDIUM: 63   LOW: 20
+
+Files most heavily affected:
+  OrikaServer/SQLDATA/SqlData.cpp        - ~50 SQL injection sites (D1) + D2/D21
+  OrikaServer/server/openssl_iocp.cpp    - session lifetime / locking core
+  OrikaServer/server/FrameAndDeframeMessage.cpp - WebSocket frame parsing
+  OrikaServer/server/Server.cpp          - hot-path allocations + leaks
+  OrikaServer/StaticClass.cpp            - god-singleton + hardcoded creds
+  OrikaServer/ClientSocket/ClientSocket.cpp \
+  OrikaServer/ClientSocket/UniFeederSocket.cpp  - ~85% duplicate; same bugs twice
+  OrikaServer.vcxproj                    - build security settings
+  .gitignore                             - root cause of repo bloat
+
+Recommended approach:
+  Day 1   - Phase 1 fixes (S1, S8, S11, S12, R14, CR5) + revoke key.pem at CA
+  Week 1  - Phase 2 fixes (S2, S5, S7, S9, CR4) + reissue TLS + rotate sa/MT5
+  Week 2-3 - Phase 3 fixes (S3, S4, S6, D1, CR1, R1-R4)
+  Quarter - Phase 4 architectural (refcount sessions, send queue, bounded
+            resources, dedupe ClientSocket/UniFeederSocket, break CStaticClass,
+            complete or replace WebSocket implementation)
+
+This report supersedes OrikaServer/docs/STABILITY_AUDIT.md (2026-05-08); every
+one of its findings remains valid in current code and is restated here with
+current line numbers.
