@@ -9,11 +9,15 @@
 #pragma comment (lib, "ws2_32.lib")
 #pragma comment (lib, "mswsock.lib")
 
-#if _MSC_VER >= 1900
-FILE _iob[] = { *stdin, *stdout, *stderr };
-extern "C" FILE * __cdecl __iob_func(void) { return _iob; }
-#pragma comment (lib, "legacy_stdio_definitions.lib")
-#endif
+// I1: removed the legacy `_iob[]` / `__iob_func` shim. It dereferenced
+// *stdin/*stdout/*stderr at static-init time (before WinMain), which crashes
+// the process if those streams aren't initialised yet by the CRT - a classic
+// silent-process-death scenario. The shim was a workaround for linking
+// against pre-VS2015 CRT libs (e.g., old OpenSSL 1.0). The current build
+// links OpenSSL 3.4, modern protobuf, etc., none of which need the legacy
+// __iob_func / legacy_stdio_definitions.lib bridge. If a future dependency
+// reintroduces the linker error, prefer rebuilding that dependency against
+// UCRT over restoring this shim.
 
 
 #define CERTF  "Certificate.pem"
