@@ -2,7 +2,6 @@
 #include "stdafx.h"
 #include <atlbase.h>
 #include <stdio.h>
-#include "cert.h"
 #include "openssl_iocp.h"
 #include "WebsocketHandshakeMessage.h"
 #include "FrameAndDeframeMessage.h"
@@ -150,38 +149,15 @@ SOCKET create_listen_socket(int port)
 	return s;
 }
 
-// load server certificate and RSA private key 
-// from memory and use them on glocal SSL_CTX object.
-void set_cert()
-{
-
-	
-	
-	int length = strlen(server_cert_key_pem);
-	BIO *bio_cert = BIO_new_mem_buf((void*)server_cert_key_pem, length);
-	X509 *cert = PEM_read_bio_X509(bio_cert, nullptr, nullptr, nullptr);		
-	
-	//printf("Certificate used for server:\n");
-	//ssl_print_cert_info(cert);
-	EVP_PKEY *pkey = PEM_read_bio_PrivateKey(bio_cert, 0, 0, 0);
-	ssl_set_ctx_cert_and_key(cert, pkey);
-
-
-	/*BIO* bio = BIO_new_file("error_log.txt", "w");
-	ERR_print_errors(bio);
-	BIO_free(bio);*/
-
-
-	X509_free(cert);
-	EVP_PKEY_free(pkey);
-	BIO_free(bio_cert);
-}
-
 void stratServer()
 {
 	//lzo_init();
 	ssl_init();
-	set_cert();	
+	// I3: ssl_set_ctx_cert_and_key loads Certificate.pem / key.pem from disk
+	// (and has done so since pre-S6); it never used its cert/pkey arguments.
+	// The former set_cert() wrapper parsed the now-empty embedded blobs only
+	// to throw the results away. Call directly with null args.
+	ssl_set_ctx_cert_and_key(nullptr, nullptr);
 	int port = _wtoi(CStaticClass::orikaPort);
 	SOCKET s = create_listen_socket(port);
 		

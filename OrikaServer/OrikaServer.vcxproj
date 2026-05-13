@@ -340,7 +340,6 @@
     <ClInclude Include="ProtoMessageConverter.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="server\base64\base64.h" />
-    <ClInclude Include="server\cert.h" />
     <ClInclude Include="server\DataBuffer.h" />
     <ClInclude Include="server\FrameAndDeframeMessage.h" />
     <ClInclude Include="server\IncomingPacket.h" />
@@ -473,7 +472,6 @@
     <ClCompile Include="OrikaServerDlg.cpp" />
     <ClCompile Include="ProtoMessageConverter.cpp" />
     <ClCompile Include="server\base64\base64.cpp" />
-    <ClCompile Include="server\cert.cpp" />
     <ClCompile Include="server\DataBuffer.cpp" />
     <ClCompile Include="server\FrameAndDeframeMessage.cpp" />
     <ClCompile Include="server\IncomingPacket.cpp" />

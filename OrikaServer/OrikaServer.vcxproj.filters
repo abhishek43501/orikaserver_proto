@@ -144,9 +144,6 @@
     <ClInclude Include="Orika_BalanceTableAccounting.h">
       <Filter>DataTable</Filter>
     </ClInclude>
-    <ClInclude Include="server\cert.h">
-      <Filter>server</Filter>
-    </ClInclude>
     <ClInclude Include="server\DataBuffer.h">
       <Filter>server</Filter>
     </ClInclude>
@@ -541,9 +538,6 @@
     </ClCompile>
     <ClCompile Include="UserLogin.cpp">
       <Filter>Login</Filter>
-    </ClCompile>
-    <ClCompile Include="server\cert.cpp">
-      <Filter>server</Filter>
     </ClCompile>
     <ClCompile Include="server\DataBuffer.cpp">
       <Filter>server</Filter>
