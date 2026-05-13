@@ -39,13 +39,20 @@ void CLogFile::OpenFile(CString strFile, bool bAppend, long lTruncate)
 		m_pLogFile = _wfopen(szFile, bAppend ? L"a" : L"w");
 		}
 
-	InitializeCriticalSection(&m_cs);
+	// I8: CRITICAL_SECTION is now initialised once in the constructor and
+	// lives for the lifetime of the CLogFile instance. Re-initialising here
+	// (as the original code did) would leak the previous CS on subsequent
+	// OpenFile / ChangeFile calls and was a documented audit issue.
 }
 
 
- CLogFile::CLogFile()
+CLogFile::CLogFile()
+	: m_pLogFile(nullptr), m_lTruncate(0)
 {
-	//OpenFile(L"demo.log", TRUE);
+	// I8: initialise members in the ctor so that the first LogEvent's
+	// ChangeFile -> CloseFile sequence doesn't read garbage from m_pLogFile
+	// or call DeleteCriticalSection on an uninitialised CRITICAL_SECTION.
+	InitializeCriticalSection(&m_cs);
 }
 
 	/////////////////////////////////
@@ -53,6 +60,10 @@ void CLogFile::OpenFile(CString strFile, bool bAppend, long lTruncate)
 CLogFile::~CLogFile()
 {
 	CloseFile();
+	// I8 / D9: CS lifetime is now ctor-to-dtor, so delete it exactly once
+	// here instead of inside CloseFile (which can be called multiple times
+	// via ChangeFile).
+	DeleteCriticalSection(&m_cs);
 }
 
 void CLogFile::CloseFile()
@@ -62,9 +73,10 @@ void CLogFile::CloseFile()
 		fputs("\n===============Finish Loging================\n\n", m_pLogFile);
 
 		fclose(m_pLogFile);
+		// I8: null out the handle so a subsequent CloseFile call (e.g. via
+		// ChangeFile then dtor) is a no-op instead of a double-fclose.
+		m_pLogFile = NULL;
 		}
-
-	DeleteCriticalSection(&m_cs);
 }
 
 void CLogFile::ChangeFile(CString strFile, bool bAppend, long lTruncate)
