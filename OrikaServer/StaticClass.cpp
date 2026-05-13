@@ -217,8 +217,9 @@ CString  CStaticClass::MTServerAdd = L"38.170.242.2:443";
 CString  CStaticClass::MTServerUserID = L"1017";
 CString  CStaticClass::MTServerPassword = L"ASDF123";
 CString  CStaticClass::MSMQQueuName = L"orika_proto";
-LPCSTR  CStaticClass::dataFeedServer = "13.126.83.17:60631";
-LPCSTR  CStaticClass::GatewayServer = "95.111.253.230:99801";
+// I6: see StaticClass.h - changed to owning CStringA to fix dangling-LPCSTR bug.
+CStringA  CStaticClass::dataFeedServer = "13.126.83.17:60631";
+CStringA  CStaticClass::GatewayServer = "95.111.253.230:99801";
 int		 CStaticClass::ExchangeCode = 0;
 CString  CStaticClass::APIFolderPath = L"";
 int			CStaticClass::APISERVER_PORT = 0;

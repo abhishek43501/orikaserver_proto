@@ -20,8 +20,13 @@ public:
 	static CString  MTServerPassword;
 	static CString  MSMQQueuName;
 	static CString  orikaPort;
-	static LPCSTR  dataFeedServer;
-	static LPCSTR  GatewayServer;
+	// I6: changed from LPCSTR to CStringA so the static OWNS its buffer.
+	// Prior LPCSTR variant accepted assignment from a CStringA temporary in
+	// LoadConfigFile, which left a dangling pointer once the temporary
+	// destructed. CStringA::operator LPCSTR() supplies the LPCSTR readers
+	// (CClientSocket::Connect / CUniFeederSocket::Connect) still expect.
+	static CStringA  dataFeedServer;
+	static CStringA  GatewayServer;
 	static int ExchangeCode;
 	static CString  APIFolderPath;
 	static int		APISERVER_PORT;
