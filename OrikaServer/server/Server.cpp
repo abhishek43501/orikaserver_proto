@@ -303,8 +303,33 @@ bool Matchvalue(CString strval)
 }
 
 
+struct MsgContext {
+	SSL_session*           psession;
+	SSL_session*           client;
+	rapidjson::Document&   d;
+	const char*            strforjson;
+	std::string&           str;
+	std::string&           message;
+	CString&               strtype;
+	CString&               strKey;
+	CString&               strloginuser;
+	int&                   m_ActiveClient;
+	int&                   checkLoginValidate;
+	int&                   m_clientType;
+	CString                key;
+	CString                login;
+	CString                HDSLno;
+	CString                _action;
+};
+
+// Forward declarations for MessageReceived strtype handlers.
+// Each handler is defined below MessageReceived in this same file.
+// Added incrementally as branches are extracted.
+// --- BEGIN handler forward decls ---
+// --- END handler forward decls ---
+
 void MessageReceived(SSL_session* psession, char* c_message, int datasize,CString  key, CString login, CString HDSLno)
-{	
+{
 	if (c_message == "")
 	{
 		return;
