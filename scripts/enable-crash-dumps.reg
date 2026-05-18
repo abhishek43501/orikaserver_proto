@@ -1,0 +1,15 @@
+Windows Registry Editor Version 5.00
+
+; Enables Windows Error Reporting LocalDumps for OrikaServer.exe.
+; When OrikaServer.exe crashes, Windows writes a full crash dump (.dmp) to
+; the DumpFolder below - no debugger attach needed.
+;
+; To apply: double-click this file and accept the UAC / confirmation prompt.
+; To remove later: see disable-crash-dumps.reg in this folder.
+;
+; DumpType 2 = full dump (heap + handles - needed for post-mortem analysis).
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\OrikaServer.exe]
+"DumpFolder"="D:\\VSCodeProject\\orikaserver_proto\\crashdumps"
+"DumpCount"=dword:0000000a
+"DumpType"=dword:00000002

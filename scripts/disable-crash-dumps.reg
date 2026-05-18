@@ -1,0 +1,7 @@
+Windows Registry Editor Version 5.00
+
+; Removes the Windows Error Reporting LocalDumps setting for OrikaServer.exe.
+; Run this once the crash has been diagnosed.
+; To apply: double-click this file and accept the UAC / confirmation prompt.
+
+[-HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\OrikaServer.exe]
