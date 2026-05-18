@@ -74,6 +74,7 @@ OrikeEXE/
 *.bat
 *.cmd
 *.ps1
+!scripts/*.ps1
 *.ico
 *.rc
 *.rc2
