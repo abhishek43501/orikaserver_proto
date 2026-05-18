@@ -326,6 +326,7 @@ struct MsgContext {
 // Each handler is defined below MessageReceived in this same file.
 // Added incrementally as branches are extracted.
 // --- BEGIN handler forward decls ---
+static bool Handle_login(MsgContext& ctx);
 // --- END handler forward decls ---
 
 void MessageReceived(SSL_session* psession, char* c_message, int datasize,CString  key, CString login, CString HDSLno)
@@ -420,7 +421,25 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 		if (d.HasMember("type") == true)
 		{
 			const Value& Keyuser = d["type"];
-			strtype = Keyuser.GetString();			
+			strtype = Keyuser.GetString();
+			MsgContext ctx{
+				psession,
+				client,
+				d,
+				strforjson,
+				str,
+				message,
+				strtype,
+				strKey,
+				strloginuser,
+				m_ActiveClient,
+				checkLoginValidate,
+				m_clientType,
+				key,
+				login,
+				HDSLno,
+				_action
+			};
 			if (strtype == "login")
 			{
 				CUserLogin m_CUserLogin;
