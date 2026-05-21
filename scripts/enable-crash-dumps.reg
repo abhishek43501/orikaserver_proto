@@ -4,6 +4,14 @@ Windows Registry Editor Version 5.00
 ; When OrikaServer.exe crashes, Windows writes a full crash dump (.dmp) to
 ; the DumpFolder below - no debugger attach needed.
 ;
+; !!! EDIT THE DumpFolder PATH BELOW BEFORE IMPORTING !!!
+; The default points to the original author's working tree
+; (D:\VSCodeProject\orikaserver_proto\crashdumps). If that path does not
+; exist on your machine, the registry write will succeed silently but WER
+; will fail to create dumps (WER creates the leaf folder but NOT missing
+; parent directories). Change the path to something that exists on your
+; machine, e.g. C:\OrikaCrashDumps, before double-clicking.
+;
 ; To apply: double-click this file and accept the UAC / confirmation prompt.
 ; To remove later: see disable-crash-dumps.reg in this folder.
 ;

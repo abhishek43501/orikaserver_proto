@@ -17,7 +17,9 @@
 #   9. Write the file back with CRLF line endings preserved.
 #
 # Note: Word-boundary regex used for rewrites, with negative lookbehinds to skip
-#       struct-member accesses like psession->key, psession->login, psession->HDSLno.
+#       struct-member accesses like psession->key, psession->login, psession->HDSLno,
+#       and identifiers inside string literals (lookbehind excludes ").
+#       Uses -creplace (case-sensitive) so writer.Key(...) is NOT matched by /key/.
 
 [CmdletBinding()]
 param(
@@ -85,35 +87,39 @@ foreach ($line in $bodyLines) {
         $rewritten += $L
         continue
     }
-    # Negative-lookbehind (?<![\w>]) to skip:
+    # Negative-lookbehind (?<![\w>"]) to skip:
     #   - identifiers that contain the substring as a tail (\w before)
     #   - struct member accesses like psession->X (> before)
+    #   - identifiers inside string literals like d["login"] (" before)
     # For very short names (d, str), this is essential.
-    $L = $L -replace '(?<![\w>])psession\b', 'ctx.psession'
-    $L = $L -replace '(?<![\w>])client\b', 'ctx.client'
-    $L = $L -replace '(?<![\w>])strforjson\b', 'ctx.strforjson'
-    $L = $L -replace '(?<![\w>])strKey\b', 'ctx.strKey'
-    $L = $L -replace '(?<![\w>])strloginuser\b', 'ctx.strloginuser'
-    $L = $L -replace '(?<![\w>])strtype\b', 'ctx.strtype'
-    $L = $L -replace '(?<![\w>])m_ActiveClient\b', 'ctx.m_ActiveClient'
-    $L = $L -replace '(?<![\w>])checkLoginValidate\b', 'ctx.checkLoginValidate'
-    $L = $L -replace '(?<![\w>])m_clientType\b', 'ctx.m_clientType'
-    $L = $L -replace '(?<![\w>])message\b', 'ctx.message'
-    $L = $L -replace '(?<![\w>])_action\b', 'ctx._action'
+    # -creplace (case-sensitive) so writer.Key(...) is NOT mangled by the /key/ rewrite.
+    $L = $L -creplace '(?<![\w>"])psession\b', 'ctx.psession'
+    $L = $L -creplace '(?<![\w>"])client\b', 'ctx.client'
+    $L = $L -creplace '(?<![\w>"])strforjson\b', 'ctx.strforjson'
+    $L = $L -creplace '(?<![\w>"])strKey\b', 'ctx.strKey'
+    $L = $L -creplace '(?<![\w>"])strloginuser\b', 'ctx.strloginuser'
+    $L = $L -creplace '(?<![\w>"])strtype\b', 'ctx.strtype'
+    $L = $L -creplace '(?<![\w>"])m_ActiveClient\b', 'ctx.m_ActiveClient'
+    $L = $L -creplace '(?<![\w>"])checkLoginValidate\b', 'ctx.checkLoginValidate'
+    $L = $L -creplace '(?<![\w>"])m_clientType\b', 'ctx.m_clientType'
+    $L = $L -creplace '(?<![\w>"])message\b', 'ctx.message'
+    $L = $L -creplace '(?<![\w>"])_action\b', 'ctx._action'
     # `key`, `login`, `HDSLno` — function parameters. These appear as struct-member
     # access (psession->key etc.) all over this file; the (?<!>) lookbehind protects those.
-    $L = $L -replace '(?<![\w>])key\b', 'ctx.key'
-    $L = $L -replace '(?<![\w>])login\b', 'ctx.login'
-    $L = $L -replace '(?<![\w>])HDSLno\b', 'ctx.HDSLno'
+    # The (?<!") guard protects JSON-key string literals like d["login"], "key", etc.
+    # -creplace is critical here so writer.Key(...) and similar PascalCase calls stay intact.
+    $L = $L -creplace '(?<![\w>"])key\b', 'ctx.key'
+    $L = $L -creplace '(?<![\w>"])login\b', 'ctx.login'
+    $L = $L -creplace '(?<![\w>"])HDSLno\b', 'ctx.HDSLno'
     # Single-letter `d` — restrict to common rapidjson::Document call sites: d., d[, d).
     # Without this restriction, `d` matches inside many other identifiers.
-    $L = $L -replace '(?<![\w>])d(?=[\.\[])', 'ctx.d'
+    $L = $L -creplace '(?<![\w>"])d(?=[\.\[])', 'ctx.d'
     # `str` — outer std::string. Match standalone-only.
-    $L = $L -replace '(?<![\w>])str(?=[\.\(])', 'ctx.str'
+    $L = $L -creplace '(?<![\w>"])str(?=[\.\(])', 'ctx.str'
 
     if ($ReturnsBool) {
         # `return;` → `return true;` (preserve leading whitespace)
-        $L = $L -replace '(^\s*)return;\s*$', '$1return true;'
+        $L = $L -creplace '(^\s*)return;\s*$', '$1return true;'
     }
     $rewritten += $L
 }
