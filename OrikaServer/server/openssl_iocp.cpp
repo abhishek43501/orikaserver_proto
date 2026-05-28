@@ -229,8 +229,13 @@ void ssl_set_ctx_cert_and_key(X509* cert, EVP_PKEY* pkey)
 	// bypassed MFC cleanup. The process now stays alive; any later SSL operation
 	// fails visibly because ssl_ctx is missing the cert/key, and the cause is
 	// recorded in D:\logs\<date>.log via CStaticClass::m_logfile.
-	if (SSL_CTX_use_certificate_file(ssl_ctx, CERTF, SSL_FILETYPE_PEM) <= 0) {
-		CStaticClass::m_logfile.LogEvent(L"ssl_set_ctx_cert_and_key: SSL_CTX_use_certificate_file failed for Certificate.pem");
+	// Use _chain_file so the leaf AND any intermediate certs concatenated in
+	// Certificate.pem are loaded and sent to clients during the TLS handshake.
+	// The plain _certificate_file variant only loads the first PEM block,
+	// which made browsers (Chrome, Firefox) fail with "ERR_CERT_AUTHORITY_INVALID"
+	// because the GoDaddy G2 intermediate was missing from the handshake.
+	if (SSL_CTX_use_certificate_chain_file(ssl_ctx, CERTF) <= 0) {
+		CStaticClass::m_logfile.LogEvent(L"ssl_set_ctx_cert_and_key: SSL_CTX_use_certificate_chain_file failed for Certificate.pem");
 		log_openssl_errors(L"ssl_set_ctx_cert_and_key");
 		return;
 	}
