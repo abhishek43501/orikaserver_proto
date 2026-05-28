@@ -91,9 +91,13 @@ int CUserLogin::userValideate(const char* jsonString,CString ipAddress)
 					strserialno=serialno.GetString();
 
 
-					if (validateSerialno(struser,strserialno)==false)
+					// Logins 1001 and 1002 are exempt from HD/serial-number binding.
+					if (struser != L"1001" && struser != L"1002")
 					{
-						return 2;
+						if (validateSerialno(struser, strserialno) == false)
+						{
+							return 2;
+						}
 					}
 
 
