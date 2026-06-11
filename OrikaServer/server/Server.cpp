@@ -25,6 +25,7 @@
 //#include <lzo1z.h>
 //#include <lzoconf.h>
 #include "ProtoMessageConverter.h"
+#include <vector>
 
 
 using namespace rapidjson;
@@ -53,16 +54,25 @@ void app_on_session_send(SSL_session *psession)
 void app_on_session_recv(SSL_session *psession)
 {
 	DataBuffer DataForReceive;
-	DataForReceive.Allocate(1500000);	
+	DataForReceive.Allocate(1500000);
 	//printf("Received %d bytes from %s:", psession->ssl_buffer_size[RECV], psession->addresses_sz[REMOTE]);
-	char buffer[BUFFER_SIZE+1] = {0};
-	strncpy_s(buffer, psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV]);
-	buffer[psession->ssl_buffer_size[RECV]] = 0;
-	//printf("%s\n", buffer);		
 	if (psession->handsake  == 0)
-	{		
+	{
+		// I14: the handshake staging buffer used to be `char buffer[BUFFER_SIZE+1]`
+		// (~900 KB) on the stack, allocated on EVERY recv. app_on_session_recv runs
+		// on IOCP worker threads (created with the default 1 MB stack) and can
+		// re-enter itself via MessageReceived -> session_send_data ->
+		// session_process -> SSL_read -> app_on_session_recv when messages are
+		// pipelined, so two nested frames blew the 1 MB stack and silently killed
+		// the process (access violation, no log). Move it to the heap and scope it
+		// to the handshake branch (the post-handshake path reads ssl_buffer_Rev
+		// directly and never used this buffer).
+		std::vector<char> buffer(BUFFER_SIZE + 1, 0);
+		strncpy_s(buffer.data(), buffer.size(), psession->ssl_buffer_Rev, psession->ssl_buffer_size[RECV]);
+		buffer[psession->ssl_buffer_size[RECV]] = 0;
+		//printf("%s\n", buffer.data());
 		char* sendData;
-		WebsocketHandshakeMessage* wshs = new WebsocketHandshakeMessage(buffer, strlen(buffer));		
+		WebsocketHandshakeMessage* wshs = new WebsocketHandshakeMessage(buffer.data(), strlen(buffer.data()));
 		if (wshs->Parse() == true)
 		{
 			psession->handsake = 1;
@@ -1255,7 +1265,7 @@ void MessageReceived(SSL_session* psession, char* c_message, int datasize,CStrin
 							CString strjson = L"";
 							if (d.HasMember("time"))
 							{
-								const Value& Keytime = d["time"];
+								const Value& Keytime = d["time"];	
 								if (Keytime.IsNumber())
 								{
 
