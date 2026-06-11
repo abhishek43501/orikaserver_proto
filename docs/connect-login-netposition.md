@@ -83,6 +83,7 @@ Relevant `type` → field mappings:
 | `FETCH_DEALING_DATA` | `fetchDealingdatainterval` (generic fetch) | → server |
 | `DEALING_DATA`    | `dealingdata`         | ← server  |
 | `UNSUBSCRIBE`     | `unsubscribe`         | → server  |
+| `ACTIVE_COLUMNS_CHANGED` / `ACTIVE_COLUMNS_DELETE` | `activecolumnchagerequest` | → server |
 
 ---
 
@@ -361,7 +362,60 @@ number 60), one message per deal (`StaticClass.cpp:10678`). Fields:
 
 ---
 
-## 7. End-to-end sequence
+## 7. Choosing which columns a stream sends (active column change)
+
+A stream (net position, orders, …) can carry many columns, but a client usually
+displays only a subset. `ACTIVE_COLUMNS_CHANGED` tells the server **which
+columns to compute and push** for a given `requestType`, so subsequent stream
+frames are trimmed to that set. This is a control message — it changes an
+existing subscription; it does not start or stop one.
+
+### Request
+
+Send a `ClientMessage` carrying an `ActiveColumnChanged`
+(`ProtoFile/ActiveColumnChanged.proto`, field `activecolumnchagerequest`,
+number 5):
+
+```
+ClientMessage {
+    type: "ACTIVE_COLUMNS_CHANGED"
+    activecolumnchagerequest: ActiveColumnChanged {
+        type:        "ACTIVE_COLUMNS_CHANGED"
+        requestType: "FETCH_CLIENT_POSITIONS"   // which stream these columns apply to
+        loginUser:   "1001"
+        columns:     ["login","symbol","ag-Grid-AutoColumn","subbroker",
+                      "volume","previousvolume","difference"]
+    }
+}
+```
+
+`ActiveColumnChanged` fields: `type=1`, `requestType=2 (string)`,
+`columns=3 (repeated string)`, `loginUser=4 (string)`.
+
+### Behaviour
+
+The handler (`Server.cpp:4353`) requires a valid login and both `loginUser` and
+`columns` to be present. It rebuilds the per-client column subscription
+(`m_clientrequests_List`, keyed `loginUser:column:requestType`): it first
+**removes every existing entry** for that `requestType`, then adds one entry per
+column in the new list. So each `ACTIVE_COLUMNS_CHANGED` is a full replacement of
+the active column set for that `requestType`, not an incremental add — send the
+complete desired list every time.
+
+### Response
+
+The server confirms with a `SERVER_MESSAGE`
+(`{"type":"SERVER_MESSAGE","responseMessage":"Column Subscription Has Been Updated."}`),
+then applies the trimmed column set to subsequent stream frames for that
+`requestType`.
+
+> A companion `ACTIVE_COLUMNS_DELETE` message (`Server.cpp:4453`, same
+> `activecolumnchagerequest` field) removes columns from the active set instead
+> of replacing it.
+
+---
+
+## 8. End-to-end sequence
 
 ```
 Client                                  OrikaServer
@@ -382,7 +436,7 @@ Client                                  OrikaServer
 
 ---
 
-## 8. Reference client
+## 9. Reference client
 
 A working, standalone C++17 reference implementation lives in a **separate**
 repo: `D:\VSCodeProject\OrikaClient` (`OrikaClient.sln`, x64, output
@@ -394,7 +448,7 @@ described above.
 
 ---
 
-## 9. Implementation checklist
+## 10. Implementation checklist
 
 1. [ ] WebSocket client capable of binary frames + relaxed TLS verification.
 2. [ ] Generated protobuf bindings from `ProtoFile/*.proto` (at minimum
